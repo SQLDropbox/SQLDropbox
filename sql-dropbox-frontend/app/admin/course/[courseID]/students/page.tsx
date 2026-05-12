@@ -2,8 +2,6 @@
 
 import { useParams } from "next/navigation";
 import Header from "@/components/header";
-import Link from "next/link";
-import { FaArrowLeft } from "react-icons/fa6";
 import { Course } from "@/types/types";
 import AdminCourseDetailsHeader from "@/components/admin/adminCourseDetailsHeader";
 
