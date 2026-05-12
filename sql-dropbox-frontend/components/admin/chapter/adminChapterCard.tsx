@@ -10,7 +10,7 @@ export default function AdminChapterCard({ chapter }: { chapter: Chapter }) {
     const [editDialogOpen, setEditDialogOpen] = useState(false);
 
     return (
-        <div className="flex justify-between items-center rounded-xl border border-gray-200 bg-white p-6 shadow-sm hover:shadow-lg transition-shadow">
+        <div className="flex justify-between items-center rounded-xl border border-gray-200 bg-white px-6 py-3 shadow-sm hover:shadow-lg transition-shadow">
             <div className="flex items-start justify-between">
                 <div className="flex-1">
                     <h3 className="text-lg font-semibold text-gray-900 mb-1">
