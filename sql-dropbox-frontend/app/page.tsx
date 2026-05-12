@@ -1,7 +1,6 @@
-import Image from "next/image";
-import Header from "../components/header";
+import Header from "@/components/header";
 
-export default function Home() {
+export default function Page() {
   return (
     <div>
         <Header />
