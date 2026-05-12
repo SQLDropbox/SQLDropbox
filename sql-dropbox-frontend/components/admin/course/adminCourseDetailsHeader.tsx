@@ -14,7 +14,7 @@ export default function AdminCourseDetailsHeader({
     const pathname = usePathname();
 
     return (
-        <div>
+        <div className="mb-6">
             <Link
                 href="/admin"
                 className="flex items-center text-blue-500 hover:text-blue-700 gap-1"

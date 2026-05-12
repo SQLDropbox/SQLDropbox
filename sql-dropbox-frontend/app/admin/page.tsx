@@ -1,4 +1,4 @@
-import AdminCourseCard from "@/components/admin/adminCourseCard";
+import AdminCourseCard from "@/components/admin/course/adminCourseCard";
 import Header from "@/components/header";
 import { Course } from "@/types/types";
 import { Metadata } from "next";

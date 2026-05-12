@@ -10,3 +10,13 @@ export interface Course {
     studentCount: number;
     chapterCount: number;
 }
+
+export interface Chapter {
+    chapterID: number;
+    chapterNameNL: string;
+    chapterNameEN: string;
+    chapterDescriptionNL: string;
+    chapterDescriptionEN: string;
+    courseID: number;
+    exerciseCount: number;
+}

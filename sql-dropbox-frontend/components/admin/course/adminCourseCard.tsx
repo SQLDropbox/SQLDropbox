@@ -3,14 +3,8 @@
 import { Course } from "@/types/types";
 import Link from "next/link";
 import { useState } from "react";
-import {
-    FaUsers,
-    FaFileAlt,
-    FaBookOpen,
-    FaEdit,
-    FaTrash,
-} from "react-icons/fa";
-import EditCourseDialog from "./editCourseDialog";
+import { FaUsers, FaFileAlt, FaBookOpen, FaEdit } from "react-icons/fa";
+import EditCourseDialog from "@/components/admin/course/editCourseDialog";
 
 export default function AdminCourseCard({ course }: { course: Course }) {
     const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -56,20 +50,21 @@ export default function AdminCourseCard({ course }: { course: Course }) {
                     href={`/admin/course/${course.courseID}`}
                     className="flex-1"
                 >
-                    <button className="w-full flex items-center justify-center gap-2 bg-black text-white text-sm px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors">
+                    <button className="w-full flex items-center justify-center gap-2 bg-black text-white text-sm px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors cursor-pointer">
                         <FaBookOpen />
                         Manage
                     </button>
                 </Link>
 
-                <button
-                    className="border border-gray-400 rounded-lg px-3 py-2 transition-colors bg-white hover:bg-gray-200 text-gray-900 text-sm"
+                <Link
+                    href={`/admin/course/${course.courseID}/students`}
+                    className="flex items-center border border-gray-400 rounded-lg px-3 py-2 transition-colors bg-white hover:bg-gray-200 text-gray-900 text-sm cursor-pointer"
                 >
                     <FaUsers />
-                </button>
+                </Link>
 
                 <button
-                    className="border border-gray-400 rounded-lg px-3 py-2 transition-colors bg-white hover:bg-gray-200 text-gray-900 text-sm"
+                    className="border border-gray-400 rounded-lg px-3 py-2 transition-colors bg-white hover:bg-gray-200 text-gray-900 text-sm cursor-pointer"
                     onClick={() => setEditDialogOpen(true)}
                 >
                     <FaEdit />

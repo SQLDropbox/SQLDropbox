@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import Header from "@/components/header";
 import { Course } from "@/types/types";
-import AdminCourseDetailsHeader from "@/components/admin/adminCourseDetailsHeader";
+import AdminCourseDetailsHeader from "@/components/admin/course/adminCourseDetailsHeader";
 
 export default function Page() {
     const params = useParams();
