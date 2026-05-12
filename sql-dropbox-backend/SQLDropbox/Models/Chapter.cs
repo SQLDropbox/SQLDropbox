@@ -23,7 +23,9 @@ namespace SQLDropbox.Models
         public string? ChapterDescriptionNL { get; set; }
         public string? ChapterDescriptionEN { get; set; }
         public DbSchemaType? DbSchema { get; set; }
+        public int? AmountOfExercises { get; set; }
 
+        public int CourseId { get; set; }
         [JsonIgnore]
         public Course Course { get; set; } = null!;
         public ICollection<Exercise> Exercises { get; set; } = [];
