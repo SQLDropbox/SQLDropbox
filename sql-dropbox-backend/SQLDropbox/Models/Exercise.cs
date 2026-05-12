@@ -1,21 +1,30 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
-namespace SQLDropbox.Models;
-
-public class Exercise
+namespace SQLDropbox.Models
 {
-    public int ExerciseId {get; set;}
-    public string QuestionNl {get; set;} = string.Empty;
-    public string QuestionEN {get; set;}  = string.Empty;
-    public string HintNl {get; set;}
-    public string HintEN {get; set;}
-    public ICollection<Solution> Solutions { get; set; } = new List<Solution>();
-    public ICollection<Requirement> Requirements { get; set; } = new List<Requirement>();
-    
-    [Required]
-    public DateTime CreatedAt {get; set;}
-    public DateTime? UpdatedAt {get; set;}
-    public DateTime? DeletedAt {get; set;}
+    [Table("Exercise")]
+    public class Exercise
+    {
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int ExerciseId { get; set; }
+        public string? QuestionNL { get; set; }
+        public string? QuestionEN { get; set; }
+        public string? HintNL { get; set; }
+        public string? HintEN { get; set; }
+
+        [JsonIgnore]
+        public Chapter Chapter { get; set; } = null!;
+        public ICollection<Requirement> Requirements { get; set; } = [];
+        public ICollection<Solution> Solutions { get; set; } = [];
+        public ICollection<StudentExercise> StudentExercises { get; set; } = [];
+
+        public DateTime CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
+        public DateTime? DeletedAt { get; set; }
+    }
 }
