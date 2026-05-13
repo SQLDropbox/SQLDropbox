@@ -9,19 +9,14 @@ public class SchemaController : ControllerBase
 {
     private readonly SchemaService _schemaService;
 
-    // store last created schema (for demo purposes)
     private static string? _lastSchema;
 
-    public SchemaController(SchemaService schemaService)
-    {
-        _schemaService = schemaService;
-    }
+    public SchemaController(SchemaService schemaService){_schemaService = schemaService;}
 
-    // POST: api/schema/clone
-    [HttpPost("clone")]
+    [HttpPost("clone-static")]
     public async Task<IActionResult> CloneSchema()
     {
-        var schemaName = await _schemaService.CloneSchemaAsync();
+        var schemaName = await _schemaService.CloneSchemaStaticAsync();
 
         _lastSchema = schemaName;
 
@@ -32,7 +27,17 @@ public class SchemaController : ControllerBase
         });
     }
 
-    // DELETE: api/schema/latest
+    [HttpPost("clone-with-data-static")]
+    public async Task<IActionResult> CloneSchemaWithData()
+    {
+        var schemaName = await _schemaService.CloneSchemaStaticAsync();
+        _lastSchema = schemaName;
+
+        var csv = await _schemaService.ExportTableStaticAsync(schemaName, "mammals");
+
+        return Content(csv, "text/plain");
+    }
+
     [HttpDelete("latest")]
     public async Task<IActionResult> DeleteLatestSchema()
     {
@@ -41,7 +46,7 @@ public class SchemaController : ControllerBase
             return NotFound("No schema has been created yet.");
         }
 
-        await _schemaService.DeleteSchemaAsync(_lastSchema);
+        await _schemaService.DeleteLatestSchemaAsync(_lastSchema);
 
         var deleted = _lastSchema;
         _lastSchema = null;
