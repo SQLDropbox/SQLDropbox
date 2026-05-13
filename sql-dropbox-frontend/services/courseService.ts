@@ -10,7 +10,13 @@ const getCourses = async () => {
 const addCourse = async (course: Course) => {
     return api.publicFetch("/Course", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(course),
+    });
+};
+
+const updateCourse = async (courseId: number, course: Course) => {
+    return api.publicFetch(`/Course/${courseId}`, {
+        method: "PUT",
         body: JSON.stringify(course),
     });
 };
@@ -18,4 +24,5 @@ const addCourse = async (course: Course) => {
 export const courseService = {
     getCourses,
     addCourse,
+    updateCourse,
 };

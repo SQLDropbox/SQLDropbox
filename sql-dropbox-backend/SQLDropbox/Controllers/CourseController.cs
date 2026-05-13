@@ -62,20 +62,29 @@ public class CourseController : ControllerBase
         return Ok(newCourse);
     }
 
-    [HttpPut("{courseID}")]
-    public ActionResult updateCourse(int courseID)
+    [HttpPut("{courseId}")]
+    public ActionResult updateCourse(int courseId, [FromBody] CourseDTO course)
     {
-        var course = _db.Courses.FirstOrDefault(x => x.CourseId == courseID);
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
 
-        if (course == null)
-        {
-            return BadRequest("Course not found");
-        }
+        var existing = _db.Courses.Find(courseId);
 
-        course.UpdatedAt = DateTime.Now;
+        if (existing == null)
+            return NotFound();
+
+        existing.CourseNameEN = course.CourseNameEN;
+        existing.CourseNameNL = course.CourseNameNL;
+        existing.CourseDescriptionEN = course.CourseDescriptionEN;
+        existing.CourseDescriptionNL = course.CourseDescriptionNL;
+        existing.Lecturer = course.Lecturer;
+        existing.Deadline = course.Deadline;
+        existing.IsActive = course.IsActive;
+        existing.UpdatedAt = DateTime.UtcNow;
+
         _db.SaveChanges();
 
-        return Ok(course);
+        return Ok(existing);
     }
 
     [HttpDelete("{courseID}")]

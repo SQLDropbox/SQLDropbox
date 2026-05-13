@@ -116,12 +116,14 @@ export default function EditCourseDialog({
 
         try {
             if (isEdit) {
+                await courseService.updateCourse(form.courseId, form);
+                console.log("Course updated successfully"); // TODO: add notification?
             } else {
                 await courseService.addCourse(form);
-                console.log("Course created successfully");
-                onSuccess();
+                console.log("Course created successfully"); // TODO: add notification?
             }
 
+            onSuccess();
             onClose();
         } catch (err) {
             console.error(err);
