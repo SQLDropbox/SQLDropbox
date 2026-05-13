@@ -10,7 +10,8 @@ import EditCourseDialog from "@/components/admin/course/editCourseDialog";
 import { useState } from "react";
 
 export default function Page() {
-    const [addDialogOpen, setAddDialogOpen] = useState(false);
+    const [editDialogOpen, setEditDialogOpen] = useState(false);
+    const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
 
     const { data, isLoading, error, refetch } = useQuery<Course[]>({
         queryKey: ["courses"],
@@ -27,7 +28,10 @@ export default function Page() {
                     </div>
                     <button
                         className="bg-gray-900 hover:bg-gray-700 transition-colors text-white py-1 px-2 rounded text-sm"
-                        onClick={() => setAddDialogOpen(true)}
+                        onClick={() => {
+                            setSelectedCourse(null);
+                            setEditDialogOpen(true);
+                        }}
                     >
                         <FaPlus className="inline-block mr-1" />
                         New course
@@ -49,15 +53,20 @@ export default function Page() {
                         <AdminCourseCard
                             key={course.courseId}
                             course={course}
+                            onEdit={() => {
+                                setSelectedCourse(course);
+                                setEditDialogOpen(true);
+                            }}
                         />
                     ))}
                 </div>
             </div>
             <EditCourseDialog
-                open={addDialogOpen}
-                onClose={() => setAddDialogOpen(false)}
+                open={editDialogOpen}
+                onClose={() => setEditDialogOpen(false)}
                 onSuccess={refetch}
-                mode="add"
+                mode={selectedCourse ? "edit" : "add"}
+                course={selectedCourse ?? undefined}
             />
         </div>
     );

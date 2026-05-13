@@ -33,7 +33,7 @@ public class CourseController : ControllerBase
             x.IsActive,
             studentCount = x.Students.Count(),
             chapterCount = x.Chapters.Count(),
-        }).ToList();
+        }).OrderBy(x => x.CourseId).ToList();
 
         return Ok(courses);
     }
