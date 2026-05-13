@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using SQLDropbox.Data;
+using SQLDropbox.DTO;
 using SQLDropbox.Models;
 
 namespace SQLDropbox.Controllers;
@@ -20,53 +21,71 @@ public class CourseController : ControllerBase
     [HttpGet]
     public ActionResult getCourses()
     {
-        var courses = _db.Courses.Select(x => new
+        var courses = _db.Courses.Where(x => x.DeletedAt == null
+        ).Select(x => new
         {
             x.CourseId,
             x.CourseNameEN,
             x.CourseNameNL,
             x.CourseDescriptionEN,
             x.CourseDescriptionNL,
+            x.Lecturer,
             x.Deadline,
-            x.IsActive
-        }).ToList();
+            x.IsActive,
+            studentCount = x.Students.Count(),
+            chapterCount = x.Chapters.Count(),
+        }).OrderBy(x => x.CourseId).ToList();
 
         return Ok(courses);
     }
 
     [HttpPost]
-    public ActionResult addCourse()
+    public ActionResult addCourse([FromBody] CourseDTO course)
     {
-        var course = new Course
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var newCourse = new Course
         {
-            CourseNameEN = "test",
-            CourseNameNL = "test",
-            CourseDescriptionEN = "test",
-            CourseDescriptionNL = "test",
-            IsActive = true,
+            CourseNameEN = course.CourseNameEN,
+            CourseNameNL = course.CourseNameNL,
+            CourseDescriptionEN = course.CourseDescriptionEN,
+            CourseDescriptionNL = course.CourseDescriptionNL,
+            Lecturer = course.Lecturer,
+            Deadline = course.Deadline,
+            IsActive = course.IsActive,
             CreatedAt = DateTime.Now,
         };
 
-        _db.Courses.Add(course);
+        _db.Courses.Add(newCourse);
         _db.SaveChanges();
 
-        return Ok(course);
+        return Ok(newCourse);
     }
 
-    [HttpPut("{courseID}")]
-    public ActionResult updateCourse(int courseID)
+    [HttpPut("{courseId}")]
+    public ActionResult updateCourse(int courseId, [FromBody] CourseDTO course)
     {
-        var course = _db.Courses.FirstOrDefault(x => x.CourseId == courseID);
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
 
-        if (course == null)
-        {
-            return BadRequest("Course not found");
-        }
+        var existing = _db.Courses.Find(courseId);
 
-        course.UpdatedAt = DateTime.Now;
+        if (existing == null)
+            return NotFound();
+
+        existing.CourseNameEN = course.CourseNameEN;
+        existing.CourseNameNL = course.CourseNameNL;
+        existing.CourseDescriptionEN = course.CourseDescriptionEN;
+        existing.CourseDescriptionNL = course.CourseDescriptionNL;
+        existing.Lecturer = course.Lecturer;
+        existing.Deadline = course.Deadline;
+        existing.IsActive = course.IsActive;
+        existing.UpdatedAt = DateTime.UtcNow;
+
         _db.SaveChanges();
 
-        return Ok(course);
+        return Ok(existing);
     }
 
     [HttpDelete("{courseID}")]
@@ -79,9 +98,9 @@ public class CourseController : ControllerBase
             return BadRequest("Course not found");
         }
 
-        _db.Courses.Remove(course);
+        course.DeletedAt = DateTime.Now;
         _db.SaveChanges();
 
-        return Ok("Course removed successfully");
+        return Ok();
     }
 }
