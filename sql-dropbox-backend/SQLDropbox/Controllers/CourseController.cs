@@ -39,6 +39,38 @@ public class CourseController : ControllerBase
         return Ok(courses);
     }
 
+    [HttpGet("{courseId}")]
+    public ActionResult getCourseByCourseId(int courseId)
+    {
+        var course = _db.Courses.Find(courseId);
+
+        if (course == null)
+            return NotFound();
+
+        return Ok(new
+        {
+            course.CourseId,
+            course.CourseNameEN,
+            course.CourseNameNL,
+            course.CourseDescriptionEN,
+            course.CourseDescriptionNL,
+            course.Lecturer,
+            course.Deadline,
+            course.IsActive,
+            chapters = course.Chapters.Select(x => new
+            {
+                x.ChapterId,
+                x.ChapterNameEN,
+                x.ChapterNameNL
+            }),
+            students = course.Students.Select(x => new
+            {
+                x.StudentId,
+                x.FullName
+            }),
+        });
+    }
+
     [HttpPost]
     public ActionResult addCourse([FromBody] CourseDTO course)
     {
