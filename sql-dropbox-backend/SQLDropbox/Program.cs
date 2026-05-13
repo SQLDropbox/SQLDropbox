@@ -9,6 +9,7 @@ using SQLDropbox.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("localhostFrontend", policy =>
