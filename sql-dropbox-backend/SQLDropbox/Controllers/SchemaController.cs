@@ -62,6 +62,40 @@ public class SchemaController : ControllerBase
         return Content(csv, "text/plain");
     }
 
+    [HttpPost("clone-and-query-dynamic")]
+    public async Task<IActionResult> CloneAndQuery(
+    [FromQuery] string sourceSchema,
+    [FromQuery] string selectQuery)
+    {
+        if (string.IsNullOrWhiteSpace(sourceSchema))
+        {
+            return BadRequest("Parameter 'sourceSchema' is required.");
+        }
+
+        if (string.IsNullOrWhiteSpace(selectQuery))
+        {
+            return BadRequest("Parameter 'selectQuery' is required.");
+        }
+
+        var exists = await _schemaService.SchemaExistsAsync(sourceSchema);
+        if (!exists)
+        {
+            return NotFound($"Schema '{sourceSchema}' does not exist.");
+        }
+
+        if (!_schemaService.IsSafeSelectQuery(selectQuery))
+        {
+            return BadRequest("Only a single SELECT query is allowed.");
+        }
+
+        var clonedSchema = await _schemaService.CloneSchemaAsync(sourceSchema);
+        _lastSchema = clonedSchema;
+
+        var result = await _schemaService.ExecuteSelectOnSchemaAsCsvAsync(clonedSchema, selectQuery);
+
+        return Content(result, "text/plain");
+    }
+
     [HttpDelete("latest")]
     public async Task<IActionResult> DeleteLatestSchema()
     {

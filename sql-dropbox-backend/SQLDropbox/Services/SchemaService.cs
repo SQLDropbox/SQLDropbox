@@ -57,6 +57,56 @@ namespace SQLDropbox.Services
             return targetSchema;
         }
 
+        public bool IsSafeSelectQuery(string query)
+        {
+            if (string.IsNullOrWhiteSpace(query))return false;
+
+            var trimmed = query.Trim();
+
+            if (trimmed.EndsWith(";"))trimmed = trimmed[..^1].Trim();
+            if (!trimmed.StartsWith("SELECT", StringComparison.OrdinalIgnoreCase))return false;
+            if (trimmed.Contains("--") || trimmed.Contains("/*") || trimmed.Contains("*/"))return false;
+
+            var forbidden = new[]
+            {
+                "INSERT ", "UPDATE ", "DELETE ", "DROP ", "ALTER ", "CREATE ",
+                "TRUNCATE ", "CALL ", "DO ", "COPY ", "GRANT ", "REVOKE "
+            };
+
+            return !forbidden.Any(x => trimmed.Contains(x, StringComparison.OrdinalIgnoreCase));
+        }
+
+        public async Task<string> ExecuteSelectOnSchemaAsCsvAsync(string schemaName, string selectQuery)
+        {
+            await using var conn = new NpgsqlConnection(_connectionString);
+            await conn.OpenAsync();
+
+            await using (var setPathCmd = new NpgsqlCommand($"SET search_path TO \"{schemaName}\";", conn))
+            {
+                await setPathCmd.ExecuteNonQueryAsync();
+            }
+
+            var trimmed = selectQuery.Trim();
+            if (trimmed.EndsWith(";"))
+                trimmed = trimmed[..^1];
+
+            var copySql = $@"COPY ({trimmed}) TO STDOUT WITH (FORMAT CSV, HEADER true)";
+
+            using var reader = conn.BeginTextExport(copySql);
+
+            var sb = new StringBuilder();
+            while (true)
+            {
+                var line = await reader.ReadLineAsync();
+                if (line is null)
+                    break;
+
+                sb.AppendLine(line);
+            }
+
+            return sb.ToString();
+        }
+
         public async Task<string> ExportTableStaticAsync(string schemaName, string tableName)
         {
             await using var conn = new NpgsqlConnection(_connectionString);
