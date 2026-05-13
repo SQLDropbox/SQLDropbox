@@ -17,6 +17,13 @@ public class ExerciseController : ControllerBase
         _db = db;
     }
 
+    [HttpGet]
+    public async Task<IActionResult> GetAllExercises()
+    {
+        var exercises = await _db.Exercises.Include(e => e.Solutions).Where(e => e.DeletedAt == null).ToListAsync();
+        return Ok(exercises);
+    }
+
     [HttpPost]
     public async Task<IActionResult> CreateExercise([FromBody] ExerciseDTO dto)
     {
