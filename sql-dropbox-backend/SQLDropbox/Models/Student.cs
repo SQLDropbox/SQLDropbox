@@ -21,7 +21,6 @@ namespace SQLDropbox.Models
         [Required(ErrorMessage = "Group is mandatory.")]
         public string Group { get; set; } = string.Empty;
 
-        public int? CourseId { get; set; }
         [JsonIgnore]
         public Course? Course { get; set; }
         public ICollection<StudentExercise> StudentExercises { get; set; } = [];

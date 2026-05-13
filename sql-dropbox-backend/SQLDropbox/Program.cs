@@ -37,15 +37,15 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 
-    // DB initialization on startup
-    AsyncServiceScope scope = app.Services.CreateAsyncScope();
-    AppDbContext db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    ///PasswordService pass = scope.ServiceProvider.GetRequiredService<PasswordService>();
+    //// DB initialization on startup
+    //AsyncServiceScope scope = app.Services.CreateAsyncScope();
+    //AppDbContext db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    /////PasswordService pass = scope.ServiceProvider.GetRequiredService<PasswordService>();
 
-    //await db.Database.EnsureDeletedAsync();
-    await db.Database.MigrateAsync();
+    ////await db.Database.EnsureDeletedAsync();
+    //await db.Database.MigrateAsync();
 
-    await DbInitializer.SeedAsync(db/*, pass*/);
+    //await DbInitializer.SeedAsync(db/*, pass*/);
 }
 
 app.UseHttpsRedirection();
