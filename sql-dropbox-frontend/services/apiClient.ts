@@ -1,8 +1,12 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-async function publicFetch(url: string, options: RequestInit = {}): Promise<any> {
+async function publicFetch(
+    url: string,
+    options: RequestInit = {},
+): Promise<any> {
     if (!API_URL) {
-        const errorMessage = "NEXT_PUBLIC_API_URL is not defined in environment variables.";
+        const errorMessage =
+            "NEXT_PUBLIC_API_URL is not defined in environment variables.";
         console.error(errorMessage);
         throw new Error(errorMessage);
     }
@@ -17,7 +21,8 @@ async function publicFetch(url: string, options: RequestInit = {}): Promise<any>
         throw new Error(errorText || "Something went wrong.");
     }
 
-    return response.json();
+    const text = await response.text();
+    return text ? JSON.parse(text) : null;
 }
 
 export const api = {

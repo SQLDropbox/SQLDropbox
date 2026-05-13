@@ -21,8 +21,15 @@ const updateCourse = async (courseId: number, course: Course) => {
     });
 };
 
+const deleteCourse = async (courseId: number) => {
+    return api.publicFetch(`/Course/${courseId}`, {
+        method: "DELETE"
+    });
+};
+
 export const courseService = {
     getCourses,
     addCourse,
     updateCourse,
+    deleteCourse,
 };

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { FaTimes } from "react-icons/fa";
 import { Course } from "@/types/types";
 import { courseService } from "@/services/courseService";
+import ConfirmDialog from "@/components/confirmDialog";
 
 interface Props {
     open: boolean;
@@ -65,6 +66,8 @@ export default function EditCourseDialog({
     const [form, setForm] = useState<Course>(emptyForm);
     const [errors, setErrors] = useState<FormErrors>({});
     const [submitted, setSubmitted] = useState(false);
+    const [confirmDeleteDialogOpen, setConfirmDeleteDialogOpen] =
+        useState(false);
 
     useEffect(() => {
         if (!open) return;
@@ -88,6 +91,11 @@ export default function EditCourseDialog({
     }, [open, mode, course]);
 
     if (!open) return null;
+
+    function onDelete() {
+        if (!isEdit || !course) return;
+        setConfirmDeleteDialogOpen(true);
+    }
 
     function handleChange(
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -345,22 +353,49 @@ export default function EditCourseDialog({
                 </div>
 
                 {/* FOOTER */}
-                <div className="flex justify-end gap-3 px-6 py-4 border-t border-gray-100">
-                    <button
-                        onClick={onClose}
-                        className="border border-gray-300 px-4 py-2 rounded-lg text-sm hover:bg-gray-50"
-                    >
-                        Cancel
-                    </button>
+                <div
+                    className={`flex ${mode == "edit" ? "justify-between" : "justify-end"} gap-3 px-6 py-4 border-t border-gray-100`}
+                >
+                    {mode == "edit" && (
+                        <button
+                            className="border border-gray-300 px-4 py-2 rounded-lg text-sm bg-red-600 text-white hover:bg-red-400 transition-colors cursor-pointer"
+                            onClick={onDelete}
+                        >
+                            Delete
+                        </button>
+                    )}
+                    <div className="flex gap-3">
+                        <button
+                            onClick={onClose}
+                            className="border border-gray-300 px-4 py-2 rounded-lg text-sm hover:bg-gray-200 transition-colors cursor-pointer"
+                        >
+                            Cancel
+                        </button>
 
-                    <button
-                        onClick={handleSubmit}
-                        className="bg-black text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-800"
-                    >
-                        {isEdit ? "Save Changes" : "Create Course"}
-                    </button>
+                        <button
+                            onClick={handleSubmit}
+                            className="bg-black text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-700 transition-colors cursor-pointer"
+                        >
+                            {isEdit ? "Save Changes" : "Create Course"}
+                        </button>
+                    </div>
                 </div>
             </div>
+
+            {confirmDeleteDialogOpen && (
+                <ConfirmDialog
+                    onClose={() => setConfirmDeleteDialogOpen(false)}
+                    onConfirm={async () => {
+                        await courseService.deleteCourse(course!.courseId);
+                        setConfirmDeleteDialogOpen(false);
+                        onSuccess();
+                        onClose();
+                    }}
+                    title="Delete Course"
+                    description="Are you sure you want to delete this course? This action cannot be undone."
+                    type="delete"
+                />
+            )}
         </div>
     );
 }
