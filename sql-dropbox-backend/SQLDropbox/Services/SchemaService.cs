@@ -76,7 +76,7 @@ namespace SQLDropbox.Services
             return !forbidden.Any(x => trimmed.Contains(x, StringComparison.OrdinalIgnoreCase));
         }
 
-        public async Task<string> ExecuteSelectOnSchemaAsCsvAsync(string schemaName, string selectQuery)
+        public async Task<string> ExecuteSelectOnSchemaAsync(string schemaName, string selectQuery)
         {
             await using var conn = new NpgsqlConnection(_connectionString);
             await conn.OpenAsync();
@@ -135,6 +135,42 @@ namespace SQLDropbox.Services
             await conn.OpenAsync();
 
             var sql = $"DROP SCHEMA IF EXISTS \"{schemaName}\" CASCADE";
+
+            await using var cmd = new NpgsqlCommand(sql, conn);
+            await cmd.ExecuteNonQueryAsync();
+        }
+
+        public async Task<string> CloneQueryAndDeleteAsync(string sourceSchema, string selectQuery)
+        {
+            string? clonedSchema = null;
+
+            try
+            {
+                clonedSchema = await CloneSchemaAsync(sourceSchema);
+                return await ExecuteSelectOnSchemaAsync(clonedSchema, selectQuery);
+            }
+            finally
+            {
+                if (!string.IsNullOrWhiteSpace(clonedSchema))
+                {
+                    try
+                    {
+                        await DeleteSchemaAsync(clonedSchema);
+                    }
+                    catch
+                    {
+                        // optional: log cleanup failure
+                    }
+                }
+            }
+        }
+
+        public async Task DeleteSchemaAsync(string schemaName)
+        {
+            await using var conn = new NpgsqlConnection(_connectionString);
+            await conn.OpenAsync();
+
+            var sql = $@"DROP SCHEMA IF EXISTS ""{schemaName}"" CASCADE";
 
             await using var cmd = new NpgsqlCommand(sql, conn);
             await cmd.ExecuteNonQueryAsync();
