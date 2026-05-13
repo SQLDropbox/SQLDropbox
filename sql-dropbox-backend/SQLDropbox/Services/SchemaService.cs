@@ -10,6 +10,20 @@ namespace SQLDropbox.Services
 
         public SchemaService(IConfiguration config) {_connectionString = config.GetConnectionString("DefaultConnection");}
 
+        public async Task<bool> SchemaExistsAsync(string schemaName)
+        {
+            await using var conn = new NpgsqlConnection(_connectionString);
+            await conn.OpenAsync();
+
+            const string sql = @"SELECT EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = @schemaName);";
+
+            await using var cmd = new NpgsqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("schemaName", schemaName);
+
+            var result = await cmd.ExecuteScalarAsync();
+            return result is bool exists && exists;
+        }
+
         public async Task<string> CloneSchemaStaticAsync()
         {
             var targetSchema = $"animals_session_{Guid.NewGuid():N}";
@@ -20,6 +34,22 @@ namespace SQLDropbox.Services
             await using var cmd = new NpgsqlCommand("CALL public.sp_clone_schema(@source, @target);", conn);
 
             cmd.Parameters.AddWithValue("source", "animals");
+            cmd.Parameters.AddWithValue("target", targetSchema);
+
+            await cmd.ExecuteNonQueryAsync();
+
+            return targetSchema;
+        }
+
+        public async Task<string> CloneSchemaAsync(string sourceSchema)
+        {
+            var targetSchema = $"{sourceSchema}_session_{Guid.NewGuid():N}";
+
+            await using var conn = new NpgsqlConnection(_connectionString);
+            await conn.OpenAsync();
+
+            await using var cmd = new NpgsqlCommand("CALL animals.sp_clone_schema(@source, @target);", conn);
+            cmd.Parameters.AddWithValue("source", sourceSchema);
             cmd.Parameters.AddWithValue("target", targetSchema);
 
             await cmd.ExecuteNonQueryAsync();

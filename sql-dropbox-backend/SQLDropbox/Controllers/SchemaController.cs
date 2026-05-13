@@ -27,6 +27,30 @@ public class SchemaController : ControllerBase
         });
     }
 
+    [HttpPost("clone-dynamic")]
+    public async Task<IActionResult> CloneSchemaDynamic([FromQuery] string sourceSchema)
+    {
+        if (string.IsNullOrWhiteSpace(sourceSchema))
+        {
+            return BadRequest("Parameter 'sourceSchema' is required.");
+        }
+
+        var exists = await _schemaService.SchemaExistsAsync(sourceSchema);
+        if (!exists)
+        {
+            return NotFound($"Schema '{sourceSchema}' does not exist.");
+        }
+
+        var clonedSchema = await _schemaService.CloneSchemaAsync(sourceSchema);
+        _lastSchema = clonedSchema;
+
+        return Ok(new
+        {
+            sourceSchema,
+            clonedSchema
+        });
+    }
+
     [HttpPost("clone-with-data-static")]
     public async Task<IActionResult> CloneSchemaWithData()
     {
