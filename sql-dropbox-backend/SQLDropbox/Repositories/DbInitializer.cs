@@ -9,15 +9,15 @@ namespace SQLDropbox.Repositories
     {
         public static async Task SeedAsync(AppDbContext context/*, PasswordService passwordService*/)
         {
-            await context.Admins.ExecuteDeleteAsync();
-            await context.Requirements.ExecuteDeleteAsync();
-            await context.StudentSolutions.ExecuteDeleteAsync();
-            await context.StudentExercises.ExecuteDeleteAsync();
-            await context.Students.ExecuteDeleteAsync();
-            await context.Solutions.ExecuteDeleteAsync();
-            await context.Exercises.ExecuteDeleteAsync();
-            await context.Chapters.ExecuteDeleteAsync();
-            await context.Courses.ExecuteDeleteAsync();
+            //await context.Admins.ExecuteDeleteAsync();
+            //await context.Requirements.ExecuteDeleteAsync();
+            //await context.StudentSolutions.ExecuteDeleteAsync();
+            //await context.StudentExercises.ExecuteDeleteAsync();
+            //await context.Students.ExecuteDeleteAsync();
+            //await context.Solutions.ExecuteDeleteAsync();
+            //await context.Exercises.ExecuteDeleteAsync();
+            //await context.Chapters.ExecuteDeleteAsync();
+            //await context.Courses.ExecuteDeleteAsync();
 
             /* ADMINS */
             Admin admin = new()
