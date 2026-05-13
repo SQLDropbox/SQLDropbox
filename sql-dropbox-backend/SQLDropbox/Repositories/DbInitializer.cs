@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
+using SQLDropbox.Services;
 using SQLDropbox.Data;
 using SQLDropbox.Models;
 
@@ -7,7 +8,7 @@ namespace SQLDropbox.Repositories
 {
     public static class DbInitializer
     {
-        public static async Task SeedAsync(AppDbContext context/*, PasswordService passwordService*/)
+        public static async Task SeedAsync(AppDbContext context, PasswordService passwordService)
         {
             //await context.Admins.ExecuteDeleteAsync();
             //await context.Requirements.ExecuteDeleteAsync();
@@ -23,6 +24,7 @@ namespace SQLDropbox.Repositories
             Admin admin = new()
             {
                 LectorCode = "u0123456",
+                /*Password = passwordService.HashPassword("u0123456"),*/
                 CreatedAt = DateTime.UtcNow,
             };
             await context.Admins.AddAsync(admin);
@@ -143,7 +145,8 @@ namespace SQLDropbox.Repositories
                 Year = 2026,
                 Group = "AT-TE",
                 Course = course1,
-                CreatedAt= DateTime.UtcNow,
+                /*Password = passwordService.HashPassword("r0123456"),*/
+                CreatedAt = DateTime.UtcNow,
             };
             await context.Students.AddAsync(student1);
 
