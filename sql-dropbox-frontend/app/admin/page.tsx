@@ -4,33 +4,14 @@ import AdminCourseCard from "@/components/admin/course/adminCourseCard";
 import Header from "@/components/header";
 import { courseService } from "@/services/courseService";
 import { Course } from "@/types/types";
-import { useEffect, useState } from "react";
 import { FaPlus } from "react-icons/fa6";
+import { useQuery } from "@tanstack/react-query";
 
 export default function Page() {
-
-const [courses, setCourses] = useState<Course[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
-
-    useEffect(() => {
-        async function loadCourses() {
-            try {
-                const data = await courseService.getCourses();
-                setCourses(data);
-            } catch (err) {
-                if (err instanceof Error) {
-                    setError(err.message);
-                } else {
-                    setError("Something went wrong.");
-                }
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        loadCourses();
-    }, []);
+    const { data, isLoading, error } = useQuery<Course[]>({
+        queryKey: ["courses"],
+        queryFn: courseService.getCourses,
+    });
 
     return (
         <div>
@@ -46,9 +27,17 @@ const [courses, setCourses] = useState<Course[]>([]);
                     </button>
                 </div>
 
+                {isLoading && <p className="mt-6">Loading...</p>}
+
+                {error && (
+                    <p className="mt-6 text-red-500">
+                        Something went wrong
+                    </p>
+                )}
+
                 <div className="grid grid-cols-3 gap-6 my-6">
-                    {courses.map((course, index) => (
-                        <AdminCourseCard key={index} course={course} />
+                    {data?.map((course: Course) => (
+                        <AdminCourseCard key={course.courseId} course={course} />
                     ))}
                 </div>
             </div>
