@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using SQLDropbox.Data;
+using SQLDropbox.DTO;
 using SQLDropbox.Models;
 
 namespace SQLDropbox.Controllers;
@@ -27,30 +28,38 @@ public class CourseController : ControllerBase
             x.CourseNameNL,
             x.CourseDescriptionEN,
             x.CourseDescriptionNL,
+            x.Lecturer,
             x.Deadline,
-            x.IsActive
+            x.IsActive,
+            studentCount = x.Students.Count(),
+            chapterCount = x.Chapters.Count(),
         }).ToList();
 
         return Ok(courses);
     }
 
     [HttpPost]
-    public ActionResult addCourse()
+    public ActionResult addCourse([FromBody] CourseDTO course)
     {
-        var course = new Course
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var newCourse = new Course
         {
-            CourseNameEN = "test",
-            CourseNameNL = "test",
-            CourseDescriptionEN = "test",
-            CourseDescriptionNL = "test",
-            IsActive = true,
+            CourseNameEN = course.CourseNameEN,
+            CourseNameNL = course.CourseNameNL,
+            CourseDescriptionEN = course.CourseDescriptionEN,
+            CourseDescriptionNL = course.CourseDescriptionNL,
+            Lecturer = course.Lecturer,
+            Deadline = course.Deadline,
+            IsActive = course.IsActive,
             CreatedAt = DateTime.Now,
         };
 
-        _db.Courses.Add(course);
+        _db.Courses.Add(newCourse);
         _db.SaveChanges();
 
-        return Ok(course);
+        return Ok(newCourse);
     }
 
     [HttpPut("{courseID}")]
