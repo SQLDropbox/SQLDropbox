@@ -1,5 +1,5 @@
 export interface Course {
-    courseID: number;
+    courseId: number;
     courseNameNL: string;
     courseNameEN: string;
     courseDescriptionNL: string;
@@ -12,11 +12,11 @@ export interface Course {
 }
 
 export interface Chapter {
-    chapterID: number;
+    chapterId: number;
     chapterNameNL: string;
     chapterNameEN: string;
     chapterDescriptionNL: string;
     chapterDescriptionEN: string;
-    courseID: number;
+    courseId: number;
     exerciseCount: number;
 }

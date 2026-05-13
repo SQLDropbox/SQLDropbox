@@ -47,7 +47,7 @@ export default function AdminCourseCard({ course }: { course: Course }) {
 
             <div className="flex gap-2 pt-4 border-t border-gray-200">
                 <Link
-                    href={`/admin/course/${course.courseID}`}
+                    href={`/admin/course/${course.courseId}`}
                     className="flex-1"
                 >
                     <button className="w-full flex items-center justify-center gap-2 bg-black text-white text-sm px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors cursor-pointer">
@@ -57,7 +57,7 @@ export default function AdminCourseCard({ course }: { course: Course }) {
                 </Link>
 
                 <Link
-                    href={`/admin/course/${course.courseID}/students`}
+                    href={`/admin/course/${course.courseId}/students`}
                     className="flex items-center border border-gray-400 rounded-lg px-3 py-2 transition-colors bg-white hover:bg-gray-200 text-gray-900 text-sm cursor-pointer"
                 >
                     <FaUsers />

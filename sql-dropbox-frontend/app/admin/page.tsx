@@ -1,53 +1,36 @@
+"use client";
+
 import AdminCourseCard from "@/components/admin/course/adminCourseCard";
 import Header from "@/components/header";
+import { courseService } from "@/services/courseService";
 import { Course } from "@/types/types";
-import { Metadata } from "next";
+import { useEffect, useState } from "react";
 import { FaPlus } from "react-icons/fa6";
-
-export const metadata: Metadata = {
-    title: "Admin Page",
-};
 
 export default function Page() {
 
-    const courses: Course[] = [
-        {
-            courseID: 1,
-            courseNameNL: "Inleiding tot Databases",
-            courseNameEN: "Introduction to Databases",
-            courseDescriptionNL: "Leer de basisprincipes van databases en SQL.",
-            courseDescriptionEN: "Learn the fundamentals of databases and SQL.",
-            lecturer: "Dr. Smith",
-            deadline: new Date("2024-12-31"),
-            isActive: true,
-            studentCount: 120,
-            chapterCount: 5,
-        },
-        {
-            courseID: 2,
-            courseNameNL: "Geavanceerde SQL",
-            courseNameEN: "Advanced SQL",
-            courseDescriptionNL: "Verdiep je in complexe SQL-query's en optimalisatie.",
-            courseDescriptionEN: "Dive into complex SQL queries and optimization.",
-            lecturer: "Prof. Johnson",
-            deadline: new Date("2024-11-30"),
-            isActive: false,
-            studentCount: 80,
-            chapterCount: 8,
-        },
-        {
-            courseID: 3,
-            courseNameNL: "Database Beheer",
-            courseNameEN: "Database Administration",
-            courseDescriptionNL: "Leer hoe je databases effectief beheert en onderhoudt.",
-            courseDescriptionEN: "Learn how to effectively manage and maintain databases.",
-            lecturer: "Dr. Lee",
-            deadline: new Date("2024-10-15"),
-            isActive: true,
-            studentCount: 60,
-            chapterCount: 6,
-        },
-    ];
+const [courses, setCourses] = useState<Course[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+
+    useEffect(() => {
+        async function loadCourses() {
+            try {
+                const data = await courseService.getCourses();
+                setCourses(data);
+            } catch (err) {
+                if (err instanceof Error) {
+                    setError(err.message);
+                } else {
+                    setError("Something went wrong.");
+                }
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        loadCourses();
+    }, []);
 
     return (
         <div>

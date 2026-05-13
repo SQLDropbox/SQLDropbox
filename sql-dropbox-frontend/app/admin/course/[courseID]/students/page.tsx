@@ -9,7 +9,7 @@ export default function Page() {
     const params = useParams();
 
     const course: Course = {
-        courseID: 1,
+        courseId: 1,
         courseNameNL: "Inleiding tot Databases",
         courseNameEN: "Introduction to Databases",
         courseDescriptionNL: "Leer de basisprincipes van databases en SQL.",
