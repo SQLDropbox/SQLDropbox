@@ -21,7 +21,8 @@ public class CourseController : ControllerBase
     [HttpGet]
     public ActionResult getCourses()
     {
-        var courses = _db.Courses.Select(x => new
+        var courses = _db.Courses.Where(x => x.DeletedAt == null
+        ).Select(x => new
         {
             x.CourseId,
             x.CourseNameEN,
@@ -97,9 +98,9 @@ public class CourseController : ControllerBase
             return BadRequest("Course not found");
         }
 
-        _db.Courses.Remove(course);
+        course.DeletedAt = DateTime.Now;
         _db.SaveChanges();
 
-        return Ok("Course removed successfully");
+        return Ok();
     }
 }
