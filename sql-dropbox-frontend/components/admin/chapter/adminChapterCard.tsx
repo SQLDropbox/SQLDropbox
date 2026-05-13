@@ -29,7 +29,7 @@ export default function AdminChapterCard({ chapter }: { chapter: Chapter }) {
             <div className="flex gap-2 justify-between">
                 <div className="w-10"></div>
                 <Link
-                    href={`/admin/course/${chapter.chapterID}`}
+                    href={`/admin/course/${chapter.chapterId}`}
                     className="w-100 flex items-center justify-center gap-2 bg-black text-white text-sm px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors cursor-pointer"
                 >
                     <FaBookOpen />
@@ -48,7 +48,7 @@ export default function AdminChapterCard({ chapter }: { chapter: Chapter }) {
                 </div>
             </div>
 
-            <EditChapterDialog
+            <EditChapterDialog  
                 open={editDialogOpen}
                 onClose={() => setEditDialogOpen(false)}
                 chapter={chapter}

@@ -9,7 +9,7 @@ export default function Page() {
     const params = useParams();
 
     const course: Course = {
-        courseID: 1,
+        courseId: params.courseID ? parseInt(params.courseID[0]) : 0,
         courseNameNL: "Inleiding tot Databases",
         courseNameEN: "Introduction to Databases",
         courseDescriptionNL: "Leer de basisprincipes van databases en SQL.",
@@ -17,8 +17,6 @@ export default function Page() {
         lecturer: "Dr. Smith",
         deadline: new Date("2024-12-31"),
         isActive: true,
-        studentCount: 120,
-        chapterCount: 5,
     };
 
     return (

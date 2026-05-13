@@ -1,5 +1,5 @@
 export interface Course {
-    courseID: number;
+    courseId: number;
     courseNameNL: string;
     courseNameEN: string;
     courseDescriptionNL: string;
@@ -7,16 +7,14 @@ export interface Course {
     lecturer: string;
     deadline: Date;
     isActive: boolean;
-    studentCount: number;
-    chapterCount: number;
 }
 
 export interface Chapter {
-    chapterID: number;
+    chapterId: number;
     chapterNameNL: string;
     chapterNameEN: string;
     chapterDescriptionNL: string;
     chapterDescriptionEN: string;
-    courseID: number;
+    courseId: number;
     exerciseCount: number;
 }

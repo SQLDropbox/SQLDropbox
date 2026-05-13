@@ -12,7 +12,7 @@ export default function Page() {
     const params = useParams();
 
     const course: Course = {
-        courseID: 1,
+        courseId: 1,
         courseNameNL: "Inleiding tot Databases",
         courseNameEN: "Introduction to Databases",
         courseDescriptionNL: "Leer de basisprincipes van databases en SQL.",
@@ -20,8 +20,6 @@ export default function Page() {
         lecturer: "Dr. Smith",
         deadline: new Date("2024-12-31"),
         isActive: true,
-        studentCount: 120,
-        chapterCount: 5,
     };
 
     return (
@@ -34,12 +32,12 @@ export default function Page() {
                         <AdminChapterCard
                             key={i}
                             chapter={{
-                                chapterID: i + 1,
+                                chapterId: i + 1,
                                 chapterNameNL: `Hoofdstuk ${i + 1}`,
                                 chapterNameEN: `Chapter ${i + 1}`,
                                 chapterDescriptionNL: `Beschrijving van hoofdstuk ${i + 1}`,
                                 chapterDescriptionEN: `Description of chapter ${i + 1}`,
-                                courseID: course.courseID,
+                                courseId: course.courseId,
                                 exerciseCount: 10,
                             }}
                         />
