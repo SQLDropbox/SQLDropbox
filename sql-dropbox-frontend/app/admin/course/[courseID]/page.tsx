@@ -20,8 +20,6 @@ export default function Page() {
         lecturer: "Dr. Smith",
         deadline: new Date("2024-12-31"),
         isActive: true,
-        studentCount: 120,
-        chapterCount: 5,
     };
 
     return (
