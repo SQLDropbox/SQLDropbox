@@ -6,8 +6,12 @@ import { courseService } from "@/services/courseService";
 import { Course } from "@/types/types";
 import { FaPlus } from "react-icons/fa6";
 import { useQuery } from "@tanstack/react-query";
+import EditCourseDialog from "@/components/admin/course/editCourseDialog";
+import { useState } from "react";
 
 export default function Page() {
+    const [addDialogOpen, setAddDialogOpen] = useState(false);
+
     const { data, isLoading, error } = useQuery<Course[]>({
         queryKey: ["courses"],
         queryFn: courseService.getCourses,
@@ -21,7 +25,7 @@ export default function Page() {
                     <div>
                         <h1>Manage Courses</h1>
                     </div>
-                    <button className="bg-gray-900 hover:bg-gray-700 transition-colors text-white py-1 px-2 rounded text-sm">
+                    <button className="bg-gray-900 hover:bg-gray-700 transition-colors text-white py-1 px-2 rounded text-sm" onClick={() => setAddDialogOpen(true)}>
                         <FaPlus className="inline-block mr-1" />
                         New course
                     </button>
@@ -41,6 +45,11 @@ export default function Page() {
                     ))}
                 </div>
             </div>
+            <EditCourseDialog
+                open={addDialogOpen}
+                onClose={() => setAddDialogOpen(false)}
+                mode="add"
+            />
         </div>
     );
 }

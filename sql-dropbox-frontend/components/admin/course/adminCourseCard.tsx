@@ -24,12 +24,12 @@ export default function AdminCourseCard({ course }: { course: Course }) {
                     <div className="space-y-2">
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                             <FaUsers className="text-sm" />
-                            {course.studentCount} students
+                            {/* {course.studentCount} students */}
                         </div>
 
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                             <FaFileAlt className="text-sm" />
-                            {course.chapterCount} chapters
+                            {/* {course.chapterCount} chapters */}
                         </div>
                     </div>
                 </div>
@@ -74,6 +74,7 @@ export default function AdminCourseCard({ course }: { course: Course }) {
                 open={editDialogOpen}
                 onClose={() => setEditDialogOpen(false)}
                 course={course}
+                mode="edit"
             />
         </div>
     );

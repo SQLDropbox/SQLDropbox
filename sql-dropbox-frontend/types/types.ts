@@ -7,8 +7,6 @@ export interface Course {
     lecturer: string;
     deadline: Date;
     isActive: boolean;
-    studentCount: number;
-    chapterCount: number;
 }
 
 export interface Chapter {
