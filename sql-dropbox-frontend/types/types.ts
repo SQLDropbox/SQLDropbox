@@ -5,8 +5,11 @@ export interface Course {
     courseDescriptionNL: string;
     courseDescriptionEN: string;
     lecturer: string;
-    deadline: Date;
+    deadline?: Date | null;
     isActive: boolean;
+
+    studentCount?: number;
+    chapterCount?: number;
 }
 
 export interface Chapter {
