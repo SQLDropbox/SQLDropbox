@@ -2,24 +2,21 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SQLDropbox.Data;
 using SQLDropbox.Repositories;
+using SQLDropbox.Services;
 
 namespace SQLDropbox.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class UtilitiesController : ControllerBase
+public class UtilitiesController(AppDbContext db, PasswordService passwordService) : ControllerBase
 {
-    private readonly AppDbContext _db;
-    
-    public UtilitiesController(AppDbContext db)
-    {
-        _db = db;
-    }
+    private readonly AppDbContext _db = db;
+    private readonly PasswordService _passwordService = passwordService;
 
     [HttpGet("seed-db")]
     public async Task<IActionResult> SeedTheDb()
-    {
-        await DbInitializer.SeedAsync(_db);        
+    {        
+        await DbInitializer.SeedAsync(_db, _passwordService);
         return Ok("The DB should have been seeded.");
     }
 

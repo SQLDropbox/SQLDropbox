@@ -9,6 +9,7 @@ namespace SQLDropbox.Models
     {
         [Key]
         public required string LectorCode { get; set; }
+        //public required string Password { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 }

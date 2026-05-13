@@ -21,6 +21,7 @@ namespace SQLDropbox.Models
         public int Year { get; set; }
         [Required(ErrorMessage = "Group is mandatory.")]
         public string Group { get; set; } = string.Empty;
+        //public required string Password { get; set; }
 
         [JsonIgnore]
         public Course? Course { get; set; }
