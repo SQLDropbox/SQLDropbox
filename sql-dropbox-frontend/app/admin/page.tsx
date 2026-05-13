@@ -1,6 +1,5 @@
 "use client";
 
-import AdminCourseCard from "@/components/admin/course/adminCourseCard";
 import Header from "@/components/header";
 import { courseService } from "@/services/courseService";
 import { Course } from "@/types/types";
@@ -8,6 +7,7 @@ import { FaPlus } from "react-icons/fa6";
 import { useQuery } from "@tanstack/react-query";
 import EditCourseDialog from "@/components/admin/course/editCourseDialog";
 import { useState } from "react";
+import CourseCard from "@/components/courseCard";
 
 export default function Page() {
     const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -50,13 +50,14 @@ export default function Page() {
 
                 <div className="grid grid-cols-3 gap-6 my-6">
                     {data?.map((course) => (
-                        <AdminCourseCard
+                        <CourseCard
                             key={course.courseId}
                             course={course}
                             onEdit={() => {
                                 setSelectedCourse(course);
                                 setEditDialogOpen(true);
                             }}
+                            adminMode
                         />
                     ))}
                 </div>
