@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SQLDropbox.Data;
@@ -11,9 +12,11 @@ using SQLDropbox.Data;
 namespace SQLDropbox.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260512125703_AddedAmountOfExercisesToChapter")]
+    partial class AddedAmountOfExercisesToChapter
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -141,9 +144,6 @@ namespace SQLDropbox.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("HintNL")
-                        .HasColumnType("text");
-
-                    b.Property<string>("QueryOutput")
                         .HasColumnType("text");
 
                     b.Property<string>("QuestionEN")
@@ -315,7 +315,7 @@ namespace SQLDropbox.Migrations
                     b.Property<int>("StudentExerciseId")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime?>("UpdatedAt")
+                    b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp without time zone");
 
                     b.HasKey("StudentSolutionId");

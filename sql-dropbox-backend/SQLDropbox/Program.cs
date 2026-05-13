@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SQLDropbox.Data;
+using SQLDropbox.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,6 +38,16 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
     app.UseSwagger();
     app.UseSwaggerUI();
+
+    //// DB initialization on startup
+    //AsyncServiceScope scope = app.Services.CreateAsyncScope();
+    //AppDbContext db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    /////PasswordService pass = scope.ServiceProvider.GetRequiredService<PasswordService>();
+
+    ////await db.Database.EnsureDeletedAsync();
+    //await db.Database.MigrateAsync();
+
+    //await DbInitializer.SeedAsync(db/*, pass*/);
 }
 
 app.UseHttpsRedirection();

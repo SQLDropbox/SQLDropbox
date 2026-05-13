@@ -21,6 +21,6 @@ namespace SQLDropbox.Models
         public StudentExercise StudentExercise { get; set; } = null!;
 
         public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
     }
 }
