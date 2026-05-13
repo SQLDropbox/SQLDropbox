@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SQLDropbox.Data;
+using SQLDropbox.DTO;
+using SQLDropbox.Models;
 
 namespace SQLDropbox.Controllers;
 
@@ -51,5 +53,46 @@ public class ChapterController : ControllerBase
         }
 
         return Ok(chapter);
+    }
+
+    [HttpPost]
+    public async Task<ActionResult> CreateChapter([FromBody] ChapterDTO dto)
+    {
+        var course = await _db.Courses.FindAsync(dto.CourseId);
+        if (course == null)
+        {
+            return BadRequest(new { message = $"Course with ID {dto.CourseId} does not exist." });
+        }
+
+        var newChapter = new Chapter
+        {
+            ChapterNameNL = dto.ChapterNameNL,
+            ChapterNameEN = dto.ChapterNameEN,
+            ChapterDescriptionNL = dto.ChapterDescriptionNL,
+            ChapterDescriptionEN = dto.ChapterDescriptionEN,
+            DbSchema = dto.DbSchema,
+            AmountOfExercises = dto.AmountOfExercises,
+            Course = course,
+            CreatedAt = DateTime.UtcNow
+
+        };
+        await _db.Chapters.AddAsync(newChapter);
+        await _db.SaveChangesAsync();
+        return CreatedAtAction(nameof(GetChapterById), new { id = newChapter.ChapterId }, newChapter);
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<ActionResult> DeleteChapter(int id)
+    {
+        var chapter = await _db.Chapters.FirstOrDefaultAsync(x => x.ChapterId == id && x.DeletedAt == null);
+
+        if (chapter == null)
+        {
+            return NotFound(new { message = $"Chapter with ID {id} not found." });
+        }
+        
+        chapter.DeletedAt = DateTime.UtcNow;
+        await _db.SaveChangesAsync();
+        return Ok(new { message = $"Chapter with ID {id} successfully deleted." });
     }
 }
