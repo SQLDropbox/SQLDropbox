@@ -24,23 +24,6 @@ namespace SQLDropbox.Services
             return result is bool exists && exists;
         }
 
-        public async Task<string> CloneSchemaStaticAsync()
-        {
-            var targetSchema = $"animals_session_{Guid.NewGuid():N}";
-
-            await using var conn = new NpgsqlConnection(_connectionString);
-            await conn.OpenAsync();
-
-            await using var cmd = new NpgsqlCommand("CALL public.sp_clone_schema(@source, @target);", conn);
-
-            cmd.Parameters.AddWithValue("source", "animals");
-            cmd.Parameters.AddWithValue("target", targetSchema);
-
-            await cmd.ExecuteNonQueryAsync();
-
-            return targetSchema;
-        }
-
         public async Task<string> CloneSchemaAsync(string sourceSchema)
         {
             var targetSchema = $"{sourceSchema}_session_{Guid.NewGuid():N}";
@@ -67,11 +50,7 @@ namespace SQLDropbox.Services
             if (!trimmed.StartsWith("SELECT", StringComparison.OrdinalIgnoreCase))return false;
             if (trimmed.Contains("--") || trimmed.Contains("/*") || trimmed.Contains("*/"))return false;
 
-            var forbidden = new[]
-            {
-                "INSERT ", "UPDATE ", "DELETE ", "DROP ", "ALTER ", "CREATE ",
-                "TRUNCATE ", "CALL ", "DO ", "COPY ", "GRANT ", "REVOKE "
-            };
+            var forbidden = new[] {"INSERT ", "UPDATE ", "DELETE ", "DROP ", "ALTER ", "CREATE ", "TRUNCATE ", "CALL ", "DO ", "COPY ", "GRANT ", "REVOKE "};
 
             return !forbidden.Any(x => trimmed.Contains(x, StringComparison.OrdinalIgnoreCase));
         }
@@ -91,10 +70,9 @@ namespace SQLDropbox.Services
                 trimmed = trimmed[..^1];
 
             var copySql = $@"COPY ({trimmed}) TO STDOUT WITH (FORMAT CSV, HEADER true)";
-
             using var reader = conn.BeginTextExport(copySql);
-
             var sb = new StringBuilder();
+
             while (true)
             {
                 var line = await reader.ReadLineAsync();
@@ -105,39 +83,6 @@ namespace SQLDropbox.Services
             }
 
             return sb.ToString();
-        }
-
-        public async Task<string> ExportTableStaticAsync(string schemaName, string tableName)
-        {
-            await using var conn = new NpgsqlConnection(_connectionString);
-            await conn.OpenAsync();
-
-            var copySql =   $@" COPY (SELECT * FROM ""{schemaName}"".""{tableName}"") TO STDOUT WITH (FORMAT CSV, HEADER true)";
-
-            using var reader = conn.BeginTextExport(copySql);
-
-            var sb = new StringBuilder();
-            while (true)
-            {
-                var line = await reader.ReadLineAsync();
-                if (line is null)
-                    break;
-
-                sb.AppendLine(line);
-            }
-
-            return sb.ToString();
-        }
-
-        public async Task DeleteLatestSchemaAsync(string schemaName)
-        {
-            await using var conn = new NpgsqlConnection(_connectionString);
-            await conn.OpenAsync();
-
-            var sql = $"DROP SCHEMA IF EXISTS \"{schemaName}\" CASCADE";
-
-            await using var cmd = new NpgsqlCommand(sql, conn);
-            await cmd.ExecuteNonQueryAsync();
         }
 
         public async Task<string> CloneQueryAndDeleteAsync(string sourceSchema, string selectQuery)
@@ -159,7 +104,7 @@ namespace SQLDropbox.Services
                     }
                     catch
                     {
-                        // optional: log cleanup failure
+                        // WIP
                     }
                 }
             }

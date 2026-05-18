@@ -13,20 +13,6 @@ public class SchemaController : ControllerBase
 
     public SchemaController(SchemaService schemaService){_schemaService = schemaService;}
 
-    [HttpPost("clone-static")]
-    public async Task<IActionResult> CloneSchema()
-    {
-        var schemaName = await _schemaService.CloneSchemaStaticAsync();
-
-        _lastSchema = schemaName;
-
-        return Ok(new
-        {
-            message = "Schema cloned successfully",
-            schema = schemaName
-        });
-    }
-
     [HttpPost("clone-dynamic")]
     public async Task<IActionResult> CloneSchemaDynamic([FromQuery] string sourceSchema)
     {
@@ -44,22 +30,7 @@ public class SchemaController : ControllerBase
         var clonedSchema = await _schemaService.CloneSchemaAsync(sourceSchema);
         _lastSchema = clonedSchema;
 
-        return Ok(new
-        {
-            sourceSchema,
-            clonedSchema
-        });
-    }
-
-    [HttpPost("clone-with-data-static")]
-    public async Task<IActionResult> CloneSchemaWithData()
-    {
-        var schemaName = await _schemaService.CloneSchemaStaticAsync();
-        _lastSchema = schemaName;
-
-        var csv = await _schemaService.ExportTableStaticAsync(schemaName, "mammals");
-
-        return Content(csv, "text/plain");
+        return Ok(new {sourceSchema, clonedSchema});
     }
 
     [HttpPost("clone-and-query-dynamic")]
@@ -82,25 +53,5 @@ public class SchemaController : ControllerBase
 
         var csv = await _schemaService.CloneQueryAndDeleteAsync(sourceSchema, selectQuery);
         return Content(csv, "text/plain");
-    }
-
-    [HttpDelete("latest")]
-    public async Task<IActionResult> DeleteLatestSchema()
-    {
-        if (_lastSchema == null)
-        {
-            return NotFound("No schema has been created yet.");
-        }
-
-        await _schemaService.DeleteLatestSchemaAsync(_lastSchema);
-
-        var deleted = _lastSchema;
-        _lastSchema = null;
-
-        return Ok(new
-        {
-            message = "Schema deleted successfully",
-            schema = deleted
-        });
     }
 }
