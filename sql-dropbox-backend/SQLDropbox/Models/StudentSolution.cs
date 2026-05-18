@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
@@ -20,6 +21,6 @@ namespace SQLDropbox.Models
         public StudentExercise StudentExercise { get; set; } = null!;
 
         public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
     }
 }

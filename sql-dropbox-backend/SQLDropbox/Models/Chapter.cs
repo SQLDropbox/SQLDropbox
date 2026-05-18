@@ -8,8 +8,8 @@ namespace SQLDropbox.Models
 {
     public enum DbSchemaType
     {
-        Name1,
-        Name2
+        Animals,
+        Countries
     }
 
     [Table("Chapter")]
@@ -23,6 +23,7 @@ namespace SQLDropbox.Models
         public string? ChapterDescriptionNL { get; set; }
         public string? ChapterDescriptionEN { get; set; }
         public DbSchemaType? DbSchema { get; set; }
+        public int? AmountOfExercises { get; set; }
 
         [JsonIgnore]
         public Course Course { get; set; } = null!;

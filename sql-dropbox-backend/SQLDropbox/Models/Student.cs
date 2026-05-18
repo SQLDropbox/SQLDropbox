@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
@@ -20,8 +21,8 @@ namespace SQLDropbox.Models
         public int Year { get; set; }
         [Required(ErrorMessage = "Group is mandatory.")]
         public string Group { get; set; } = string.Empty;
+        //public required string Password { get; set; }
 
-        public int? CourseId { get; set; }
         [JsonIgnore]
         public Course? Course { get; set; }
         public ICollection<StudentExercise> StudentExercises { get; set; } = [];

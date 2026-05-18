@@ -1,13 +1,29 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SQLDropbox.Data;
+using SQLDropbox.Repositories;
 using SQLDropbox.Services;
+using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("localhostFrontend", policy =>
+    {
+        policy
+            .WithOrigins("http://localhost:3000")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
 // Add services to the container.
+builder.Services.AddScoped<PasswordService>();
 
 // Add controllers to the container
 builder.Services.AddControllers();
@@ -34,9 +50,20 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    app.UseCors("localhostFrontend");
     app.MapOpenApi();
     app.UseSwagger();
     app.UseSwaggerUI();
+
+    //// DB initialization on startup
+    //AsyncServiceScope scope = app.Services.CreateAsyncScope();
+    //AppDbContext db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    /////PasswordService pass = scope.ServiceProvider.GetRequiredService<PasswordService>();
+
+    ////await db.Database.EnsureDeletedAsync();
+    //await db.Database.MigrateAsync();
+
+    //await DbInitializer.SeedAsync(db/*, pass*/);
 }
 
 app.UseHttpsRedirection();

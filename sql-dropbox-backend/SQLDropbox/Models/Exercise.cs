@@ -16,6 +16,7 @@ namespace SQLDropbox.Models
         public string? QuestionEN { get; set; }
         public string? HintNL { get; set; }
         public string? HintEN { get; set; }
+        public string? QueryOutput { get; set; }
 
         [JsonIgnore]
         public Chapter Chapter { get; set; } = null!;
