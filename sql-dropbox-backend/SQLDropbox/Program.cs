@@ -34,6 +34,7 @@ builder.Services.AddOpenApi();
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddScoped<SchemaService>();
 
 // Postgres
 // create migration ==> dotnet ef migrations add Init
