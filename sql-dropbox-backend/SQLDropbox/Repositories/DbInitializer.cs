@@ -39,6 +39,7 @@ namespace SQLDropbox.Repositories
                 Deadline = DateTime.UtcNow.AddDays(7),        
                 IsActive = false,
                 Lecturer = "Lehr Kragt",
+                Url = "data-management",
                 CreatedAt = DateTime.UtcNow,
             };
             Course course2 = new()
@@ -50,6 +51,7 @@ namespace SQLDropbox.Repositories
                 Deadline = DateTime.UtcNow.AddDays(14),
                 IsActive = false,
                 Lecturer = "Bro Fesser",
+                Url = "data-analytics",
                 CreatedAt = DateTime.UtcNow,
             };
             await context.Courses.AddAsync(course1);
