@@ -32,19 +32,6 @@ function validateForm(form: Course): FormErrors {
 
     if (!form.lecturer.trim()) errors.lecturer = "Lecturer is required.";
 
-    if (!form.deadline) {
-        errors.deadline = "Deadline is required.";
-    } else {
-        const deadline = new Date(form.deadline);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        if (isNaN(deadline.getTime())) {
-            errors.deadline = "Deadline must be a valid date.";
-        } else if (deadline < today) {
-            errors.deadline = "Deadline must be today or in the future.";
-        }
-    }
-
     return errors;
 }
 
@@ -55,7 +42,6 @@ const emptyForm: Course = {
     courseDescriptionNL: "",
     courseDescriptionEN: "",
     lecturer: "",
-    deadline: null,
     isActive: true,
 };
 
@@ -90,7 +76,6 @@ export default function EditCourseDialog({
                 courseDescriptionNL: course.courseDescriptionNL ?? "",
                 courseDescriptionEN: course.courseDescriptionEN ?? "",
                 lecturer: course.lecturer ?? "",
-                deadline: course.deadline ? new Date(course.deadline) : null,
                 isActive: course.isActive ?? true,
             });
         } else {
@@ -356,45 +341,6 @@ export default function EditCourseDialog({
                             {errors.lecturer && (
                                 <p className="text-xs text-red-500 mt-1">
                                     {errors.lecturer}
-                                </p>
-                            )}
-                        </div>
-
-                        {/* Deadline */}
-                        <div>
-                            <label className="text-sm font-medium text-gray-700">
-                                Deadline
-                            </label>
-                            <input
-                                type="date"
-                                value={
-                                    form.deadline
-                                        ? new Date(form.deadline)
-                                              .toISOString()
-                                              .split("T")[0]
-                                        : ""
-                                }
-                                onChange={(e) => {
-                                    const updated = {
-                                        ...form,
-                                        deadline: e.target.value
-                                            ? new Date(e.target.value)
-                                            : null,
-                                    };
-                                    setForm(updated);
-                                    if (submitted) {
-                                        const newErrors = validateForm(updated);
-                                        setErrors((prev) => ({
-                                            ...prev,
-                                            deadline: newErrors.deadline,
-                                        }));
-                                    }
-                                }}
-                                className={inputClass("deadline")}
-                            />
-                            {errors.deadline && (
-                                <p className="text-xs text-red-500 mt-1">
-                                    {errors.deadline}
                                 </p>
                             )}
                         </div>

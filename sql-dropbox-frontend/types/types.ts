@@ -5,7 +5,6 @@ export interface Course {
     courseDescriptionNL: string;
     courseDescriptionEN: string;
     lecturer: string;
-    deadline?: Date | null;
     isActive: boolean;
 
     chapters?: Chapter[];
