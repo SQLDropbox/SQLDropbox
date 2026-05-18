@@ -9,8 +9,7 @@ namespace SQLDropbox.Models
     public class Course
     {
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int CourseId { get; set; }
+        public required string CourseId { get; set; }
         public string? CourseNameNL { get; set; }
         public string? CourseNameEN { get; set; }
         public string? CourseDescriptionNL { get; set; }
@@ -18,7 +17,6 @@ namespace SQLDropbox.Models
         public DateTime? Deadline { get; set; }
         public bool IsActive { get; set; }
         public string? Lecturer { get; set; }
-        public string? Url { get; set; }
 
         public ICollection<Student> Students { get; set; } = [];
         public ICollection<Chapter> Chapters { get; set; } = [];
