@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 
 import Header from "@/components/header";
 import AdminCourseDetailsHeader from "@/components/admin/course/adminCourseDetailsHeader";
@@ -12,32 +12,18 @@ import { courseService } from "@/services/courseService";
 
 export default function Page() {
     const params = useParams();
-    const courseUrl = params.courseUrl as string;
+    const courseId = params.courseId as string;
 
-    const [course, setCourse] = useState<Course | null>(null);
-    const [loading, setLoading] = useState(true);
+    const {data: course, isLoading, error,} = useQuery<Course>({queryKey: ["course", courseId],
+    queryFn: () =>
+            courseService.getCourseByCourseId(courseId),
+        enabled: !!courseId,
+    });
 
-    useEffect(() => {
-        const fetchCourse = async () => {
-            try {
-                const data =
-                    await courseService.getCourseByCourseId(
-                        courseUrl
-                    );
+    if (isLoading) return <p>Loading...</p>;
 
-                setCourse(data);
-            } catch (err) {
-                console.error("Failed to load course", err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        if (courseUrl) fetchCourse();
-    }, [courseUrl]);
-
-    if (loading) return <p>Loading...</p>;
-    if (!course) return <p>Course not found</p>;
+    if (error || !course)
+        return <p>Course not found</p>;
 
     return (
         <div>
