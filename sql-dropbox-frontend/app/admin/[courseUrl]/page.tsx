@@ -4,10 +4,8 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 
 import Header from "@/components/header";
-
 import AdminCourseDetailsHeader from "@/components/admin/course/adminCourseDetailsHeader";
 import AdminChapterCard from "@/components/admin/chapter/adminChapterCard";
-
 import { Chapter, Course } from "@/types/types";
 
 import { courseService } from "@/services/courseService";
@@ -15,39 +13,19 @@ import { courseService } from "@/services/courseService";
 export default function Page() {
     const params = useParams();
 
-    const courseUrl = params.courseUrl as string;
+    const courseUrl = (params.courseUrl as string) ?? undefined;
 
-    const [course, setCourse] = useState<Course | null>(null);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        const fetchCourse = async () => {
-            try {
-                const data =
-                    await courseService.getCourseByCourseUrl(
-                        courseUrl
-                    );
-
-                setCourse(data);
-            } catch (error) {
-                console.error("Failed to fetch course:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        if (courseUrl) {
-            fetchCourse();
-        }
-    }, [courseUrl]);
-
-    if (loading) {
-        return <p>Loading...</p>;
-    }
-
-    if (!course) {
-        return <p>Course not found.</p>;
-    }
+    const course: Course = {
+        courseId: 1,
+        courseNameNL: "Inleiding tot Databases",
+        courseNameEN: "Introduction to Databases",
+        courseDescriptionNL: "Leer de basisprincipes van databases en SQL.",
+        courseDescriptionEN: "Learn the fundamentals of databases and SQL.",
+        lecturer: "Dr. Smith",
+        deadline: new Date("2024-12-31"),
+        isActive: true,
+        url: courseUrl,
+    };
 
     return (
         <div>

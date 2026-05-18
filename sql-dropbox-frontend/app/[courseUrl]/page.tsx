@@ -10,7 +10,7 @@ import { FaBookOpen } from "react-icons/fa6";
 export default function Page() {
     const params = useParams();
 
-    const courseUrl = params.courseUrl as string ?? undefined;
+    const courseUrl = (params.courseUrl as string) ?? undefined;
 
     const { data, isLoading, error } = useQuery<Course>({
         queryKey: ["course", courseUrl],
@@ -47,6 +47,20 @@ export default function Page() {
                     <p className="mt-4 text-sm leading-6 text-gray-600 line-clamp-3">
                         {data?.courseDescriptionEN}
                     </p>
+
+                    {data?.chapters?.map((chapter) => (
+                        <div
+                            key={chapter.chapterId}
+                            className="rounded-xl border border-gray-300 bg-gray p-6 shadow-lg cursor-pointer"
+                        >
+                            <h2 className="text-xl font-semibold text-gray-900">
+                                {chapter.chapterNameEN}
+                            </h2>
+                            <p className="mt-2 text-sm text-gray-500">
+                                {chapter.chapterDescriptionEN}
+                            </p>
+                        </div>
+                    ))}
                 </div>
             </div>
         </div>

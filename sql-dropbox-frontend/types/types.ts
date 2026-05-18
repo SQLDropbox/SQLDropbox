@@ -10,6 +10,8 @@ export interface Course {
     deadline?: Date | null;
     isActive: boolean;
 
+    chapters?: Chapter[];
+
     studentCount?: number;
     chapterCount?: number;
 }
