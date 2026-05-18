@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@import "tailwindcss/theme" layer(theme);
+
 
 body {
     background-color: #f5f3fe;
