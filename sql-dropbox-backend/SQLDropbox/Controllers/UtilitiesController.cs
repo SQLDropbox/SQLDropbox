@@ -10,11 +10,11 @@ namespace SQLDropbox.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class UtilitiesController(AppDbContext db, PasswordService passwordService, PostgreSQLQueryFormatter formatter) : ControllerBase
+public class UtilitiesController(AppDbContext db, PasswordService passwordService, PostgreSQLQueryValidator formatter) : ControllerBase
 {
     private readonly AppDbContext _db = db;
     private readonly PasswordService _passwordService = passwordService;
-    private readonly PostgreSQLQueryFormatter _formatter = formatter;
+    private readonly PostgreSQLQueryValidator _formatter = formatter;
 
     [HttpGet("seed-db")]
     public async Task<IActionResult> SeedTheDb()
@@ -44,7 +44,33 @@ public class UtilitiesController(AppDbContext db, PasswordService passwordServic
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var formatted = _formatter.ParseSQL(format.Query);
+        var formatted = _formatter.ParseQuery(format.Query);
         return Ok(formatted);
+    }
+
+    [HttpPost("check")]
+    public async Task<IActionResult> Check([FromBody] FormatDTO format)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        List<Requirement> requirements = [];
+        Requirement r1 = new()
+        {
+            RequirementId = 1,
+            Statement = "JOIN",
+            Use = false
+        };
+        requirements.Add(r1);
+        Requirement r2 = new()
+        {
+            RequirementId = 1,
+            Statement = "GROUP BY",
+            Use = true
+        };
+        requirements.Add(r2);
+
+        var checkedQuery = _formatter.CheckQueryRequirements(requirements, format.Query);
+        return Ok(checkedQuery);
     }
 }
