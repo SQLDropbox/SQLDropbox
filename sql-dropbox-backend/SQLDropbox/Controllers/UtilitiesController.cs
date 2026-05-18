@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SQLDropbox.Data;
+using SQLDropbox.DTO;
+using SQLDropbox.Models;
 using SQLDropbox.Repositories;
 using SQLDropbox.Services;
 
@@ -8,10 +10,11 @@ namespace SQLDropbox.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class UtilitiesController(AppDbContext db, PasswordService passwordService) : ControllerBase
+public class UtilitiesController(AppDbContext db, PasswordService passwordService, PostgreSQLQueryFormatter formatter) : ControllerBase
 {
     private readonly AppDbContext _db = db;
     private readonly PasswordService _passwordService = passwordService;
+    private readonly PostgreSQLQueryFormatter _formatter = formatter;
 
     [HttpGet("seed-db")]
     public async Task<IActionResult> SeedTheDb()
@@ -33,5 +36,15 @@ public class UtilitiesController(AppDbContext db, PasswordService passwordServic
         await _db.Chapters.ExecuteDeleteAsync();
         await _db.Courses.ExecuteDeleteAsync();
         return Ok("The DB should have been emptied.");
+    }
+
+    [HttpPost("format")]
+    public async Task<IActionResult> Format([FromBody] FormatDTO format)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var formatted = _formatter.ParseSQL(format.Query);
+        return Ok(formatted);
     }
 }
