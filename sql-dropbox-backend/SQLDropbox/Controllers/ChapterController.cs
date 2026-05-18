@@ -78,7 +78,8 @@ public class ChapterController : ControllerBase
         };
         await _db.Chapters.AddAsync(newChapter);
         await _db.SaveChangesAsync();
-        return CreatedAtAction(nameof(GetChapterById), new { id = newChapter.ChapterId }, newChapter);
+        return Ok();
+        //return CreatedAtAction(nameof(GetChapterById), new { id = newChapter.ChapterId }, newChapter);
     }
 
     [HttpDelete("{id}")]
