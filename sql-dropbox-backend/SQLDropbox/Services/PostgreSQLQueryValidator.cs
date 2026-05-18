@@ -11,9 +11,10 @@ namespace SQLDropbox.Services
             return ast.ToSql();
         }
 
-        public bool CheckQueryRequirements(List<Requirement> requirements, string query)
+        public (bool, string) CheckQueryRequirements(List<Requirement> requirements, string query)
         {
             bool valid = true;
+            string message = "";
             string psdQuery = ParseQuery(query);
             foreach (Requirement requirement in requirements)
             {
@@ -22,9 +23,12 @@ namespace SQLDropbox.Services
                     valid = requirement.Use ?
                         psdQuery.Contains(requirement.Statement) :
                         !psdQuery.Contains(requirement.Statement);
-                }               
+                    message = valid ?
+                        "" :
+                        $"You {(requirement.Use ? "must" : "can't")} use {requirement.Statement}";
+                }
             }
-            return valid;
+            return (valid, message);
         }
     }
 }
