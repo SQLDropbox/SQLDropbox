@@ -9,10 +9,10 @@ import AdminChapterCard from "@/components/admin/chapter/adminChapterCard";
 export default function Page() {
     const params = useParams();
 
-    const courseUrl = (params.courseUrl as string) ?? undefined;
+    const courseId = (params.courseId as string) ?? undefined;
 
     const course: Course = {
-        courseId: 1,
+        courseId: courseId!,
         courseNameNL: "Inleiding tot Databases",
         courseNameEN: "Introduction to Databases",
         courseDescriptionNL: "Leer de basisprincipes van databases en SQL.",
@@ -20,7 +20,6 @@ export default function Page() {
         lecturer: "Dr. Smith",
         deadline: new Date("2024-12-31"),
         isActive: true,
-        url: courseUrl,
     };
 
     return (

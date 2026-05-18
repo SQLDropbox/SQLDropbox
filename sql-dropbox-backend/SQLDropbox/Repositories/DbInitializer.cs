@@ -32,6 +32,7 @@ namespace SQLDropbox.Repositories
             /* COURSES */
             Course course1 = new()
             {
+                CourseId = "data-management",
                 CourseNameNL = "Data Beheer",
                 CourseNameEN = "Data Management",
                 CourseDescriptionNL = "Beheer data.",
@@ -39,11 +40,11 @@ namespace SQLDropbox.Repositories
                 Deadline = DateTime.UtcNow.AddDays(7),        
                 IsActive = false,
                 Lecturer = "Lehr Kragt",
-                Url = "data-management",
                 CreatedAt = DateTime.UtcNow,
             };
             Course course2 = new()
             {
+                CourseId = "data-analytics",
                 CourseNameNL = "Data Analyse",
                 CourseNameEN = "Data Analytics",
                 CourseDescriptionNL = "Analyseer data.",
@@ -51,7 +52,6 @@ namespace SQLDropbox.Repositories
                 Deadline = DateTime.UtcNow.AddDays(14),
                 IsActive = false,
                 Lecturer = "Bro Fesser",
-                Url = "data-analytics",
                 CreatedAt = DateTime.UtcNow,
             };
             await context.Courses.AddAsync(course1);

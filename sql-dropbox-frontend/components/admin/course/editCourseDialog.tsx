@@ -20,15 +20,15 @@ type FormErrors = Partial<Record<keyof Course, string>>;
 function validateForm(form: Course): FormErrors {
     const errors: FormErrors = {};
 
+    if (!form.courseId.trim()) {
+        errors.courseId = "URL is required.";
+    }
+
     if (!form.courseNameEN.trim())
         errors.courseNameEN = "Course name (EN) is required.";
 
     if (!form.courseNameNL.trim())
         errors.courseNameNL = "Course name (NL) is required.";
-
-    if (!form.url.trim()) {
-        errors.url = "URL is required.";
-    }
 
     if (!form.lecturer.trim()) errors.lecturer = "Lecturer is required.";
 
@@ -49,13 +49,12 @@ function validateForm(form: Course): FormErrors {
 }
 
 const emptyForm: Course = {
-    courseId: 0,
+    courseId: "",
     courseNameNL: "",
     courseNameEN: "",
     courseDescriptionNL: "",
     courseDescriptionEN: "",
     lecturer: "",
-    url: "",
     deadline: null,
     isActive: true,
 };
@@ -85,13 +84,12 @@ export default function EditCourseDialog({
         if (isEdit && course) {
             setUrlLocked(true);
             setForm({
-                courseId: course.courseId ?? 0,
+                courseId: course.courseId ?? "",
                 courseNameNL: course.courseNameNL ?? "",
                 courseNameEN: course.courseNameEN ?? "",
                 courseDescriptionNL: course.courseDescriptionNL ?? "",
                 courseDescriptionEN: course.courseDescriptionEN ?? "",
                 lecturer: course.lecturer ?? "",
-                url: course.url ?? "",
                 deadline: course.deadline ? new Date(course.deadline) : null,
                 isActive: course.isActive ?? true,
             });
@@ -112,17 +110,22 @@ export default function EditCourseDialog({
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
     ) {
         const { name, value } = e.target;
+
+        if (name === "courseId" && isEdit) {
+            return;
+        }
+
         const updated = { ...form, [name]: value };
 
         // AUTO-GENERATE URL from EN name (only if not locked)
         if (name === "courseNameEN" && !urlLocked) {
-            updated.url = generateSlug(value);
+            updated.courseId = generateSlug(value);
         }
 
         // If user manually edits URL → lock it
-        if (name === "url") {
+        if (name === "courseId") {
             setUrlLocked(true);
-            updated.url = generateSlug(value);
+            updated.courseId = generateSlug(value);
         }
 
         setForm(updated);
@@ -271,14 +274,15 @@ export default function EditCourseDialog({
                                 )}
                             </label>
                             <input
-                                name="url"
-                                value={form.url}
+                                name="courseId"
+                                value={form.courseId}
                                 onChange={handleChange}
-                                className={inputClass("url")}
+                                className={inputClass("courseId") + (isEdit ? " bg-gray-200 cursor-not-allowed" : "")}
+                                disabled={isEdit}
                             />
-                            {errors.url && (
+                            {errors.courseId && (
                                 <p className="text-xs text-red-500 mt-1">
-                                    {errors.url}
+                                    {errors.courseId}
                                 </p>
                             )}
                         </div>
