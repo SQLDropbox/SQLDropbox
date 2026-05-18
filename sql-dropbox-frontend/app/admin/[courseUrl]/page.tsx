@@ -2,14 +2,14 @@
 
 import { useParams } from "next/navigation";
 import Header from "@/components/header";
-import Link from "next/link";
-import { FaArrowLeft } from "react-icons/fa6";
 import { Course } from "@/types/types";
 import AdminCourseDetailsHeader from "@/components/admin/course/adminCourseDetailsHeader";
 import AdminChapterCard from "@/components/admin/chapter/adminChapterCard";
 
 export default function Page() {
     const params = useParams();
+
+    const courseUrl = (params.courseUrl as string) ?? undefined;
 
     const course: Course = {
         courseId: 1,
@@ -20,6 +20,7 @@ export default function Page() {
         lecturer: "Dr. Smith",
         deadline: new Date("2024-12-31"),
         isActive: true,
+        url: courseUrl,
     };
 
     return (
