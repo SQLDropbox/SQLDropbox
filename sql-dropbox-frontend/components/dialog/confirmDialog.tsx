@@ -1,4 +1,5 @@
 interface Props {
+    open: boolean;
     onClose: () => void;
     onConfirm: () => void;
     title: string;
@@ -7,12 +8,15 @@ interface Props {
 }
 
 export default function ConfirmDialog({
+    open,
     onClose,
     onConfirm,
     title,
     description,
     type,
 }: Props) {
+    if (!open) return null;
+
     return (
         <div
             className="fixed inset-0 z-60 flex items-center justify-center bg-black/50 p-4"

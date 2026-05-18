@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { FaTimes } from "react-icons/fa";
 import { Course } from "@/types/types";
 import { courseService } from "@/services/courseService";
-import ConfirmDialog from "@/components/confirmDialog";
+import ConfirmDialog from "@/components/dialog/confirmDialog";
+import AlertDialog from "@/components/dialog/alertDialog";
 
 interface Props {
     open: boolean;
@@ -74,6 +75,7 @@ export default function EditCourseDialog({
     const [confirmDeleteDialogOpen, setConfirmDeleteDialogOpen] =
         useState(false);
     const [urlLocked, setUrlLocked] = useState(!isEdit);
+    const [errorDialog, setErrorDialog] = useState<string | null>(null);
 
     useEffect(() => {
         if (!open) return;
@@ -154,8 +156,12 @@ export default function EditCourseDialog({
 
             onSuccess();
             onClose();
-        } catch (err) {
+        } catch (err: any) {
             console.error(err);
+
+            setErrorDialog(
+                err?.message || "Something went wrong while saving the course.",
+            );
         }
     }
 
@@ -437,20 +443,27 @@ export default function EditCourseDialog({
                 </div>
             </div>
 
-            {confirmDeleteDialogOpen && (
-                <ConfirmDialog
-                    onClose={() => setConfirmDeleteDialogOpen(false)}
-                    onConfirm={async () => {
-                        await courseService.deleteCourse(course!.courseId);
-                        setConfirmDeleteDialogOpen(false);
-                        onSuccess();
-                        onClose();
-                    }}
-                    title="Delete Course"
-                    description="Are you sure you want to delete this course? This action cannot be undone."
-                    type="delete"
-                />
-            )}
+            <AlertDialog
+                open={!!errorDialog}
+                onClose={() => setErrorDialog(null)}
+                title="Error"
+                description={errorDialog || ""}
+                type="error"
+                buttonText="OK"
+            />
+            <ConfirmDialog
+                open={confirmDeleteDialogOpen}
+                onClose={() => setConfirmDeleteDialogOpen(false)}
+                onConfirm={async () => {
+                    await courseService.deleteCourse(course!.courseId);
+                    setConfirmDeleteDialogOpen(false);
+                    onSuccess();
+                    onClose();
+                }}
+                title="Delete Course"
+                description="Are you sure you want to delete this course? This action cannot be undone."
+                type="delete"
+            />
         </div>
     );
 }
