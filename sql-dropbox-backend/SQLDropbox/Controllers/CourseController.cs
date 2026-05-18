@@ -30,6 +30,7 @@ public class CourseController : ControllerBase
             x.CourseDescriptionEN,
             x.CourseDescriptionNL,
             x.Lecturer,
+            x.url,
             x.Deadline,
             x.IsActive,
             studentCount = x.Students.Count(),
@@ -39,10 +40,10 @@ public class CourseController : ControllerBase
         return Ok(courses);
     }
 
-    [HttpGet("{courseId}")]
-    public ActionResult getCourseByCourseId(int courseId)
+    [HttpGet("{courseUrl}")]
+    public ActionResult getCourseByCourseUrl(string courseUrl)
     {
-        var course = _db.Courses.Find(courseId);
+        var course = _db.Courses.FirstOrDefault(x => x.url == courseUrl);
 
         if (course == null)
             return NotFound();
@@ -77,6 +78,11 @@ public class CourseController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
+        if (_db.Courses.Any(x => x.url == course.Url))
+        {
+            return BadRequest("This URL is already in use");
+        }
+
         var newCourse = new Course
         {
             CourseNameEN = course.CourseNameEN,
@@ -84,6 +90,7 @@ public class CourseController : ControllerBase
             CourseDescriptionEN = course.CourseDescriptionEN,
             CourseDescriptionNL = course.CourseDescriptionNL,
             Lecturer = course.Lecturer,
+            url = course.Url,
             Deadline = course.Deadline,
             IsActive = course.IsActive,
             CreatedAt = DateTime.Now,
@@ -106,11 +113,17 @@ public class CourseController : ControllerBase
         if (existing == null)
             return NotFound();
 
+        if (_db.Courses.Any(x => x.url == course.Url))
+        {
+            return BadRequest("This URL is already in use");
+        }
+
         existing.CourseNameEN = course.CourseNameEN;
         existing.CourseNameNL = course.CourseNameNL;
         existing.CourseDescriptionEN = course.CourseDescriptionEN;
         existing.CourseDescriptionNL = course.CourseDescriptionNL;
         existing.Lecturer = course.Lecturer;
+        existing.url = course.Url;
         existing.Deadline = course.Deadline;
         existing.IsActive = course.IsActive;
         existing.UpdatedAt = DateTime.UtcNow;
