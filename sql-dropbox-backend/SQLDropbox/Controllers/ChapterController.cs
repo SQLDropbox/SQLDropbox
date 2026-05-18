@@ -33,7 +33,7 @@ public class ChapterController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult> GetChapterById(int id)
+    public async Task<ActionResult> GetChapterByChapterId(int id)
     {
         var chapter = await _db.Chapters.Where(x => x.ChapterId == id && x.DeletedAt == null).Select(x => new
         {
