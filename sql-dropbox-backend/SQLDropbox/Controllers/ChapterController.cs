@@ -95,4 +95,16 @@ public class ChapterController : ControllerBase
         await _db.SaveChangesAsync();
         return Ok(new { message = $"Chapter with ID {id} successfully deleted." });
     }
+
+    [HttpGet("{id}/exercises")]
+    public async Task<ActionResult<IEnumerable<Exercise>>> GetExercisesByChapter(int id)
+    {
+        var chapterExists = await _db.Chapters.AnyAsync(c => c.ChapterId == id);
+        if (!chapterExists)
+        {
+            return NotFound($"Chapter with ID {id} not found.");
+        }
+        var exercises =  await _db.Exercises.Where(e => e.Chapter.ChapterId == id && e.DeletedAt == null).ToListAsync();
+        return Ok(exercises);
+    }
 }
