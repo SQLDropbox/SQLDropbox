@@ -19,6 +19,8 @@ namespace SQLDropbox.Models
         public bool IsActive { get; set; }
         public string? Lecturer { get; set; }
 
+        public string? url { get; set; }
+
         public ICollection<Student> Students { get; set; } = [];
         public ICollection<Chapter> Chapters { get; set; } = [];
 
