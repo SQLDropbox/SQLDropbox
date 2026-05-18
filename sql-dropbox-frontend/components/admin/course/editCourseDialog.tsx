@@ -25,6 +25,10 @@ function validateForm(form: Course): FormErrors {
     if (!form.courseNameNL.trim())
         errors.courseNameNL = "Course name (NL) is required.";
 
+    if (!form.url.trim()) {
+        errors.url = "URL is required.";
+    }
+
     if (!form.lecturer.trim()) errors.lecturer = "Lecturer is required.";
 
     if (!form.deadline) {
@@ -50,6 +54,7 @@ const emptyForm: Course = {
     courseDescriptionNL: "",
     courseDescriptionEN: "",
     lecturer: "",
+    url: "",
     deadline: null,
     isActive: true,
 };
@@ -68,6 +73,7 @@ export default function EditCourseDialog({
     const [submitted, setSubmitted] = useState(false);
     const [confirmDeleteDialogOpen, setConfirmDeleteDialogOpen] =
         useState(false);
+    const [urlLocked, setUrlLocked] = useState(!isEdit);
 
     useEffect(() => {
         if (!open) return;
@@ -75,6 +81,7 @@ export default function EditCourseDialog({
         setSubmitted(false);
 
         if (isEdit && course) {
+            setUrlLocked(true);
             setForm({
                 courseId: course.courseId ?? 0,
                 courseNameNL: course.courseNameNL ?? "",
@@ -82,10 +89,12 @@ export default function EditCourseDialog({
                 courseDescriptionNL: course.courseDescriptionNL ?? "",
                 courseDescriptionEN: course.courseDescriptionEN ?? "",
                 lecturer: course.lecturer ?? "",
+                url: course.url ?? "",
                 deadline: course.deadline ? new Date(course.deadline) : null,
                 isActive: course.isActive ?? true,
             });
         } else {
+            setUrlLocked(false);
             setForm(emptyForm);
         }
     }, [open, mode, course]);
@@ -102,6 +111,18 @@ export default function EditCourseDialog({
     ) {
         const { name, value } = e.target;
         const updated = { ...form, [name]: value };
+
+        // AUTO-GENERATE URL from EN name (only if not locked)
+        if (name === "courseNameEN" && !urlLocked) {
+            updated.url = generateSlug(value);
+        }
+
+        // If user manually edits URL → lock it
+        if (name === "url") {
+            setUrlLocked(true);
+            updated.url = generateSlug(value);
+        }
+
         setForm(updated);
 
         if (submitted) {
@@ -136,6 +157,16 @@ export default function EditCourseDialog({
         } catch (err) {
             console.error(err);
         }
+    }
+
+    function generateSlug(text: string) {
+        return text
+            .toLowerCase()
+            .trim()
+            .replace(/['"]/g, "") // remove quotes
+            .replace(/[^a-z0-9\s-]/g, "") // remove special chars
+            .replace(/\s+/g, "-") // spaces → dashes
+            .replace(/-+/g, "-"); // collapse multiple dashes
     }
 
     const inputClass = (name: keyof Course) =>
@@ -220,6 +251,30 @@ export default function EditCourseDialog({
                                     )}
                                 </div>
                             </div>
+                        </div>
+
+                        {/* URL */}
+                        <div>
+                            <label className="text-sm font-medium text-gray-700">
+                                URL
+                                {!urlLocked && (
+                                    <span className="text-xs text-gray-400 ml-2">
+                                        {" "}
+                                        (auto-generated)
+                                    </span>
+                                )}
+                            </label>
+                            <input
+                                name="url"
+                                value={form.url}
+                                onChange={handleChange}
+                                className={inputClass("url")}
+                            />
+                            {errors.url && (
+                                <p className="text-xs text-red-500 mt-1">
+                                    {errors.url}
+                                </p>
+                            )}
                         </div>
 
                         <div>
