@@ -53,7 +53,19 @@ public class ExerciseController : ControllerBase
         await _db.Exercises.AddAsync(newExercise);
         await _db.SaveChangesAsync();
         
-        return CreatedAtAction(nameof(CreateExercise), new {id = newExercise.ExerciseId});
+        return CreatedAtAction(nameof(CreateExercise), new {id = newExercise.ExerciseId},  newExercise);
+    }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetExerciseById(int id)
+    {
+        var exercise = await _db.Exercises.Include(e => e.Solutions).FirstOrDefaultAsync(e => e.ExerciseId == id && e.DeletedAt == null);
+
+        if (exercise == null)
+        {
+            return NotFound(new { message = $"Exercise with ID {id} not found." });
+        }
+        return Ok(exercise);
     }
         
 }
