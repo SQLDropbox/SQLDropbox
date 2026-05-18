@@ -7,6 +7,8 @@
         public string? CourseDescriptionEN { get; set; }
         public string? CourseDescriptionNL { get; set; }
         public string? Lecturer { get; set; }
+
+        public string? Url { get; set; }
         public DateTime? Deadline { get; set; }
         public bool IsActive { get; set; }
     }

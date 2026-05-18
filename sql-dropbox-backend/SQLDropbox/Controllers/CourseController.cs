@@ -1,9 +1,10 @@
-using System;
-using System.Linq;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using SQLDropbox.Data;
 using SQLDropbox.DTO;
 using SQLDropbox.Models;
+using System;
+using System.Linq;
 
 namespace SQLDropbox.Controllers;
 
@@ -30,6 +31,7 @@ public class CourseController : ControllerBase
             x.CourseDescriptionEN,
             x.CourseDescriptionNL,
             x.Lecturer,
+            x.Url,
             x.Deadline,
             x.IsActive,
             studentCount = x.Students.Count(),
@@ -39,10 +41,10 @@ public class CourseController : ControllerBase
         return Ok(courses);
     }
 
-    [HttpGet("{courseId}")]
-    public ActionResult getCourseByCourseId(int courseId)
+    [HttpGet("{courseUrl}")]
+    public ActionResult getCourseByCourseUrl(string courseUrl)
     {
-        var course = _db.Courses.Find(courseId);
+        var course = _db.Courses.Include(x => x.Chapters).FirstOrDefault(x => x.Url == courseUrl);
 
         if (course == null)
             return NotFound();
@@ -61,13 +63,10 @@ public class CourseController : ControllerBase
             {
                 x.ChapterId,
                 x.ChapterNameEN,
-                x.ChapterNameNL
-            }),
-            students = course.Students.Select(x => new
-            {
-                x.StudentId,
-                x.FullName
-            }),
+                x.ChapterNameNL,
+                x.ChapterDescriptionEN,
+                x.ChapterDescriptionNL
+            })
         });
     }
 
@@ -77,6 +76,11 @@ public class CourseController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
+        if (_db.Courses.Any(x => x.Url == course.Url))
+        {
+            return BadRequest("This URL is already in use");
+        }
+
         var newCourse = new Course
         {
             CourseNameEN = course.CourseNameEN,
@@ -84,6 +88,7 @@ public class CourseController : ControllerBase
             CourseDescriptionEN = course.CourseDescriptionEN,
             CourseDescriptionNL = course.CourseDescriptionNL,
             Lecturer = course.Lecturer,
+            Url = course.Url,
             Deadline = course.Deadline,
             IsActive = course.IsActive,
             CreatedAt = DateTime.Now,
@@ -106,11 +111,17 @@ public class CourseController : ControllerBase
         if (existing == null)
             return NotFound();
 
+        if (_db.Courses.Any(x => x.Url == course.Url))
+        {
+            return BadRequest("This URL is already in use");
+        }
+
         existing.CourseNameEN = course.CourseNameEN;
         existing.CourseNameNL = course.CourseNameNL;
         existing.CourseDescriptionEN = course.CourseDescriptionEN;
         existing.CourseDescriptionNL = course.CourseDescriptionNL;
         existing.Lecturer = course.Lecturer;
+        existing.Url = course.Url;
         existing.Deadline = course.Deadline;
         existing.IsActive = course.IsActive;
         existing.UpdatedAt = DateTime.UtcNow;
