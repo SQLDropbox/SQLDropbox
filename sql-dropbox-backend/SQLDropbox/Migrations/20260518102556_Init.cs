@@ -28,14 +28,14 @@ namespace SQLDropbox.Migrations
                 name: "Course",
                 columns: table => new
                 {
-                    CourseId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    CourseId = table.Column<string>(type: "text", nullable: false),
                     CourseNameNL = table.Column<string>(type: "text", nullable: true),
                     CourseNameEN = table.Column<string>(type: "text", nullable: true),
                     CourseDescriptionNL = table.Column<string>(type: "text", nullable: true),
                     CourseDescriptionEN = table.Column<string>(type: "text", nullable: true),
                     Deadline = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    Lecturer = table.Column<string>(type: "text", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     DeletedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
@@ -56,7 +56,8 @@ namespace SQLDropbox.Migrations
                     ChapterDescriptionNL = table.Column<string>(type: "text", nullable: true),
                     ChapterDescriptionEN = table.Column<string>(type: "text", nullable: true),
                     DbSchema = table.Column<int>(type: "integer", nullable: true),
-                    CourseId = table.Column<int>(type: "integer", nullable: false),
+                    AmountOfExercises = table.Column<int>(type: "integer", nullable: true),
+                    CourseId = table.Column<string>(type: "text", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     DeletedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
@@ -68,8 +69,7 @@ namespace SQLDropbox.Migrations
                         name: "FK_Chapter_Course_CourseId",
                         column: x => x.CourseId,
                         principalTable: "Course",
-                        principalColumn: "CourseId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "CourseId");
                 });
 
             migrationBuilder.CreateTable(
@@ -81,7 +81,7 @@ namespace SQLDropbox.Migrations
                     FullName = table.Column<string>(type: "text", nullable: false),
                     Year = table.Column<int>(type: "integer", nullable: false),
                     Group = table.Column<string>(type: "text", nullable: false),
-                    CourseId = table.Column<int>(type: "integer", nullable: true),
+                    CourseId = table.Column<string>(type: "text", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     DeletedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
@@ -106,6 +106,7 @@ namespace SQLDropbox.Migrations
                     QuestionEN = table.Column<string>(type: "text", nullable: true),
                     HintNL = table.Column<string>(type: "text", nullable: true),
                     HintEN = table.Column<string>(type: "text", nullable: true),
+                    QueryOutput = table.Column<string>(type: "text", nullable: true),
                     ChapterId = table.Column<int>(type: "integer", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
@@ -206,7 +207,7 @@ namespace SQLDropbox.Migrations
                     Error = table.Column<string>(type: "text", nullable: true),
                     StudentExerciseId = table.Column<int>(type: "integer", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false)
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
                 },
                 constraints: table =>
                 {

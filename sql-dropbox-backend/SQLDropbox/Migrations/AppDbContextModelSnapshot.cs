@@ -58,8 +58,8 @@ namespace SQLDropbox.Migrations
                     b.Property<string>("ChapterNameNL")
                         .HasColumnType("text");
 
-                    b.Property<int>("CourseId")
-                        .HasColumnType("integer");
+                    b.Property<string>("CourseId")
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp without time zone");
@@ -82,11 +82,8 @@ namespace SQLDropbox.Migrations
 
             modelBuilder.Entity("SQLDropbox.Models.Course", b =>
                 {
-                    b.Property<int>("CourseId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("CourseId"));
+                    b.Property<string>("CourseId")
+                        .HasColumnType("text");
 
                     b.Property<string>("CourseDescriptionEN")
                         .HasColumnType("text");
@@ -117,9 +114,6 @@ namespace SQLDropbox.Migrations
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp without time zone");
-
-                    b.Property<string>("Url")
-                        .HasColumnType("text");
 
                     b.HasKey("CourseId");
 
@@ -227,8 +221,8 @@ namespace SQLDropbox.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<int?>("CourseId")
-                        .HasColumnType("integer");
+                    b.Property<string>("CourseId")
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp without time zone");
@@ -335,9 +329,7 @@ namespace SQLDropbox.Migrations
                 {
                     b.HasOne("SQLDropbox.Models.Course", "Course")
                         .WithMany("Chapters")
-                        .HasForeignKey("CourseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("CourseId");
 
                     b.Navigation("Course");
                 });
