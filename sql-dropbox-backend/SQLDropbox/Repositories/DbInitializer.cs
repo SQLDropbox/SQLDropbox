@@ -161,6 +161,7 @@ namespace SQLDropbox.Repositories
             Lecturer lecturer = new()
             {
                 LecturerCode = "u0123456",
+                Email = "u0123456@ucll.be",
                 Password = passwordService.HashPassword("u0123456"),
                 Courses = [course1, course2],
                 CreatedAt = DateTime.UtcNow,
