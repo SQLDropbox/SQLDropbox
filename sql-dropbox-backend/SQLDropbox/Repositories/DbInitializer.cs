@@ -66,6 +66,7 @@ namespace SQLDropbox.Repositories
                 ChapterDescriptionEN = "Learn to use different types of JOINS.",
                 DbSchema = DbSchemaType.Animals,
                 AmountOfExercises = 10,
+                Order = 1,
                 Course = course1,
                 CreatedAt = DateTime.UtcNow,
             };
@@ -77,6 +78,7 @@ namespace SQLDropbox.Repositories
                 ChapterDescriptionEN = "Learn to use SUBQUERIES.",
                 DbSchema = DbSchemaType.Animals,
                 AmountOfExercises = 5,
+                Order = 2,
                 Course = course1,
                 CreatedAt = DateTime.UtcNow,
             };
