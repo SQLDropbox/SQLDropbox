@@ -1,9 +1,10 @@
-using System;
-using System.Linq;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using SQLDropbox.Data;
 using SQLDropbox.DTO;
 using SQLDropbox.Models;
+using System;
+using System.Linq;
 
 namespace SQLDropbox.Controllers;
 
@@ -43,7 +44,7 @@ public class CourseController : ControllerBase
     [HttpGet("{courseUrl}")]
     public ActionResult getCourseByCourseUrl(string courseUrl)
     {
-        var course = _db.Courses.FirstOrDefault(x => x.Url == courseUrl);
+        var course = _db.Courses.Include(x => x.Chapters).FirstOrDefault(x => x.Url == courseUrl);
 
         if (course == null)
             return NotFound();
@@ -62,13 +63,10 @@ public class CourseController : ControllerBase
             {
                 x.ChapterId,
                 x.ChapterNameEN,
-                x.ChapterNameNL
-            }),
-            students = course.Students.Select(x => new
-            {
-                x.StudentId,
-                x.FullName
-            }),
+                x.ChapterNameNL,
+                x.ChapterDescriptionEN,
+                x.ChapterDescriptionNL
+            })
         });
     }
 
