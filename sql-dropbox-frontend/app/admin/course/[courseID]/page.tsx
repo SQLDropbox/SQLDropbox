@@ -1,45 +1,63 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+
 import Header from "@/components/header";
-import Link from "next/link";
-import { FaArrowLeft } from "react-icons/fa6";
-import { Course } from "@/types/types";
 import AdminCourseDetailsHeader from "@/components/admin/course/adminCourseDetailsHeader";
 import AdminChapterCard from "@/components/admin/chapter/adminChapterCard";
 
+import { Chapter, Course } from "@/types/types";
+
+import { courseService } from "@/services/courseService";
+
 export default function Page() {
     const params = useParams();
+    const courseId = Number(params.courseId);
+    const [course, setCourse] = useState<Course | null>(null);
+    const [loading, setLoading] = useState(true);
 
-    const course: Course = {
-        courseId: 1,
-        courseNameNL: "Inleiding tot Databases",
-        courseNameEN: "Introduction to Databases",
-        courseDescriptionNL: "Leer de basisprincipes van databases en SQL.",
-        courseDescriptionEN: "Learn the fundamentals of databases and SQL.",
-        lecturer: "Dr. Smith",
-        deadline: new Date("2024-12-31"),
-        isActive: true,
-    };
+    useEffect(() => {
+        const fetchCourse = async () => {
+            try {
+                const data =
+                    await courseService.getCourseByCourseId(
+                        courseId
+                    );
+
+                setCourse(data);
+            } catch (error) {
+                console.error("Failed to fetch course:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (courseId) {
+            fetchCourse();
+        }
+    }, [courseId]);
+
+    if (loading) {
+        return <p>Loading...</p>;
+    }
+
+    if (!course) {
+        return <p>Course not found.</p>;
+    }
 
     return (
         <div>
             <Header />
+
             <div className="max-w-350 mx-auto p-6">
                 <AdminCourseDetailsHeader course={course} />
+
                 <div className="flex flex-col gap-4">
-                    {Array.from({ length: 5 }).map((_, i) => (
+                    {course.chapters?.map((chapter: Chapter) => (
                         <AdminChapterCard
-                            key={i}
-                            chapter={{
-                                chapterId: i + 1,
-                                chapterNameNL: `Hoofdstuk ${i + 1}`,
-                                chapterNameEN: `Chapter ${i + 1}`,
-                                chapterDescriptionNL: `Beschrijving van hoofdstuk ${i + 1}`,
-                                chapterDescriptionEN: `Description of chapter ${i + 1}`,
-                                courseId: course.courseId,
-                                exerciseCount: 10,
-                            }}
+                            key={chapter.chapterId}
+                            chapter={chapter}
                         />
                     ))}
                 </div>
