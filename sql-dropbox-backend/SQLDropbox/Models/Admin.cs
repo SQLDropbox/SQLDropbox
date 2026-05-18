@@ -8,8 +8,8 @@ namespace SQLDropbox.Models
     public class Admin
     {
         [Key]
-        public required string LectorCode { get; set; }
-        //public required string Password { get; set; }
+        public required string Name { get; set; }
+        public required string Password { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 }

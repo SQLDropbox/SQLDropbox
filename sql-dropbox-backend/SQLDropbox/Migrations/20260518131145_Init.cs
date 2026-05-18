@@ -16,12 +16,13 @@ namespace SQLDropbox.Migrations
                 name: "Admin",
                 columns: table => new
                 {
-                    LectorCode = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Password = table.Column<string>(type: "text", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Admin", x => x.LectorCode);
+                    table.PrimaryKey("PK_Admin", x => x.Name);
                 });
 
             migrationBuilder.CreateTable(
@@ -33,7 +34,6 @@ namespace SQLDropbox.Migrations
                     CourseNameEN = table.Column<string>(type: "text", nullable: true),
                     CourseDescriptionNL = table.Column<string>(type: "text", nullable: true),
                     CourseDescriptionEN = table.Column<string>(type: "text", nullable: true),
-                    Deadline = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false),
                     Lecturer = table.Column<string>(type: "text", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
@@ -46,6 +46,83 @@ namespace SQLDropbox.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Lecturer",
+                columns: table => new
+                {
+                    LecturerCode = table.Column<string>(type: "text", nullable: false),
+                    FirstName = table.Column<string>(type: "text", nullable: true),
+                    LastName = table.Column<string>(type: "text", nullable: true),
+                    Email = table.Column<string>(type: "text", nullable: true),
+                    Password = table.Column<string>(type: "text", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Lecturer", x => x.LecturerCode);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Schema",
+                columns: table => new
+                {
+                    SchemaId = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    SchemaName = table.Column<string>(type: "text", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Schema", x => x.SchemaId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Student",
+                columns: table => new
+                {
+                    StudentId = table.Column<Guid>(type: "uuid", nullable: false),
+                    StudentCode = table.Column<string>(type: "text", nullable: false),
+                    FirstName = table.Column<string>(type: "text", nullable: true),
+                    LastName = table.Column<string>(type: "text", nullable: true),
+                    Email = table.Column<string>(type: "text", nullable: true),
+                    Password = table.Column<string>(type: "text", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Student", x => x.StudentId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CourseLecturer",
+                columns: table => new
+                {
+                    CoursesCourseId = table.Column<string>(type: "text", nullable: false),
+                    LecturersLecturerCode = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CourseLecturer", x => new { x.CoursesCourseId, x.LecturersLecturerCode });
+                    table.ForeignKey(
+                        name: "FK_CourseLecturer_Course_CoursesCourseId",
+                        column: x => x.CoursesCourseId,
+                        principalTable: "Course",
+                        principalColumn: "CourseId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_CourseLecturer_Lecturer_LecturersLecturerCode",
+                        column: x => x.LecturersLecturerCode,
+                        principalTable: "Lecturer",
+                        principalColumn: "LecturerCode",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Chapter",
                 columns: table => new
                 {
@@ -55,9 +132,11 @@ namespace SQLDropbox.Migrations
                     ChapterNameEN = table.Column<string>(type: "text", nullable: true),
                     ChapterDescriptionNL = table.Column<string>(type: "text", nullable: true),
                     ChapterDescriptionEN = table.Column<string>(type: "text", nullable: true),
-                    DbSchema = table.Column<int>(type: "integer", nullable: true),
                     AmountOfExercises = table.Column<int>(type: "integer", nullable: true),
+                    Order = table.Column<int>(type: "integer", nullable: true),
+                    Deadline = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     CourseId = table.Column<string>(type: "text", nullable: true),
+                    SchemaId = table.Column<int>(type: "integer", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     DeletedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
@@ -70,30 +149,36 @@ namespace SQLDropbox.Migrations
                         column: x => x.CourseId,
                         principalTable: "Course",
                         principalColumn: "CourseId");
+                    table.ForeignKey(
+                        name: "FK_Chapter_Schema_SchemaId",
+                        column: x => x.SchemaId,
+                        principalTable: "Schema",
+                        principalColumn: "SchemaId",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Student",
+                name: "CourseStudent",
                 columns: table => new
                 {
-                    StudentId = table.Column<Guid>(type: "uuid", nullable: false),
-                    StudentCode = table.Column<string>(type: "character varying(8)", maxLength: 8, nullable: false),
-                    FullName = table.Column<string>(type: "text", nullable: false),
-                    Year = table.Column<int>(type: "integer", nullable: false),
-                    Group = table.Column<string>(type: "text", nullable: false),
-                    CourseId = table.Column<string>(type: "text", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
-                    DeletedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
+                    CoursesCourseId = table.Column<string>(type: "text", nullable: false),
+                    StudentsStudentId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Student", x => x.StudentId);
+                    table.PrimaryKey("PK_CourseStudent", x => new { x.CoursesCourseId, x.StudentsStudentId });
                     table.ForeignKey(
-                        name: "FK_Student_Course_CourseId",
-                        column: x => x.CourseId,
+                        name: "FK_CourseStudent_Course_CoursesCourseId",
+                        column: x => x.CoursesCourseId,
                         principalTable: "Course",
-                        principalColumn: "CourseId");
+                        principalColumn: "CourseId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_CourseStudent_Student_StudentsStudentId",
+                        column: x => x.StudentsStudentId,
+                        principalTable: "Student",
+                        principalColumn: "StudentId",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -226,6 +311,21 @@ namespace SQLDropbox.Migrations
                 column: "CourseId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Chapter_SchemaId",
+                table: "Chapter",
+                column: "SchemaId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CourseLecturer_LecturersLecturerCode",
+                table: "CourseLecturer",
+                column: "LecturersLecturerCode");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CourseStudent_StudentsStudentId",
+                table: "CourseStudent",
+                column: "StudentsStudentId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Exercise_ChapterId",
                 table: "Exercise",
                 column: "ChapterId");
@@ -239,11 +339,6 @@ namespace SQLDropbox.Migrations
                 name: "IX_Solution_ExerciseId",
                 table: "Solution",
                 column: "ExerciseId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Student_CourseId",
-                table: "Student",
-                column: "CourseId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_StudentExercise_ExerciseId",
@@ -268,6 +363,12 @@ namespace SQLDropbox.Migrations
                 name: "Admin");
 
             migrationBuilder.DropTable(
+                name: "CourseLecturer");
+
+            migrationBuilder.DropTable(
+                name: "CourseStudent");
+
+            migrationBuilder.DropTable(
                 name: "Requirement");
 
             migrationBuilder.DropTable(
@@ -275,6 +376,9 @@ namespace SQLDropbox.Migrations
 
             migrationBuilder.DropTable(
                 name: "StudentSolution");
+
+            migrationBuilder.DropTable(
+                name: "Lecturer");
 
             migrationBuilder.DropTable(
                 name: "StudentExercise");
@@ -290,6 +394,9 @@ namespace SQLDropbox.Migrations
 
             migrationBuilder.DropTable(
                 name: "Course");
+
+            migrationBuilder.DropTable(
+                name: "Schema");
         }
     }
 }

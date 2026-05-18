@@ -9,7 +9,9 @@ namespace SQLDropbox.Data
         public DbSet<Chapter> Chapters => Set<Chapter>();
         public DbSet<Course> Courses => Set<Course>();
         public DbSet<Exercise> Exercises => Set<Exercise>();
+        public DbSet<Lecturer> Lecturers => Set<Lecturer>();
         public DbSet<Requirement> Requirements => Set<Requirement>();
+        public DbSet<Schema> Schemas => Set<Schema>();
         public DbSet<Solution> Solutions => Set<Solution>();
         public DbSet<Student> Students => Set<Student>();
         public DbSet<StudentExercise> StudentExercises => Set<StudentExercise>();
