@@ -111,7 +111,7 @@ public class CourseController : ControllerBase
         if (existing == null)
             return NotFound();
 
-        if (_db.Courses.Any(x => x.Url == course.Url))
+        if (_db.Courses.Any(x => x.Url == course.Url && x.CourseId != courseId))
         {
             return BadRequest("This URL is already in use");
         }
