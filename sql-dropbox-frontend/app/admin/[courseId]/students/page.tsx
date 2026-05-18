@@ -8,10 +8,10 @@ import AdminCourseDetailsHeader from "@/components/admin/course/adminCourseDetai
 export default function Page() {
     const params = useParams();
 
-    const courseUrl = (params.courseUrl as string) ?? undefined;
+    const courseId = (params.courseId as string) ?? undefined;
 
     const course: Course = {
-        courseId: params.courseID ? parseInt(params.courseID[0]) : 0,
+        courseId: courseId!,
         courseNameNL: "Inleiding tot Databases",
         courseNameEN: "Introduction to Databases",
         courseDescriptionNL: "Leer de basisprincipes van databases en SQL.",
@@ -19,7 +19,6 @@ export default function Page() {
         lecturer: "Dr. Smith",
         deadline: new Date("2024-12-31"),
         isActive: true,
-        url: courseUrl,
     };
 
     return (

@@ -5,17 +5,17 @@ import { courseService } from "@/services/courseService";
 import { Course } from "@/types/types";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
-import { FaBookOpen } from "react-icons/fa6";
+import { FaBookOpen, FaMedal } from "react-icons/fa6";
 
 export default function Page() {
     const params = useParams();
 
-    const courseUrl = (params.courseUrl as string) ?? undefined;
+    const courseId = (params.courseId as string) ?? undefined;
 
     const { data, isLoading, error } = useQuery<Course>({
-        queryKey: ["course", courseUrl],
-        queryFn: () => courseService.getCourseByCourseUrl(courseUrl!),
-        enabled: !!courseUrl,
+        queryKey: ["course", courseId],
+        queryFn: () => courseService.getCourseByCourseId(courseId!),
+        enabled: !!courseId,
     });
 
     console.log("data:", data);
@@ -51,14 +51,19 @@ export default function Page() {
                     {data?.chapters?.map((chapter) => (
                         <div
                             key={chapter.chapterId}
-                            className="rounded-xl border border-gray-300 bg-gray p-6 shadow-lg cursor-pointer"
+                            className="flex items-center gap-6 rounded-xl border border-gray-300 bg-gray-100 bg-gray px-6 py-4 cursor-pointer"
                         >
-                            <h2 className="text-xl font-semibold text-gray-900">
-                                {chapter.chapterNameEN}
-                            </h2>
-                            <p className="mt-2 text-sm text-gray-500">
-                                {chapter.chapterDescriptionEN}
-                            </p>
+                            <div>
+                                <FaMedal className="text-2xl text-yellow-500" />
+                            </div>
+                            <div>
+                                <h2 className="text-xl font-semibold text-gray-900">
+                                    {chapter.chapterNameEN}
+                                </h2>
+                                <p className="mt-2 text-sm text-gray-500">
+                                    {chapter.chapterDescriptionEN}
+                                </p>
+                            </div>
                         </div>
                     ))}
                 </div>

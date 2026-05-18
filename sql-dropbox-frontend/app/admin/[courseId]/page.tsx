@@ -21,7 +21,7 @@ export default function Page() {
         const fetchCourse = async () => {
             try {
                 const data =
-                    await courseService.getCourseByCourseUrl(
+                    await courseService.getCourseByCourseId(
                         courseUrl
                     );
 

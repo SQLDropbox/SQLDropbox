@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SQLDropbox.Data;
+using SQLDropbox.DTO;
+using SQLDropbox.Models;
 using SQLDropbox.Repositories;
 using SQLDropbox.Services;
 
@@ -8,10 +10,11 @@ namespace SQLDropbox.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class UtilitiesController(AppDbContext db, PasswordService passwordService) : ControllerBase
+public class UtilitiesController(AppDbContext db, PasswordService passwordService, PostgreSQLQueryValidator formatter) : ControllerBase
 {
     private readonly AppDbContext _db = db;
     private readonly PasswordService _passwordService = passwordService;
+    private readonly PostgreSQLQueryValidator _formatter = formatter;
 
     [HttpGet("seed-db")]
     public async Task<IActionResult> SeedTheDb()
@@ -33,5 +36,41 @@ public class UtilitiesController(AppDbContext db, PasswordService passwordServic
         await _db.Chapters.ExecuteDeleteAsync();
         await _db.Courses.ExecuteDeleteAsync();
         return Ok("The DB should have been emptied.");
+    }
+
+    [HttpPost("format")]
+    public async Task<IActionResult> Format([FromBody] FormatDTO format)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var formatted = _formatter.ParseQuery(format.Query);
+        return Ok(formatted);
+    }
+
+    [HttpPost("check")]
+    public async Task<IActionResult> Check([FromBody] FormatDTO format)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        List<Requirement> requirements = [];
+        Requirement r1 = new()
+        {
+            RequirementId = 1,
+            Statement = "JOIN",
+            Use = false
+        };
+        requirements.Add(r1);
+        Requirement r2 = new()
+        {
+            RequirementId = 1,
+            Statement = "GROUP BY",
+            Use = true
+        };
+        requirements.Add(r2);
+
+        var checkedQuery = _formatter.CheckQueryRequirements(requirements, format.Query);
+        return Ok($"{checkedQuery.Valid}: {checkedQuery.Message}");
     }
 }

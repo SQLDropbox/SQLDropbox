@@ -59,8 +59,8 @@ export default function CourseCard({
                 <Link
                     href={
                         adminMode
-                            ? `/admin/${course.url}`
-                            : `/${course.url}`
+                            ? `/admin/${course.courseId}`
+                            : `/${course.courseId}`
                     }
                     className="flex-1 w-full flex items-center justify-center gap-2 bg-black text-white text-sm px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors cursor-pointer"
                 >
@@ -71,7 +71,7 @@ export default function CourseCard({
                 {adminMode && (
                     <>
                         <Link
-                            href={`/admin/${course.url}/students`}
+                            href={`/admin/${course.courseId}/students`}
                             className="flex items-center border border-gray-400 rounded-lg px-3 py-2 transition-colors bg-white hover:bg-gray-200 text-gray-900 text-sm cursor-pointer"
                             title="Manage students"
                         >

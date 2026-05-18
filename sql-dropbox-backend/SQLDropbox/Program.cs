@@ -22,8 +22,9 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Add services to the container.
+// Add services to the container
 builder.Services.AddScoped<PasswordService>();
+builder.Services.AddScoped<PostgreSQLQueryValidator>();
 
 // Add controllers to the container
 builder.Services.AddControllers();

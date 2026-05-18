@@ -7,8 +7,8 @@ const getCourses = async () => {
     });
 };
 
-const getCourseByCourseUrl = async (courseUrl: string) => {
-    return api.publicFetch(`/Course/${courseUrl}`, {
+const getCourseByCourseId = async (courseId: string) => {
+    return api.publicFetch(`/Course/${courseId}`, {
         method: "GET",
     });
 };
@@ -20,14 +20,14 @@ const addCourse = async (course: Course) => {
     });
 };
 
-const updateCourse = async (courseId: number, course: Course) => {
+const updateCourse = async (courseId: string, course: Course) => {
     return api.publicFetch(`/Course/${courseId}`, {
         method: "PUT",
         body: JSON.stringify(course),
     });
 };
 
-const deleteCourse = async (courseId: number) => {
+const deleteCourse = async (courseId: string) => {
     return api.publicFetch(`/Course/${courseId}`, {
         method: "DELETE",
     });
@@ -35,7 +35,7 @@ const deleteCourse = async (courseId: number) => {
 
 export const courseService = {
     getCourses,
-    getCourseByCourseUrl,
+    getCourseByCourseId,
     addCourse,
     updateCourse,
     deleteCourse,
