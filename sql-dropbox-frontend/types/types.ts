@@ -20,7 +20,7 @@ export interface Chapter {
     chapterNameEN: string;
     chapterDescriptionNL: string;
     chapterDescriptionEN: string;
-    amountOfExercises: number;
+    amountOfExercises?: number;
     dbSchema?: string;
     courseId: number;
 }

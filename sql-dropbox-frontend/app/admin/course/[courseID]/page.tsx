@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 
 import Header from "@/components/header";
+
 import AdminCourseDetailsHeader from "@/components/admin/course/adminCourseDetailsHeader";
 import AdminChapterCard from "@/components/admin/chapter/adminChapterCard";
 
@@ -13,7 +14,9 @@ import { courseService } from "@/services/courseService";
 
 export default function Page() {
     const params = useParams();
-    const courseId = Number(params.courseId);
+
+    const courseUrl = params.courseUrl as string;
+
     const [course, setCourse] = useState<Course | null>(null);
     const [loading, setLoading] = useState(true);
 
@@ -21,8 +24,8 @@ export default function Page() {
         const fetchCourse = async () => {
             try {
                 const data =
-                    await courseService.getCourseByCourseId(
-                        courseId
+                    await courseService.getCourseByCourseUrl(
+                        courseUrl
                     );
 
                 setCourse(data);
@@ -33,10 +36,10 @@ export default function Page() {
             }
         };
 
-        if (courseId) {
+        if (courseUrl) {
             fetchCourse();
         }
-    }, [courseId]);
+    }, [courseUrl]);
 
     if (loading) {
         return <p>Loading...</p>;

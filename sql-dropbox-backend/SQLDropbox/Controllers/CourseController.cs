@@ -65,7 +65,10 @@ public class CourseController : ControllerBase
                 x.ChapterNameEN,
                 x.ChapterNameNL,
                 x.ChapterDescriptionEN,
-                x.ChapterDescriptionNL
+                x.ChapterDescriptionNL,
+                x.AmountOfExercises,
+                x.Course.CourseId,
+                x.DbSchema
             })
         });
     }
