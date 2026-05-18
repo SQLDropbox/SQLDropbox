@@ -21,5 +21,6 @@ export interface Chapter {
     chapterDescriptionNL: string;
     chapterDescriptionEN: string;
     courseId: string;
-    exerciseCount: number;
+
+    amountOfExercises?: number;
 }
