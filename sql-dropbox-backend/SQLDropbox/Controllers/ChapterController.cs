@@ -27,7 +27,7 @@ public class ChapterController : ControllerBase
             x.ChapterDescriptionNL,
             x.ChapterDescriptionEN,
             x.AmountOfExercises,
-            x.DbSchema,
+            //x.DbSchema,
         }).ToList();
         return Ok(chapters);
     }
@@ -42,7 +42,7 @@ public class ChapterController : ControllerBase
             x.ChapterNameEN,
             x.ChapterDescriptionNL,
             x.ChapterDescriptionEN,
-            x.DbSchema,
+            //x.DbSchema,
             x.AmountOfExercises,
             x.CreatedAt
 
@@ -70,7 +70,7 @@ public class ChapterController : ControllerBase
             ChapterNameEN = dto.ChapterNameEN,
             ChapterDescriptionNL = dto.ChapterDescriptionNL,
             ChapterDescriptionEN = dto.ChapterDescriptionEN,
-            DbSchema = dto.DbSchema,
+            //DbSchema = dto.DbSchema,
             AmountOfExercises = dto.AmountOfExercises,
             Course = course,
             CreatedAt = DateTime.UtcNow

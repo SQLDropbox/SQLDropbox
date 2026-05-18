@@ -1,26 +1,19 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json.Serialization;
 
 namespace SQLDropbox.Models
 {
-    [Table("Student")]
-    public class Student
+    [Table("Lecturer")]
+    public class Lecturer
     {
         [Key]
-        public Guid StudentId { get; set; }
-        public required string StudentCode { get; set; }
+        public required string LecturerCode { get; set; }
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
         public string? Email { get; set; }
         public required string Password { get; set; }
-        //public int? Year { get; set; }
-        //public string? Group { get; set; }
 
         public ICollection<Course> Courses { get; set; } = [];
-        public ICollection<StudentExercise> StudentExercises { get; set; } = [];
 
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
