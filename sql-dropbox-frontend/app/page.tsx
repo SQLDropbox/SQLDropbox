@@ -4,7 +4,7 @@ import Header from "@/components/header";
 import { courseService } from "@/services/courseService";
 import { Course } from "@/types/types";
 import { useQuery } from "@tanstack/react-query";
-import CourseCard from "@/components/courseCard";
+import CourseCard from "@/components/admin/course/courseCard";
 
 export default function Page() {
     const { data, isLoading, error } = useQuery<Course[]>({

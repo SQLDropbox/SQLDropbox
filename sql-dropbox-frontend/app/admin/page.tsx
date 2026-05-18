@@ -7,7 +7,7 @@ import { FaPlus } from "react-icons/fa6";
 import { useQuery } from "@tanstack/react-query";
 import EditCourseDialog from "@/components/admin/course/editCourseDialog";
 import { useState } from "react";
-import CourseCard from "@/components/courseCard";
+import CourseCard from "@/components/admin/course/courseCard";
 
 export default function Page() {
     const [editDialogOpen, setEditDialogOpen] = useState(false);
