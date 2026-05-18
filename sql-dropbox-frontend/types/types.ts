@@ -1,5 +1,4 @@
 export interface Course {
-    chapters: any;
     courseId: number;
     courseNameNL: string;
     courseNameEN: string;
@@ -22,7 +21,7 @@ export interface Chapter {
     chapterNameEN: string;
     chapterDescriptionNL: string;
     chapterDescriptionEN: string;
-    amountOfExercises?: number;
-    dbSchema?: string;
     courseId: number;
+    exerciseCount: number;
+    dbSchema?: string;
 }

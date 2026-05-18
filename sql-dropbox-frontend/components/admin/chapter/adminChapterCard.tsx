@@ -33,7 +33,7 @@ export default function AdminChapterCard({
 
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                     <FaFileAlt className="text-sm" />
-                    {chapter.amountOfExercises} exercises
+                    {chapter.exerciseCount} exercises
                 </div>
             </div>
 
