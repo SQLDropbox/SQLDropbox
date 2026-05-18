@@ -60,7 +60,7 @@ export default function CourseCard({
                     href={
                         adminMode
                             ? `/admin/course/${course.courseId}`
-                            : `/course/${course.courseId}`
+                            : `/${course.url}`
                     }
                     className="flex-1 w-full flex items-center justify-center gap-2 bg-black text-white text-sm px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors cursor-pointer"
                 >

@@ -5,6 +5,7 @@ export interface Course {
     courseDescriptionNL: string;
     courseDescriptionEN: string;
     lecturer: string;
+    url: string;
     deadline?: Date | null;
     isActive: boolean;
 

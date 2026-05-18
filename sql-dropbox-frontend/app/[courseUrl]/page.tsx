@@ -10,14 +10,12 @@ import { FaBookOpen } from "react-icons/fa6";
 export default function Page() {
     const params = useParams();
 
-    const courseID = params.courseID
-        ? parseInt(params.courseID as string)
-        : undefined;
+    const courseUrl = params.courseUrl as string ?? undefined;
 
     const { data, isLoading, error } = useQuery<Course>({
-        queryKey: ["course", courseID],
-        queryFn: () => courseService.getCourseByCourseId(courseID!),
-        enabled: !!courseID,
+        queryKey: ["course", courseUrl],
+        queryFn: () => courseService.getCourseByCourseUrl(courseUrl!),
+        enabled: !!courseUrl,
     });
 
     console.log("data:", data);

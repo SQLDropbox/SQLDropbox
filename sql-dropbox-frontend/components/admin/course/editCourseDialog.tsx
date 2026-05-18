@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { FaTimes } from "react-icons/fa";
 import { Course } from "@/types/types";
 import { courseService } from "@/services/courseService";
-import ConfirmDialog from "@/components/confirmDialog";
+import ConfirmDialog from "@/components/dialog/confirmDialog";
+import AlertDialog from "@/components/dialog/alertDialog";
 
 interface Props {
     open: boolean;
@@ -24,6 +25,10 @@ function validateForm(form: Course): FormErrors {
 
     if (!form.courseNameNL.trim())
         errors.courseNameNL = "Course name (NL) is required.";
+
+    if (!form.url.trim()) {
+        errors.url = "URL is required.";
+    }
 
     if (!form.lecturer.trim()) errors.lecturer = "Lecturer is required.";
 
@@ -50,6 +55,7 @@ const emptyForm: Course = {
     courseDescriptionNL: "",
     courseDescriptionEN: "",
     lecturer: "",
+    url: "",
     deadline: null,
     isActive: true,
 };
@@ -68,6 +74,8 @@ export default function EditCourseDialog({
     const [submitted, setSubmitted] = useState(false);
     const [confirmDeleteDialogOpen, setConfirmDeleteDialogOpen] =
         useState(false);
+    const [urlLocked, setUrlLocked] = useState(!isEdit);
+    const [errorDialog, setErrorDialog] = useState<string | null>(null);
 
     useEffect(() => {
         if (!open) return;
@@ -75,6 +83,7 @@ export default function EditCourseDialog({
         setSubmitted(false);
 
         if (isEdit && course) {
+            setUrlLocked(true);
             setForm({
                 courseId: course.courseId ?? 0,
                 courseNameNL: course.courseNameNL ?? "",
@@ -82,10 +91,12 @@ export default function EditCourseDialog({
                 courseDescriptionNL: course.courseDescriptionNL ?? "",
                 courseDescriptionEN: course.courseDescriptionEN ?? "",
                 lecturer: course.lecturer ?? "",
+                url: course.url ?? "",
                 deadline: course.deadline ? new Date(course.deadline) : null,
                 isActive: course.isActive ?? true,
             });
         } else {
+            setUrlLocked(false);
             setForm(emptyForm);
         }
     }, [open, mode, course]);
@@ -102,6 +113,18 @@ export default function EditCourseDialog({
     ) {
         const { name, value } = e.target;
         const updated = { ...form, [name]: value };
+
+        // AUTO-GENERATE URL from EN name (only if not locked)
+        if (name === "courseNameEN" && !urlLocked) {
+            updated.url = generateSlug(value);
+        }
+
+        // If user manually edits URL → lock it
+        if (name === "url") {
+            setUrlLocked(true);
+            updated.url = generateSlug(value);
+        }
+
         setForm(updated);
 
         if (submitted) {
@@ -133,9 +156,23 @@ export default function EditCourseDialog({
 
             onSuccess();
             onClose();
-        } catch (err) {
+        } catch (err: any) {
             console.error(err);
+
+            setErrorDialog(
+                err?.message || "Something went wrong while saving the course.",
+            );
         }
+    }
+
+    function generateSlug(text: string) {
+        return text
+            .toLowerCase()
+            .trim()
+            .replace(/['"]/g, "") // remove quotes
+            .replace(/[^a-z0-9\s-]/g, "") // remove special chars
+            .replace(/\s+/g, "-") // spaces → dashes
+            .replace(/-+/g, "-"); // collapse multiple dashes
     }
 
     const inputClass = (name: keyof Course) =>
@@ -220,6 +257,30 @@ export default function EditCourseDialog({
                                     )}
                                 </div>
                             </div>
+                        </div>
+
+                        {/* URL */}
+                        <div>
+                            <label className="text-sm font-medium text-gray-700">
+                                URL
+                                {!urlLocked && (
+                                    <span className="text-xs text-gray-400 ml-2">
+                                        {" "}
+                                        (auto-generated)
+                                    </span>
+                                )}
+                            </label>
+                            <input
+                                name="url"
+                                value={form.url}
+                                onChange={handleChange}
+                                className={inputClass("url")}
+                            />
+                            {errors.url && (
+                                <p className="text-xs text-red-500 mt-1">
+                                    {errors.url}
+                                </p>
+                            )}
                         </div>
 
                         <div>
@@ -382,20 +443,27 @@ export default function EditCourseDialog({
                 </div>
             </div>
 
-            {confirmDeleteDialogOpen && (
-                <ConfirmDialog
-                    onClose={() => setConfirmDeleteDialogOpen(false)}
-                    onConfirm={async () => {
-                        await courseService.deleteCourse(course!.courseId);
-                        setConfirmDeleteDialogOpen(false);
-                        onSuccess();
-                        onClose();
-                    }}
-                    title="Delete Course"
-                    description="Are you sure you want to delete this course? This action cannot be undone."
-                    type="delete"
-                />
-            )}
+            <AlertDialog
+                open={!!errorDialog}
+                onClose={() => setErrorDialog(null)}
+                title="Error"
+                description={errorDialog || ""}
+                type="error"
+                buttonText="OK"
+            />
+            <ConfirmDialog
+                open={confirmDeleteDialogOpen}
+                onClose={() => setConfirmDeleteDialogOpen(false)}
+                onConfirm={async () => {
+                    await courseService.deleteCourse(course!.courseId);
+                    setConfirmDeleteDialogOpen(false);
+                    onSuccess();
+                    onClose();
+                }}
+                title="Delete Course"
+                description="Are you sure you want to delete this course? This action cannot be undone."
+                type="delete"
+            />
         </div>
     );
 }
