@@ -71,6 +71,6 @@ public class UtilitiesController(AppDbContext db, PasswordService passwordServic
         requirements.Add(r2);
 
         var checkedQuery = _formatter.CheckQueryRequirements(requirements, format.Query);
-        return Ok(checkedQuery);
+        return Ok($"{checkedQuery.Valid}: {checkedQuery.Message}");
     }
 }
