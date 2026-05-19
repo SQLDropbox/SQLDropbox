@@ -6,7 +6,6 @@ public class ChapterDTO
     public string ChapterNameEN { get; set; }
     public string ChapterDescriptionNL { get; set; }
     public string ChapterDescriptionEN { get; set; }
-    public DbSchemaType? DbSchema { get; set; }
     public int AmountOfExercises { get; set; }
-    public string CourseId { get; set; }
+    public int SchemaId { get; set; } = 2;
 }
