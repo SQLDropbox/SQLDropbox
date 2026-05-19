@@ -1,22 +1,25 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SQLDropbox.Data;
+using SQLDropbox.DTO;
 using SQLDropbox.Models;
+using SQLDropbox.Services;
 using static SqlParser.Ast.JsonPathElement;
 
 namespace SQLDropbox.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class AuthController(AppDbContext db) : ControllerBase
+public class AuthController(AppDbContext db, PasswordService passwordService) : ControllerBase
 {
     private readonly AppDbContext _db = db;
+    private readonly PasswordService _passwordService = passwordService;
 
     [HttpGet("setup/{guid}")]
     public async Task<ActionResult> GetAccountToSetup(string guidStr)
     {
         if (Guid.TryParse(guidStr, out Guid guid))
-            return BadRequest("Not a valid GUID.");
+            return BadRequest("Not a valid identifier.");
 
         Student? student = await _db.Students.FindAsync(guid);
         Lecturer? lecturer = await _db.Lecturers.FindAsync(guid);
@@ -26,7 +29,7 @@ public class AuthController(AppDbContext db) : ControllerBase
             if (student.Password != null)
                 return BadRequest("Student is already setup.");
 
-            return Ok($"Hello there {lecturer.FirstName} please set your password");
+            return Ok($"Hello there {student.FirstName} please set your password");
         }
         else if(lecturer != null)
         {
@@ -41,21 +44,58 @@ public class AuthController(AppDbContext db) : ControllerBase
         }        
     }
 
-    [HttpPost("setup/{guid}")]
-    public async Task<ActionResult> SetupAccount(string guidStr)
+    [HttpPost("setup")]
+    public async Task<ActionResult> SetupAccount(SetupDTO dto)
     {
-        if (Guid.TryParse(guidStr, out Guid guid))
-            return BadRequest("Not a valid GUID.");
+        try
+        {
+            if (Guid.TryParse(dto.Guid, out Guid guid))
+                return BadRequest("Not a valid identifier.");
 
-        Student? student = await _db.Students.FindAsync(guid);
+            Student? student = await _db.Students.FindAsync(guid);
+            Lecturer? lecturer = await _db.Lecturers.FindAsync(guid);
 
-        if (student == null)
-            return BadRequest("Student does not exist.");
+            if (student != null)
+            {
+                if (student.Password != null)
+                    return BadRequest("Student is already setup.");
 
-        if (student.Password != null)
-            return BadRequest("Student is already setup.");
+                if (!dto.Password.Equals(dto.ConfirmedPassword))
+                    return BadRequest("Both passwords need to be the same.");
 
-        return Ok($"Hello there {student.FirstName} please set your password");
+                //string hashedPassword = _passwordService.HashPasswordIfValid(dto.Password);
+                string hashedPassword = _passwordService.HashPassword(dto.Password);
+                student.Password = hashedPassword;
+                _db.Students.Update(student);
+                await _db.SaveChangesAsync();
+
+                return Ok($"Thank you {student.FirstName}, your account has been setup.");
+            }
+            else if (lecturer != null)
+            {
+                if (lecturer.Password != null)
+                    return BadRequest("Lecturer is already setup.");
+
+                if (!dto.Password.Equals(dto.ConfirmedPassword))
+                    return BadRequest("Both passwords need to be the same.");
+
+                //string hashedPassword = _passwordService.HashPasswordIfValid(dto.Password);
+                string hashedPassword = _passwordService.HashPassword(dto.Password);
+                lecturer.Password = hashedPassword;
+                _db.Lecturers.Update(lecturer);
+                await _db.SaveChangesAsync();
+
+                return Ok($"Thank you {lecturer.FirstName}, your account has been setup.");
+            }
+            else
+            {
+                return BadRequest("This account does not exist.");
+            }
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }        
     }
 
 }
