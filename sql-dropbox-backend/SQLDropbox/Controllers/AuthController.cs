@@ -23,33 +23,17 @@ public class AuthController(AppDbContext db, PasswordService passwordService) : 
             return BadRequest("Not a valid GUID.");
 
         var student = await _db.Students.FirstOrDefaultAsync(s => s.StudentId == guid);
-
         if (student != null)
         {
-            if (student.Password != null)
-                return BadRequest("Student is already setup.");
-
-            return Ok(new
-            {
-                type = "student",
-                userId = student.StudentCode,
-                firstName = student.FirstName,
-            });
+            if (student.Password != null) return BadRequest("This account is already set up.");
+            return Ok(new { type = "student", userId = student.StudentCode, firstName = student.FirstName });
         }
 
         var lecturer = await _db.Lecturers.FirstOrDefaultAsync(l => l.LecturerId == guid);
-
         if (lecturer != null)
         {
-            if (lecturer.Password != null)
-                return BadRequest("Lecturer is already setup.");
-
-            return Ok(new
-            {
-                type = "lecturer",
-                userId = lecturer.LecturerCode,
-                firstName = lecturer.FirstName,
-            });
+            if (lecturer.Password != null) return BadRequest("This account is already set up.");
+            return Ok(new { type = "lecturer", userId = lecturer.LecturerCode, firstName = lecturer.FirstName });
         }
 
         return NotFound("Account does not exist.");
