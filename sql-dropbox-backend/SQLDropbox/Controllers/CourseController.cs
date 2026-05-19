@@ -58,7 +58,9 @@ public class CourseController : ControllerBase
             course.Lecturer,
             course.Deadline,
             course.IsActive,
-            chapters = course.Chapters.Select(x => new
+            chapters = course.Chapters
+            .Where(x => x.DeletedAt == null)
+            .Select(x => new
             {
                 x.ChapterId,
                 x.ChapterNameEN,

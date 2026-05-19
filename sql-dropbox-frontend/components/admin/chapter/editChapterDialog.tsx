@@ -11,6 +11,7 @@ import { FaTimes } from "react-icons/fa";
 
 import { Chapter } from "@/types/types";
 import { chapterService } from "@/services/chapterService";
+import ConfirmDialog from "@/components/dialog/confirmDialog";
 
 interface Props {
     open: boolean;
@@ -103,6 +104,12 @@ export default function EditChapterDialog({
             onClose();
         },
     });
+
+    const [confirmDeleteDialogOpen, setConfirmDeleteDialogOpen] = useState(false);
+    function onDelete() {
+        if (!isEdit || !chapter) return;
+        setConfirmDeleteDialogOpen(true);
+    }
 
     async function handleSubmit() {
         const newErrors = validate();
@@ -271,26 +278,56 @@ export default function EditChapterDialog({
                 </div>
 
                 {/* FOOTER */}
-                <div className="flex justify-end gap-3 px-6 py-4 border-t">
-                    <button
-                        onClick={onClose}
-                        className="border px-4 py-2 rounded-lg hover:bg-gray-100"
-                    >
-                        Cancel
-                    </button>
+                <div className="flex justify-between gap-3 px-6 py-4 border-t">
+                    {isEdit && (
+                        <button
+                            onClick={onDelete}
+                            className="border border-gray-300 px-4 py-2 rounded-lg text-sm bg-red-600 text-white hover:bg-red-400 transition-colors cursor-pointer"
+                        >
+                            Delete
+                        </button>
+                    )}
 
-                    <button
-                        onClick={handleSubmit}
-                        disabled={mutation.isPending}
-                        className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 disabled:opacity-50"
-                    >
-                        {mutation.isPending
-                            ? "Saving..."
-                            : isEdit
-                              ? "Save Changes"
-                              : "Create Chapter"}
-                    </button>
+                    <div className="flex gap-3 ml-auto">
+                        <button
+                            onClick={onClose}
+                            className="border border-gray-300 px-4 py-2 rounded-lg text-sm hover:bg-gray-200 transition-colors cursor-pointer"
+                        >
+                            Cancel
+                        </button>
+                
+                        <button
+                            onClick={handleSubmit}
+                            disabled={mutation.isPending}
+                            className="bg-black text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-700 transition-colors cursor-pointer"
+                        >
+                            {mutation.isPending
+                                ? "Saving..."
+                                : isEdit
+                                ? "Save Changes"
+                                : "Create Chapter"}
+                        </button>
+                    </div>
                 </div>
+                <ConfirmDialog
+                    open={confirmDeleteDialogOpen}
+                    onClose={() => setConfirmDeleteDialogOpen(false)}
+                    onConfirm={async () => {
+                        if (!chapter) return;
+                    
+                        await chapterService.deleteChapter(chapter.chapterId);
+                    
+                        queryClient.invalidateQueries({
+                            queryKey: ["course", courseId],
+                        });
+                    
+                        setConfirmDeleteDialogOpen(false);
+                        onClose();
+                    }}
+                    title="Delete Chapter"
+                    description="Are you sure you want to delete this chapter? This action cannot be undone."
+                    type="delete"
+                />
             </div>
         </div>
     );
