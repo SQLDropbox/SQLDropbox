@@ -5,13 +5,19 @@ import { authService } from "@/services/authService";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import { useState } from "react";
-import { FaEnvelope, FaLock } from "react-icons/fa6";
+import { FaEnvelope, FaEye, FaEyeSlash, FaLock } from "react-icons/fa6";
 
 export default function Page() {
     const params = useParams();
     const studentId = (params.studentId as string) ?? undefined;
 
     const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+    const [errorMessage, setErrorMessage] = useState("");
 
     const { data, isLoading, error } = useQuery({
         queryKey: ["student", studentId],
@@ -38,6 +44,30 @@ export default function Page() {
         );
     }
 
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+
+        setErrorMessage("");
+
+        if (!password || !confirmPassword) {
+            setErrorMessage("Password fields cannot be empty.");
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            setErrorMessage("Passwords do not match.");
+            return;
+        }
+
+        if (password.length < 6) {
+            setErrorMessage("Password must be at least 6 characters long.");
+            return;
+        }
+
+        // TODO: submit
+        console.log("Submitting password:", password);
+    };
+
     return (
         <div className="min-h-screen">
             <Header />
@@ -55,7 +85,7 @@ export default function Page() {
                     </div>
 
                     {/* Form */}
-                    <form className="space-y-5">
+                    <form className="space-y-5" onSubmit={handleSubmit}>
                         {/* UserId (readonly) */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -84,7 +114,7 @@ export default function Page() {
                                 <FaLock className="text-gray-500 text-sm" />
 
                                 <input
-                                    type="password"
+                                    type={showPassword ? "text" : "password"}
                                     value={password}
                                     onChange={(e) =>
                                         setPassword(e.target.value)
@@ -92,13 +122,78 @@ export default function Page() {
                                     placeholder="Enter a secure password"
                                     className="w-full outline-none text-sm text-gray-900 placeholder:text-gray-400 bg-transparent"
                                 />
+
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setShowPassword(!showPassword)
+                                    }
+                                    className="text-gray-500 text-sm hover:text-gray-700"
+                                >
+                                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                                </button>
                             </div>
                         </div>
+
+                        {/* Confirm Password */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Confirm Password
+                            </label>
+
+                            <div className="flex items-center gap-3 border border-gray-300 rounded-lg px-4 py-3 bg-white focus-within:border-black transition-colors">
+                                <FaLock className="text-gray-500 text-sm" />
+
+                                <input
+                                    type={
+                                        showConfirmPassword
+                                            ? "text"
+                                            : "password"
+                                    }
+                                    value={confirmPassword}
+                                    onChange={(e) =>
+                                        setConfirmPassword(e.target.value)
+                                    }
+                                    placeholder="Re-enter your password"
+                                    className="w-full outline-none text-sm text-gray-900 placeholder:text-gray-400 bg-transparent"
+                                />
+
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setShowConfirmPassword(
+                                            !showConfirmPassword,
+                                        )
+                                    }
+                                    className="text-gray-500 text-sm hover:text-gray-700"
+                                >
+                                    {showConfirmPassword ? (
+                                        <FaEyeSlash />
+                                    ) : (
+                                        <FaEye />
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+
+                        {errorMessage && (
+                            <div className="text-center">
+                                <p className="text-sm text-red-600">
+                                    {errorMessage}
+                                </p>
+                            </div>
+                        )}
 
                         {/* Submit */}
                         <button
                             type="submit"
-                            className="w-full flex items-center justify-center gap-2 bg-black text-white text-sm px-4 py-3 rounded-lg hover:bg-gray-800 transition-colors cursor-pointer"
+                            disabled={
+                                password.length == 0 ||
+                                password !== confirmPassword
+                            }
+                            className="w-full flex items-center justify-center gap-2 text-sm px-4 py-3 rounded-lg transition-colors cursor-pointer
+        bg-black text-white hover:bg-gray-800
+        disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed disabled:hover:bg-gray-300"
                         >
                             Create account
                         </button>
