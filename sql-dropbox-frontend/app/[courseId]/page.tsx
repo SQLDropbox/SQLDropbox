@@ -4,8 +4,16 @@ import Header from "@/components/header";
 import { courseService } from "@/services/courseService";
 import { Course } from "@/types/types";
 import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
 import { useParams } from "next/navigation";
-import { FaBookOpen, FaMedal } from "react-icons/fa6";
+import { FaExclamationCircle } from "react-icons/fa";
+import {
+    FaBookOpen,
+    FaCircleXmark,
+    FaClock,
+    FaMedal,
+    FaRegCircle,
+} from "react-icons/fa6";
 
 export default function Page() {
     const params = useParams();
@@ -49,14 +57,38 @@ export default function Page() {
                     </p>
 
                     {data?.chapters?.map((chapter) => (
-                        <div
+                        <Link
                             key={chapter.chapterId}
+                            href={`/${courseId}/chapter/${chapter.chapterId}`}
                             className="flex items-center gap-6 rounded-xl border border-gray-300 bg-gray-100 bg-gray px-6 py-4 cursor-pointer"
                         >
-                            <div>
-                                <FaMedal className="text-2xl text-yellow-500" />
+                            <div className="flex gap-1">
+                                <FaMedal
+                                    className="text-2xl text-yellow-500"
+                                    title="Completed"
+                                />
+                                <FaMedal
+                                    className="text-2xl text-gray-400"
+                                    title="Halfway"
+                                />
+                                <FaClock
+                                    className="text-2xl text-blue-500"
+                                    title="Started"
+                                />
+                                <FaRegCircle
+                                    className="text-2xl text-gray-400"
+                                    title="Not Started"
+                                />
+                                <FaExclamationCircle
+                                    className="text-2xl text-orange-400"
+                                    title="Deadline almost passed"
+                                />
+                                <FaCircleXmark
+                                    className="text-2xl text-red-500"
+                                    title="Deadline passed"
+                                />
                             </div>
-                            <div>
+                            <div className="flex-1">
                                 <h2 className="text-xl font-semibold text-gray-900">
                                     {chapter.chapterNameEN}
                                 </h2>
@@ -64,7 +96,10 @@ export default function Page() {
                                     {chapter.chapterDescriptionEN}
                                 </p>
                             </div>
-                        </div>
+                            <div className="bg-black text-white text-sm rounded-lg px-2 py-1">
+                                0 / {chapter.amountOfExercises}
+                            </div>
+                        </Link>
                     ))}
                 </div>
             </div>

@@ -27,13 +27,13 @@ public class ChapterController : ControllerBase
             x.ChapterDescriptionNL,
             x.ChapterDescriptionEN,
             x.AmountOfExercises,
-            x.DbSchema,
+            //x.DbSchema,
         }).ToList();
         return Ok(chapters);
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult> GetChapterById(int id)
+    public async Task<ActionResult> GetChapterByChapterId(int id)
     {
         var chapter = await _db.Chapters.Where(x => x.ChapterId == id && x.DeletedAt == null).Select(x => new
         {
@@ -42,7 +42,7 @@ public class ChapterController : ControllerBase
             x.ChapterNameEN,
             x.ChapterDescriptionNL,
             x.ChapterDescriptionEN,
-            x.DbSchema,
+            //x.DbSchema,
             x.AmountOfExercises,
             x.CreatedAt
 

@@ -6,12 +6,6 @@ using System.Text.Json.Serialization;
 
 namespace SQLDropbox.Models
 {
-    public enum DbSchemaType
-    {
-        Animals,
-        Countries
-    }
-
     [Table("Chapter")]
     public class Chapter
     {
@@ -22,12 +16,14 @@ namespace SQLDropbox.Models
         public string? ChapterNameEN { get; set; }
         public string? ChapterDescriptionNL { get; set; }
         public string? ChapterDescriptionEN { get; set; }
-        public DbSchemaType? DbSchema { get; set; }
         public int? AmountOfExercises { get; set; }
+        public int? Order { get; set; }
+        public DateTime? Deadline { get; set; }
 
         [JsonIgnore]
         public Course Course { get; set; } = null!;
         public ICollection<Exercise> Exercises { get; set; } = [];
+        public Schema Schema { get; set; } = null!;
 
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }

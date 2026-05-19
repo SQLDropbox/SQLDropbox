@@ -21,8 +21,15 @@ const deleteChapter = async (chapterId: number) => {
     });
 };
 
+const getChapterByChapterId = async (chapterId: string) => {
+    return api.publicFetch(`/Chapter/${chapterId}`, {
+        method: "GET",
+    });
+};
+
 export const chapterService = {
     addChapter,
     updateChapter,
     deleteChapter,
+    getChapterByChapterId,
 };

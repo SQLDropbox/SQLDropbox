@@ -15,6 +15,7 @@ namespace SQLDropbox.Repositories
             //await context.StudentSolutions.ExecuteDeleteAsync();
             //await context.StudentExercises.ExecuteDeleteAsync();
             //await context.Students.ExecuteDeleteAsync();
+            //await context.Lecturers.ExecuteDeleteAsync();
             //await context.Solutions.ExecuteDeleteAsync();
             //await context.Exercises.ExecuteDeleteAsync();
             //await context.Chapters.ExecuteDeleteAsync();
@@ -23,8 +24,8 @@ namespace SQLDropbox.Repositories
             /* ADMINS */
             Admin admin = new()
             {
-                LectorCode = "u0123456",
-                /*Password = passwordService.HashPassword("u0123456"),*/
+                Name = "Admin",
+                Password = passwordService.HashPassword("Admin"),
                 CreatedAt = DateTime.UtcNow,
             };
             await context.Admins.AddAsync(admin);
@@ -36,8 +37,7 @@ namespace SQLDropbox.Repositories
                 CourseNameNL = "Data Beheer",
                 CourseNameEN = "Data Management",
                 CourseDescriptionNL = "Beheer data.",
-                CourseDescriptionEN = "Manage data.",
-                Deadline = DateTime.UtcNow.AddDays(7),        
+                CourseDescriptionEN = "Manage data.",   
                 IsActive = false,
                 Lecturer = "Lehr Kragt",
                 CreatedAt = DateTime.UtcNow,
@@ -49,7 +49,6 @@ namespace SQLDropbox.Repositories
                 CourseNameEN = "Data Analytics",
                 CourseDescriptionNL = "Analyseer data.",
                 CourseDescriptionEN = "Analyze data.",
-                Deadline = DateTime.UtcNow.AddDays(14),
                 IsActive = false,
                 Lecturer = "Bro Fesser",
                 CreatedAt = DateTime.UtcNow,
@@ -57,16 +56,32 @@ namespace SQLDropbox.Repositories
             await context.Courses.AddAsync(course1);
             await context.Courses.AddAsync(course2);
 
+            /* SCHEMAS */
+            Schema schema1 = new()
+            {
+                SchemaName = "animals",
+                CreatedAt = DateTime.UtcNow,
+            };
+            Schema schema2 = new()
+            {
+                SchemaName = "rooms",
+                CreatedAt = DateTime.UtcNow,
+            };
+            await context.Schemas.AddAsync(schema1);
+            await context.Schemas.AddAsync(schema2);
+
             /* CHAPTERS */
             Chapter chapter1 = new()
             {
                 ChapterNameNL = "JOINS Gevorderd",
                 ChapterNameEN = "JOINS Advanced",
                 ChapterDescriptionNL = "Leer werken met verschillende soorten JOINS.",
-                ChapterDescriptionEN = "Learn to use different types of JOINS.",
-                DbSchema = DbSchemaType.Animals,
+                ChapterDescriptionEN = "Learn to use different types of JOINS.",                
                 AmountOfExercises = 10,
+                Order = 1,
+                Deadline = DateTime.UtcNow.AddDays(14),
                 Course = course1,
+                Schema = schema1,
                 CreatedAt = DateTime.UtcNow,
             };
             Chapter chapter2 = new()
@@ -75,9 +90,11 @@ namespace SQLDropbox.Repositories
                 ChapterNameEN = "SUBQUERIES Basics",
                 ChapterDescriptionNL = "Leer werken met SUBQUERIES.",
                 ChapterDescriptionEN = "Learn to use SUBQUERIES.",
-                DbSchema = DbSchemaType.Animals,
                 AmountOfExercises = 5,
+                Order = 2,
+                Deadline = DateTime.UtcNow.AddDays(7),
                 Course = course1,
+                Schema = schema2,
                 CreatedAt = DateTime.UtcNow,
             };
             await context.Chapters.AddAsync(chapter1);
@@ -115,7 +132,7 @@ namespace SQLDropbox.Repositories
             };
             await context.Exercises.AddAsync(exercise1);
             await context.Exercises.AddAsync(exercise2);
-            await context.Exercises.AddAsync(exercise3);
+            await context.Exercises.AddAsync(exercise3);            
 
             /* SOLUTIONS */
             Solution solution1 = new()
@@ -129,7 +146,8 @@ namespace SQLDropbox.Repositories
                 Query = "SELECT * FROM animal INNER JOIN animal_specs ON animal.id = animel_specs.animal_id",
                 Exercise = exercise2,
                 CreatedAt = DateTime.UtcNow,
-            }; Solution solution3 = new()
+            };
+            Solution solution3 = new()
             {
                 Query = "SELECT * FROM animal INNER JOIN animal_specs ON animal.id = animel_specs.animal_id",
                 Exercise = exercise3,
@@ -139,15 +157,25 @@ namespace SQLDropbox.Repositories
             await context.Solutions.AddAsync(solution2);
             await context.Solutions.AddAsync(solution3);
 
+            /* LECTURERS */
+            Lecturer lecturer = new()
+            {
+                LecturerCode = "u0123456",
+                Password = passwordService.HashPassword("u0123456"),
+                Courses = [course1, course2],
+                CreatedAt = DateTime.UtcNow,
+            };
+            await context.Lecturers.AddAsync(lecturer);
+
             /* STUDENTS */
             Student student1 = new()
             {
                 StudentCode = "r0123456",
-                FullName = "Eggsample Stewdent",
-                Year = 2026,
-                Group = "AT-TE",
-                Course = course1,
-                /*Password = passwordService.HashPassword("r0123456"),*/
+                FirstName = "Eggsample",
+                LastName = "Stewdent",
+                Email = "r0123456@ucll.be",
+                Password = passwordService.HashPassword("r0123456"),
+                Courses = [course1],
                 CreatedAt = DateTime.UtcNow,
             };
             await context.Students.AddAsync(student1);

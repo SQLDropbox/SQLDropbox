@@ -5,7 +5,6 @@ export interface Course {
     courseDescriptionNL: string;
     courseDescriptionEN: string;
     lecturer: string;
-    deadline?: Date | null;
     isActive: boolean;
 
     chapters?: Chapter[];
@@ -21,6 +20,6 @@ export interface Chapter {
     chapterDescriptionNL: string;
     chapterDescriptionEN: string;
     courseId: string;
-    amountOfExercises: number;
+    amountOfExercises?: number;
     dbSchema?: string;
 }
