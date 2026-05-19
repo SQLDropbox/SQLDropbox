@@ -16,13 +16,14 @@ namespace SQLDropbox.Migrations
                 name: "Admin",
                 columns: table => new
                 {
+                    AdminId = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
                     Password = table.Column<string>(type: "text", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Admin", x => x.Name);
+                    table.PrimaryKey("PK_Admin", x => x.AdminId);
                 });
 
             migrationBuilder.CreateTable(
@@ -49,18 +50,19 @@ namespace SQLDropbox.Migrations
                 name: "Lecturer",
                 columns: table => new
                 {
+                    LecturerId = table.Column<Guid>(type: "uuid", nullable: false),
                     LecturerCode = table.Column<string>(type: "text", nullable: false),
                     FirstName = table.Column<string>(type: "text", nullable: true),
                     LastName = table.Column<string>(type: "text", nullable: true),
-                    Email = table.Column<string>(type: "text", nullable: true),
-                    Password = table.Column<string>(type: "text", nullable: false),
+                    Email = table.Column<string>(type: "text", nullable: false),
+                    Password = table.Column<string>(type: "text", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     DeletedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Lecturer", x => x.LecturerCode);
+                    table.PrimaryKey("PK_Lecturer", x => x.LecturerId);
                 });
 
             migrationBuilder.CreateTable(
@@ -87,8 +89,8 @@ namespace SQLDropbox.Migrations
                     StudentCode = table.Column<string>(type: "text", nullable: false),
                     FirstName = table.Column<string>(type: "text", nullable: true),
                     LastName = table.Column<string>(type: "text", nullable: true),
-                    Email = table.Column<string>(type: "text", nullable: true),
-                    Password = table.Column<string>(type: "text", nullable: false),
+                    Email = table.Column<string>(type: "text", nullable: false),
+                    Password = table.Column<string>(type: "text", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     DeletedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
@@ -103,11 +105,11 @@ namespace SQLDropbox.Migrations
                 columns: table => new
                 {
                     CoursesCourseId = table.Column<string>(type: "text", nullable: false),
-                    LecturersLecturerCode = table.Column<string>(type: "text", nullable: false)
+                    LecturersLecturerId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_CourseLecturer", x => new { x.CoursesCourseId, x.LecturersLecturerCode });
+                    table.PrimaryKey("PK_CourseLecturer", x => new { x.CoursesCourseId, x.LecturersLecturerId });
                     table.ForeignKey(
                         name: "FK_CourseLecturer_Course_CoursesCourseId",
                         column: x => x.CoursesCourseId,
@@ -115,10 +117,10 @@ namespace SQLDropbox.Migrations
                         principalColumn: "CourseId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_CourseLecturer_Lecturer_LecturersLecturerCode",
-                        column: x => x.LecturersLecturerCode,
+                        name: "FK_CourseLecturer_Lecturer_LecturersLecturerId",
+                        column: x => x.LecturersLecturerId,
                         principalTable: "Lecturer",
-                        principalColumn: "LecturerCode",
+                        principalColumn: "LecturerId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -316,9 +318,9 @@ namespace SQLDropbox.Migrations
                 column: "SchemaId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CourseLecturer_LecturersLecturerCode",
+                name: "IX_CourseLecturer_LecturersLecturerId",
                 table: "CourseLecturer",
-                column: "LecturersLecturerCode");
+                column: "LecturersLecturerId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_CourseStudent_StudentsStudentId",

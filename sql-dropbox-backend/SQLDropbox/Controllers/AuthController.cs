@@ -5,6 +5,7 @@ using SQLDropbox.Data;
 using SQLDropbox.DTO;
 using SQLDropbox.Models;
 using SQLDropbox.Services;
+using Watchlist_Backend.DTOs;
 using static SqlParser.Ast.JsonPathElement;
 
 namespace SQLDropbox.Controllers;
@@ -37,7 +38,7 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
             return Ok(new { type = "lecturer", userId = lecturer.LecturerCode, firstName = lecturer.FirstName });
         }
 
-        return NotFound("Account does not exist.");
+        return NotFound("This Account does not exist.");
     }
 
     [HttpPost("setup")]
@@ -76,12 +77,54 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
                 return Ok(new { type = "lecturer", jwt = _jwtService.GenerateAccessToken(lecturer.LecturerId, lecturer.LecturerCode, "lecturer") });
             }                                      
   
-            return BadRequest("This account does not exist.");            
+            return NotFound("This account does not exist.");
         }
         catch (Exception ex)
         {
             return BadRequest(ex.Message);
         }        
+    }
+
+    [HttpPost("login")]
+    public async Task<ActionResult> Login(LoginDTO dto)
+    {
+        if (dto.EmailOrCode == null || dto.Password == null)
+            return BadRequest("Email or code and password are required.");
+
+        Student? student = dto.EmailOrCode.Contains('@') ?
+            await _db.Students.FirstOrDefaultAsync(s => s.Email == dto.EmailOrCode) :
+            await _db.Students.FirstOrDefaultAsync(s => s.StudentCode == dto.EmailOrCode);
+
+        if (student != null)
+        {
+            if (!_passwordService.ValidatePassword(student.Password!, dto.Password))
+                return Unauthorized("The email/code or password are incorrect.");
+
+            return Ok(new { type = "student", jwt = _jwtService.GenerateAccessToken(student.StudentId, student.StudentCode, "student") });
+        }
+
+        Lecturer? lecturer = dto.EmailOrCode.Contains('@') ?
+           await _db.Lecturers.FirstOrDefaultAsync(l => l.Email == dto.EmailOrCode) :
+           await _db.Lecturers.FirstOrDefaultAsync(l => l.LecturerCode == dto.EmailOrCode);
+
+        if (lecturer != null)
+        {
+            if (!_passwordService.ValidatePassword(lecturer.Password!, dto.Password))
+                return Unauthorized("The email/code or password are incorrect.");
+
+            return Ok(new { type = "lecturer", jwt = _jwtService.GenerateAccessToken(lecturer.LecturerId, lecturer.LecturerCode, "lecturer") });
+        }
+
+        Admin? admin = await _db.Admins.FirstOrDefaultAsync(a => a.Name == dto.EmailOrCode);
+        if (admin != null)
+        {
+            if (!_passwordService.ValidatePassword(admin.Password!, dto.Password))
+                return Unauthorized("The name or password are incorrect.");
+
+            return Ok(new { type = "admin", jwt = _jwtService.GenerateAccessToken(admin.AdminId, admin.Name, "admin") });
+        }
+
+        return NotFound("This account does not exist.");
     }
 
 }
