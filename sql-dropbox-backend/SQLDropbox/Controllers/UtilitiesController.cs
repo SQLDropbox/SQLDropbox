@@ -35,6 +35,7 @@ public class UtilitiesController(AppDbContext db, PasswordService passwordServic
         await _db.Exercises.ExecuteDeleteAsync();
         await _db.Chapters.ExecuteDeleteAsync();
         await _db.Courses.ExecuteDeleteAsync();
+        await _db.Lecturers.ExecuteDeleteAsync();
         return Ok("The DB should have been emptied.");
     }
 

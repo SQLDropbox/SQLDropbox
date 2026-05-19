@@ -7,6 +7,7 @@ namespace SQLDropbox.Models
     public class Lecturer
     {
         [Key]
+        public Guid LecturerId { get; set; }
         public required string LecturerCode { get; set; }
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
