@@ -81,6 +81,30 @@ public class ChapterController : ControllerBase
         return CreatedAtAction(nameof(GetChapterById), new { id = newChapter.ChapterId }, newChapter);
     }
 
+    [HttpPut("{id}")]
+    public async Task<ActionResult> UpdateChapter(int id, [FromBody] UpdateChapterDTO dto){
+        var chapter = await _db.Chapters.FirstOrDefaultAsync(x => x.ChapterId == id && x.DeletedAt == null);
+
+        if (chapter == null)
+        {
+            return NotFound(new
+            {
+                message = $"Chapter with ID {id} not found."
+            });
+        }
+
+        if (dto.ChapterNameNL != null)chapter.ChapterNameNL = dto.ChapterNameNL;
+        if (dto.ChapterNameEN != null)chapter.ChapterNameEN = dto.ChapterNameEN;
+        if (dto.ChapterDescriptionNL != null)chapter.ChapterDescriptionNL =dto.ChapterDescriptionNL;
+        if (dto.ChapterDescriptionEN != null)chapter.ChapterDescriptionEN =dto.ChapterDescriptionEN;
+        if (dto.AmountOfExercises.HasValue)chapter.AmountOfExercises =dto.AmountOfExercises.Value;
+        if (dto.DbSchema.HasValue)chapter.DbSchema = dto.DbSchema.Value;
+
+        chapter.UpdatedAt = DateTime.UtcNow;
+        await _db.SaveChangesAsync();
+        return Ok(chapter);
+    }
+
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteChapter(int id)
     {

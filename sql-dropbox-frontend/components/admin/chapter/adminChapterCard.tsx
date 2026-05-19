@@ -18,7 +18,8 @@ export default function AdminChapterCard({
 }: {
     chapter: Chapter;
 }) {
-    const [editDialogOpen, setEditDialogOpen] = useState(false);
+    const [editDialogOpen, setEditDialogOpen] =
+        useState(false);
 
     return (
         <div className="flex justify-between items-center rounded-xl border border-gray-200 bg-white px-6 py-4 shadow-sm hover:shadow-lg transition-shadow">
@@ -33,7 +34,7 @@ export default function AdminChapterCard({
 
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                     <FaFileAlt className="text-sm" />
-                    {chapter.exerciseCount} exercises
+                    {chapter.amountOfExercises} exercises
                 </div>
             </div>
 
@@ -48,7 +49,9 @@ export default function AdminChapterCard({
 
                 <button
                     className="w-10 h-10 flex justify-center items-center border border-gray-300 rounded-lg transition-colors bg-white hover:bg-gray-100 text-gray-900 cursor-pointer"
-                    onClick={() => setEditDialogOpen(true)}
+                    onClick={() =>
+                        setEditDialogOpen(true)
+                    }
                 >
                     <FaEdit />
                 </button>
@@ -60,7 +63,9 @@ export default function AdminChapterCard({
 
             <EditChapterDialog
                 open={editDialogOpen}
-                onClose={() => setEditDialogOpen(false)}
+                onClose={() =>
+                    setEditDialogOpen(false)
+                }
                 chapter={chapter}
             />
         </div>
