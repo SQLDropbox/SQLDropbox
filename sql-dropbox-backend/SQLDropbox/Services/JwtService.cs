@@ -23,8 +23,8 @@ namespace SQLDropbox.Services
                 ?? throw new InvalidOperationException("Jwt Issuer is not configured");
             _audience = _configuration["Jwt:Audience"]
                 ?? throw new InvalidOperationException("Jwt Audience is not configured");
-            _accessTokenMinutes = int.Parse(_configuration["Jwt:AccessTokenMinutes"]
-                ?? throw new InvalidOperationException("Jwt Access Token Minutes is not configured"));
+            _accessTokenMinutes = int.Parse(_configuration["Jwt:AccessTokenDays"]
+                ?? throw new InvalidOperationException("Jwt Access Token Days is not configured"));
         }
 
         public string GenerateAccessToken(Guid userId, string userCode, string role)

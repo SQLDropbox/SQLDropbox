@@ -97,7 +97,10 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
 
         if (student != null)
         {
-            if (!_passwordService.ValidatePassword(student.Password!, dto.Password))
+            if (student.Password == null)
+                return BadRequest("This account has not yet been setup, please refer to the mail you received to do this.");
+
+            if (!_passwordService.ValidatePassword(student.Password, dto.Password))
                 return Unauthorized("The email/code or password are incorrect.");
 
             return Ok(new { type = "student", jwt = _jwtService.GenerateAccessToken(student.StudentId, student.StudentCode, "student") });
@@ -109,7 +112,10 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
 
         if (lecturer != null)
         {
-            if (!_passwordService.ValidatePassword(lecturer.Password!, dto.Password))
+            if (lecturer.Password == null)
+                return BadRequest("This account has not yet been setup, please refer to the mail you received to do this.");
+
+            if (!_passwordService.ValidatePassword(lecturer.Password, dto.Password))
                 return Unauthorized("The email/code or password are incorrect.");
 
             return Ok(new { type = "lecturer", jwt = _jwtService.GenerateAccessToken(lecturer.LecturerId, lecturer.LecturerCode, "lecturer") });

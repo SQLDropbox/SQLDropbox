@@ -23,8 +23,11 @@ builder.Services.AddCors(options =>
 });
 
 // Add services to the container
+builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<PasswordService>();
 builder.Services.AddScoped<PostgreSQLQueryValidator>();
+builder.Services.AddScoped<SchemaService>();
+builder.Services.AddScoped<UserService>();
 
 // Add controllers to the container
 builder.Services.AddControllers();

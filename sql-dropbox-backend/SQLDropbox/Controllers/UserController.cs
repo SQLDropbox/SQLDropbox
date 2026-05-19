@@ -19,7 +19,7 @@ namespace SQLDropbox.Controllers
         {
             try
             {
-                Student? student = await _db.Students.FirstAsync(s => s.StudentCode == dto.StudentCode);
+                Student? student = await _db.Students.FirstOrDefaultAsync(s => s.StudentCode == dto.StudentCode);
                 if(student != null) throw new Exception("A user with this student code already exists");
 
                 if (dto.StudentCode == null || dto.Email == null)
@@ -30,9 +30,10 @@ namespace SQLDropbox.Controllers
                     StudentCode = dto.StudentCode,
                     FirstName = dto.FirstName,
                     LastName = dto.LastName,
-                    Email = dto.Email
+                    Email = dto.Email,
+                    CreatedAt = DateTime.UtcNow
                 };
-                await _db.Students.AddAsync(newStudent);
+                _db.Students.Add(newStudent);
                 await _db.SaveChangesAsync();
 
                 return Ok($"Account created for student with code {newStudent.StudentCode}.");
