@@ -11,16 +11,17 @@ namespace SQLDropbox.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class AuthController(AppDbContext db, PasswordService passwordService) : ControllerBase
+public class AuthController(AppDbContext db, PasswordService passwordService, JwtService jwtService) : ControllerBase
 {
     private readonly AppDbContext _db = db;
     private readonly PasswordService _passwordService = passwordService;
+    private readonly JwtService _jwtService = jwtService;
 
     [HttpGet("setup/{userId}")]
-    public async Task<ActionResult> getAccountSetup(string userId)
+    public async Task<ActionResult> GetAccountSetup(string userId)
     {
         if (!Guid.TryParse(userId, out Guid guid))
-            return BadRequest("Not a valid GUID.");
+            return BadRequest("Not a valid setup code.");
 
         var student = await _db.Students.FirstOrDefaultAsync(s => s.StudentId == guid);
         if (student != null)
@@ -45,32 +46,37 @@ public class AuthController(AppDbContext db, PasswordService passwordService) : 
         try
         {
             if (!Guid.TryParse(dto.Guid, out Guid guid))
-                return BadRequest("Not a valid identifier.");
+                return BadRequest("Not a valid setup code.");            
 
-            Student? student = await _db.Students.FindAsync(guid);
-            Lecturer? lecturer = await _db.Lecturers.FindAsync(guid);
-
-            if (student == null && lecturer == null)
-                return BadRequest("This account does not exist.");
-
-            if (student?.Password != null || lecturer?.Password != null)
-                return BadRequest("This account is already set up.");
-
-            string hashedPassword = _passwordService.HashPassword(dto.Password);
-
+            Student? student = await _db.Students.FirstOrDefaultAsync(s => s.StudentId == guid);
             if (student != null)
             {
+                if (student.Password != null)
+                    return BadRequest("This account is already set up.");
+
+                string hashedPassword = _passwordService.HashPassword(dto.Password);
                 student.Password = hashedPassword;
                 _db.Students.Update(student);
-            }
-            else
-            {
-                lecturer!.Password = hashedPassword;
-                _db.Lecturers.Update(lecturer);
+
+                await _db.SaveChangesAsync();
+                return Ok(new { type = "student", jwt = _jwtService.GenerateAccessToken(student.StudentId, student.StudentCode, "student") });
             }
 
-            await _db.SaveChangesAsync();
-            return Ok(); // TODO: return JWT
+            Lecturer? lecturer = await _db.Lecturers.FirstOrDefaultAsync(l => l.LecturerId == guid);
+            if (lecturer != null)
+            {
+                if (lecturer.Password != null)
+                    return BadRequest("This account is already set up.");
+
+                string hashedPassword = _passwordService.HashPassword(dto.Password);
+                lecturer.Password = hashedPassword;
+                _db.Lecturers.Update(lecturer);
+
+                await _db.SaveChangesAsync();
+                return Ok(new { type = "lecturer", jwt = _jwtService.GenerateAccessToken(lecturer.LecturerId, lecturer.LecturerCode, "lecturer") });
+            }                                      
+  
+            return BadRequest("This account does not exist.");            
         }
         catch (Exception ex)
         {
