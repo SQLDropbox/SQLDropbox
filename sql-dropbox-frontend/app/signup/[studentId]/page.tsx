@@ -3,7 +3,7 @@
 import Header from "@/components/header";
 import { authService } from "@/services/authService";
 import { useQuery } from "@tanstack/react-query";
-import { useParams } from "next/navigation";
+import { notFound, useParams } from "next/navigation";
 import { useState } from "react";
 import { FaEnvelope, FaEye, FaEyeSlash, FaLock } from "react-icons/fa6";
 
@@ -25,24 +25,6 @@ export default function Page() {
         enabled: !!studentId,
         retry: false,
     });
-
-    if (error) {
-        // TODO: route to 404 page
-        return <div>Error: {(error as Error).message}</div>;
-    }
-
-    if (isLoading) {
-        return (
-            <div className="min-h-screen flex flex-col">
-                <Header />
-
-                <div className="flex-1 flex flex-col items-center justify-center gap-3">
-                    <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-300 border-t-blue-600" />
-                    <p className="text-sm text-gray-600">Loading...</p>
-                </div>
-            </div>
-        );
-    }
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -67,6 +49,23 @@ export default function Page() {
         // TODO: submit
         console.log("Submitting password:", password);
     };
+
+    if (error) {
+        notFound();
+    }
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen flex flex-col">
+                <Header />
+
+                <div className="flex-1 flex flex-col items-center justify-center gap-3">
+                    <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-300 border-t-blue-600" />
+                    <p className="text-sm text-gray-600">Loading...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen">

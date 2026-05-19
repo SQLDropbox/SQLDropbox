@@ -1,14 +1,16 @@
-@import "tailwindcss";
+@import "tailwindcss/preflight" layer(base);
 @import "tailwindcss/theme" layer(theme);
+@import "tailwindcss/utilities" layer(utilities);
 
+@layer base {
+    body {
+        background-color: #f5f3fe;
+    }
 
-body {
-    background-color: #f5f3fe;
-}
-
-h1 {
-    font-size: 20px;
-    line-height: 1.4;
-    font-weight: bold;
-    color: var(--color-gray-900);
+    h1 {
+        font-size: 20px;
+        line-height: 1.4;
+        font-weight: bold;
+        color: var(--color-gray-900);
+    }
 }
