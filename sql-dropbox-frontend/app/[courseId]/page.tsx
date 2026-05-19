@@ -5,7 +5,7 @@ import { courseService } from "@/services/courseService";
 import { Course } from "@/types/types";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { notFound, useParams } from "next/navigation";
 import { FaExclamationCircle } from "react-icons/fa";
 import {
     FaBookOpen,
@@ -24,9 +24,27 @@ export default function Page() {
         queryKey: ["course", courseId],
         queryFn: () => courseService.getCourseByCourseId(courseId!),
         enabled: !!courseId,
+        retry: false,
     });
 
     console.log("data:", data);
+
+    if (error) {
+        notFound();
+    }
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen flex flex-col">
+                <Header />
+
+                <div className="flex-1 flex flex-col items-center justify-center gap-3">
+                    <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-300 border-t-blue-600" />
+                    <p className="text-sm text-gray-600">Loading...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div>

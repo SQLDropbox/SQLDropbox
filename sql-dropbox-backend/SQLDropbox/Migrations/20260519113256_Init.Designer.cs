@@ -12,7 +12,7 @@ using SQLDropbox.Data;
 namespace SQLDropbox.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260518131145_Init")]
+    [Migration("20260519113256_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -30,12 +30,12 @@ namespace SQLDropbox.Migrations
                     b.Property<string>("CoursesCourseId")
                         .HasColumnType("text");
 
-                    b.Property<string>("LecturersLecturerCode")
-                        .HasColumnType("text");
+                    b.Property<Guid>("LecturersLecturerId")
+                        .HasColumnType("uuid");
 
-                    b.HasKey("CoursesCourseId", "LecturersLecturerCode");
+                    b.HasKey("CoursesCourseId", "LecturersLecturerId");
 
-                    b.HasIndex("LecturersLecturerCode");
+                    b.HasIndex("LecturersLecturerId");
 
                     b.ToTable("CourseLecturer");
                 });
@@ -57,17 +57,22 @@ namespace SQLDropbox.Migrations
 
             modelBuilder.Entity("SQLDropbox.Models.Admin", b =>
                 {
-                    b.Property<string>("Name")
-                        .HasColumnType("text");
+                    b.Property<Guid>("AdminId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("Password")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.HasKey("Name");
+                    b.HasKey("AdminId");
 
                     b.ToTable("Admin");
                 });
@@ -206,8 +211,9 @@ namespace SQLDropbox.Migrations
 
             modelBuilder.Entity("SQLDropbox.Models.Lecturer", b =>
                 {
-                    b.Property<string>("LecturerCode")
-                        .HasColumnType("text");
+                    b.Property<Guid>("LecturerId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp without time zone");
@@ -216,6 +222,7 @@ namespace SQLDropbox.Migrations
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Email")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("FirstName")
@@ -224,14 +231,17 @@ namespace SQLDropbox.Migrations
                     b.Property<string>("LastName")
                         .HasColumnType("text");
 
-                    b.Property<string>("Password")
+                    b.Property<string>("LecturerCode")
                         .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Password")
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp without time zone");
 
-                    b.HasKey("LecturerCode");
+                    b.HasKey("LecturerId");
 
                     b.ToTable("Lecturer");
                 });
@@ -328,6 +338,7 @@ namespace SQLDropbox.Migrations
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Email")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("FirstName")
@@ -337,7 +348,6 @@ namespace SQLDropbox.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Password")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("StudentCode")
@@ -431,7 +441,7 @@ namespace SQLDropbox.Migrations
 
                     b.HasOne("SQLDropbox.Models.Lecturer", null)
                         .WithMany()
-                        .HasForeignKey("LecturersLecturerCode")
+                        .HasForeignKey("LecturersLecturerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
