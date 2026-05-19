@@ -1,11 +1,19 @@
 import { api } from "./apiClient";
 
-const setupPassword = async (userId: string) => {
+const getAccountSetup = async (userId: string) => {
     return api.publicFetch(`/Auth/setup/${userId}`, {
         method: "GET",
     });
 };
 
+const setupAccount = async (guid: string, password: string) => {
+    return api.publicFetch(`/Auth/setup`, {
+        method: "POST",
+        body: JSON.stringify({ guid, password }),
+    });
+};
+
 export const authService = {
-    setupPassword,
+    getAccountSetup,
+    setupAccount,
 };

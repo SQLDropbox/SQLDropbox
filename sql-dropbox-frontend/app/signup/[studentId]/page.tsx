@@ -3,11 +3,13 @@
 import Header from "@/components/header";
 import { authService } from "@/services/authService";
 import { useQuery } from "@tanstack/react-query";
-import { notFound, useParams } from "next/navigation";
+import { notFound, useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { FaEnvelope, FaEye, FaEyeSlash, FaLock } from "react-icons/fa6";
 
 export default function Page() {
+    const router = useRouter();
+
     const params = useParams();
     const studentId = (params.studentId as string) ?? undefined;
 
@@ -21,12 +23,12 @@ export default function Page() {
 
     const { data, isLoading, error } = useQuery({
         queryKey: ["student", studentId],
-        queryFn: () => authService.setupPassword(studentId!),
+        queryFn: () => authService.getAccountSetup(studentId!),
         enabled: !!studentId,
         retry: false,
     });
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
         setErrorMessage("");
@@ -46,8 +48,13 @@ export default function Page() {
             return;
         }
 
-        // TODO: submit
-        console.log("Submitting password:", password);
+        try {
+            await authService.setupAccount(studentId, password);
+            // TODO: save JWT to local storage
+            router.push("/");
+        } catch (err: any) {
+            setErrorMessage(err.message ?? "Something went wrong.");
+        }
     };
 
     if (error) {
