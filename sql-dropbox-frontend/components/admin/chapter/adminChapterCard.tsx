@@ -2,25 +2,9 @@
 
 import { Chapter } from "@/types/types";
 import Link from "next/link";
-import { useState } from "react";
+import { FaBookOpen, FaEdit, FaBars, FaFileAlt } from "react-icons/fa";
 
-import {
-    FaBookOpen,
-    FaEdit,
-    FaBars,
-    FaFileAlt,
-} from "react-icons/fa";
-
-import EditChapterDialog from "./editChapterDialog";
-
-export default function AdminChapterCard({
-    chapter,
-}: {
-    chapter: Chapter;
-}) {
-    const [editDialogOpen, setEditDialogOpen] =
-        useState(false);
-
+export default function AdminChapterCard({chapter, onEdit}: {chapter: Chapter; onEdit: () => void;}) {
     return (
         <div className="flex justify-between items-center rounded-xl border border-gray-200 bg-white px-6 py-4 shadow-sm hover:shadow-lg transition-shadow">
             <div className="flex-1">
@@ -48,26 +32,16 @@ export default function AdminChapterCard({
                 </Link>
 
                 <button
-                    className="w-10 h-10 flex justify-center items-center border border-gray-300 rounded-lg transition-colors bg-white hover:bg-gray-100 text-gray-900 cursor-pointer"
-                    onClick={() =>
-                        setEditDialogOpen(true)
-                    }
+                    className="w-10 h-10 flex justify-center items-center border border-gray-300 rounded-lg bg-white hover:bg-gray-100"
+                    onClick={onEdit}
                 >
                     <FaEdit />
                 </button>
 
-                <div className="flex justify-center items-center ml-2 pl-4 border-l border-gray-300 cursor-grab text-gray-500">
+                <div className="flex justify-center items-center ml-2 pl-4 border-l border-gray-300 text-gray-500">
                     <FaBars />
                 </div>
             </div>
-
-            <EditChapterDialog
-                open={editDialogOpen}
-                onClose={() =>
-                    setEditDialogOpen(false)
-                }
-                chapter={chapter}
-            />
         </div>
     );
 }

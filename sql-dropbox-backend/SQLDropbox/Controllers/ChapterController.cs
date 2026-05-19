@@ -55,14 +55,13 @@ public class ChapterController : ControllerBase
         return Ok(chapter);
     }
 
-    [HttpPost]
-    public async Task<ActionResult> CreateChapter([FromBody] ChapterDTO dto)
+    [HttpPost("{courseId}")]
+    public async Task<ActionResult> CreateChapter(string courseId, [FromBody] ChapterDTO dto)
     {
-        var course = await _db.Courses.FindAsync(dto.CourseId);
+        var course = await _db.Courses.FirstOrDefaultAsync(x => x.CourseId == courseId);
+
         if (course == null)
-        {
-            return BadRequest(new { message = $"Course with ID {dto.CourseId} does not exist." });
-        }
+            return BadRequest("Course does not exist");
 
         var newChapter = new Chapter
         {
@@ -70,15 +69,16 @@ public class ChapterController : ControllerBase
             ChapterNameEN = dto.ChapterNameEN,
             ChapterDescriptionNL = dto.ChapterDescriptionNL,
             ChapterDescriptionEN = dto.ChapterDescriptionEN,
-            DbSchema = dto.DbSchema,
             AmountOfExercises = dto.AmountOfExercises,
+            DbSchema = dto.DbSchema ?? 0,
             Course = course,
             CreatedAt = DateTime.UtcNow
-
         };
-        await _db.Chapters.AddAsync(newChapter);
+
+        _db.Chapters.Add(newChapter);
         await _db.SaveChangesAsync();
-        return CreatedAtAction(nameof(GetChapterById), new { id = newChapter.ChapterId }, newChapter);
+
+        return Ok(newChapter);
     }
 
     [HttpPut("{id}")]
