@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using SQLDropbox.Data;
 using SQLDropbox.Models;
 using static SqlParser.Ast.JsonPathElement;
@@ -12,33 +13,43 @@ public class AuthController(AppDbContext db) : ControllerBase
 {
     private readonly AppDbContext _db = db;
 
-    [HttpGet("setup/{guid}")]
-    public async Task<ActionResult> GetAccountToSetup(string guidStr)
+    [HttpGet("setup/{userId}")]
+    public async Task<ActionResult> GetAccountToSetup(string userId)
     {
-        if (Guid.TryParse(guidStr, out Guid guid))
+        if (!Guid.TryParse(userId, out Guid guid))
             return BadRequest("Not a valid GUID.");
 
-        Student? student = await _db.Students.FindAsync(guid);
-        Lecturer? lecturer = await _db.Lecturers.FindAsync(guid);
+        var student = await _db.Students.FirstOrDefaultAsync(s => s.StudentId == guid);
 
-        if(student != null)
+        if (student != null)
         {
             if (student.Password != null)
                 return BadRequest("Student is already setup.");
 
-            return Ok($"Hello there {lecturer.FirstName} please set your password");
+            return Ok(new
+            {
+                type = "student",
+                userId = student.StudentCode,
+                firstName = student.FirstName,
+            });
         }
-        else if(lecturer != null)
+
+        var lecturer = await _db.Lecturers.FirstOrDefaultAsync(l => l.LecturerId == guid);
+
+        if (lecturer != null)
         {
-            if(lecturer.Password != null)
+            if (lecturer.Password != null)
                 return BadRequest("Lecturer is already setup.");
 
-            return Ok($"Hello there {lecturer.FirstName} please set your password");
+            return Ok(new
+            {
+                type = "lecturer",
+                userId = lecturer.LecturerCode,
+                firstName = lecturer.FirstName,
+            });
         }
-        else
-        {
-            return BadRequest("This account does not exist.");
-        }        
+
+        return NotFound("Account does not exist.");
     }
 
     [HttpPost("setup/{guid}")]
