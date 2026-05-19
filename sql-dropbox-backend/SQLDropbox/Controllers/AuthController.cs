@@ -12,25 +12,37 @@ public class AuthController(AppDbContext db) : ControllerBase
 {
     private readonly AppDbContext _db = db;
 
-    [HttpGet("lecturer/{guid}")]
-    public async Task<ActionResult> SetupLecturerPassword(string guidStr)
+    [HttpGet("setup/{guid}")]
+    public async Task<ActionResult> GetAccountToSetup(string guidStr)
     {
         if (Guid.TryParse(guidStr, out Guid guid))
             return BadRequest("Not a valid GUID.");
 
+        Student? student = await _db.Students.FindAsync(guid);
         Lecturer? lecturer = await _db.Lecturers.FindAsync(guid);
 
-        if (lecturer == null)
-            return BadRequest("Lecturer does not exist.");
+        if(student != null)
+        {
+            if (student.Password != null)
+                return BadRequest("Student is already setup.");
 
-        if (lecturer.Password != null)
-            return BadRequest("Lecturer is already setup.");
+            return Ok($"Hello there {lecturer.FirstName} please set your password");
+        }
+        else if(lecturer != null)
+        {
+            if(lecturer.Password != null)
+                return BadRequest("Lecturer is already setup.");
 
-        return Ok($"Hello there {lecturer.FirstName} please set your password");
+            return Ok($"Hello there {lecturer.FirstName} please set your password");
+        }
+        else
+        {
+            return BadRequest("This account does not exist.");
+        }        
     }
 
-    [HttpGet("student/{guid}")]
-    public async Task<ActionResult> SetupStudentPassword(string guidStr)
+    [HttpPost("setup/{guid}")]
+    public async Task<ActionResult> SetupAccount(string guidStr)
     {
         if (Guid.TryParse(guidStr, out Guid guid))
             return BadRequest("Not a valid GUID.");
