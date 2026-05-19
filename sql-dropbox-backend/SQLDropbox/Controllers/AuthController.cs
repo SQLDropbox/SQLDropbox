@@ -60,7 +60,7 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
                 _db.Students.Update(student);
 
                 await _db.SaveChangesAsync();
-                return Ok(new { type = "student", jwt = _jwtService.GenerateAccessToken(student.StudentId, student.StudentCode, "student") });
+                return Ok(new { type = "student", name = student.FirstName, token = _jwtService.GenerateAccessToken(student.StudentId, student.StudentCode, "student") });
             }
 
             Lecturer? lecturer = await _db.Lecturers.FirstOrDefaultAsync(l => l.LecturerId == guid);
@@ -74,7 +74,7 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
                 _db.Lecturers.Update(lecturer);
 
                 await _db.SaveChangesAsync();
-                return Ok(new { type = "lecturer", jwt = _jwtService.GenerateAccessToken(lecturer.LecturerId, lecturer.LecturerCode, "lecturer") });
+                return Ok(new { type = "lecturer", name = lecturer.LecturerCode, token = _jwtService.GenerateAccessToken(lecturer.LecturerId, lecturer.LecturerCode, "lecturer") });
             }                                      
   
             return NotFound("This account does not exist.");
@@ -103,7 +103,7 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
             if (!_passwordService.ValidatePassword(student.Password, dto.Password))
                 return Unauthorized("The email/code or password are incorrect.");
 
-            return Ok(new { type = "student", jwt = _jwtService.GenerateAccessToken(student.StudentId, student.StudentCode, "student") });
+            return Ok(new { type = "student", name = student.FirstName, jwt = _jwtService.GenerateAccessToken(student.StudentId, student.StudentCode, "student") });
         }
 
         Lecturer? lecturer = dto.EmailOrCode.Contains('@') ?
@@ -118,7 +118,7 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
             if (!_passwordService.ValidatePassword(lecturer.Password, dto.Password))
                 return Unauthorized("The email/code or password are incorrect.");
 
-            return Ok(new { type = "lecturer", jwt = _jwtService.GenerateAccessToken(lecturer.LecturerId, lecturer.LecturerCode, "lecturer") });
+            return Ok(new { type = "lecturer", name = lecturer.LecturerCode, token = _jwtService.GenerateAccessToken(lecturer.LecturerId, lecturer.LecturerCode, "lecturer") });
         }
 
         Admin? admin = await _db.Admins.FirstOrDefaultAsync(a => a.Name == dto.EmailOrCode);
@@ -127,7 +127,7 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
             if (!_passwordService.ValidatePassword(admin.Password!, dto.Password))
                 return Unauthorized("The name or password are incorrect.");
 
-            return Ok(new { type = "admin", jwt = _jwtService.GenerateAccessToken(admin.AdminId, admin.Name, "admin") });
+            return Ok(new { type = "admin", name = admin.Name, token = _jwtService.GenerateAccessToken(admin.AdminId, admin.Name, "admin") });
         }
 
         return NotFound("This account does not exist.");

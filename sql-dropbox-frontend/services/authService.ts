@@ -13,7 +13,16 @@ const setupAccount = async (guid: string, password: string) => {
     });
 };
 
+const login = async (emailOrCode: string, password: string) => {
+    return api.publicFetch(`/Auth/login`, {
+        method: "POST",
+        body: JSON.stringify({ emailOrCode, password }),
+    });
+};
+
+
 export const authService = {
     getAccountSetup,
     setupAccount,
+    login,
 };
