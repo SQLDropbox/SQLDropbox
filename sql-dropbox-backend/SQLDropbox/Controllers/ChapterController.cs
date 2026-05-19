@@ -19,16 +19,19 @@ public class ChapterController : ControllerBase
     [HttpGet]
     public ActionResult GetChapters()
     {
-        var chapters = _db.Chapters.Where(x => x.DeletedAt == null).Select(x => new
-        {
-            x.ChapterId,
-            x.ChapterNameNL,
-            x.ChapterNameEN,
-            x.ChapterDescriptionNL,
-            x.ChapterDescriptionEN,
-            x.AmountOfExercises,
-            //x.DbSchema,
-        }).ToList();
+        var chapters = _db.Chapters.Where(x => x.DeletedAt == null)
+            .Where(x => x.DeletedAt == null)
+            .Select(x => new
+            {
+                x.ChapterId,
+                x.ChapterNameNL,
+                x.ChapterNameEN,
+                x.ChapterDescriptionNL,
+                x.ChapterDescriptionEN,
+                x.AmountOfExercises,
+                x.Schema.SchemaId,
+                x.Course.CourseId,
+            }).ToList();
         return Ok(chapters);
     }
 
@@ -42,7 +45,7 @@ public class ChapterController : ControllerBase
             x.ChapterNameEN,
             x.ChapterDescriptionNL,
             x.ChapterDescriptionEN,
-            //x.DbSchema,
+            x.Schema.SchemaId,
             x.AmountOfExercises,
             x.CreatedAt
 
@@ -55,14 +58,18 @@ public class ChapterController : ControllerBase
         return Ok(chapter);
     }
 
-    [HttpPost]
-    public async Task<ActionResult> CreateChapter([FromBody] ChapterDTO dto)
+    [HttpPost("course/{courseId}")]
+    public async Task<ActionResult> CreateChapter(string courseId, [FromBody] ChapterDTO dto)
     {
-        var course = await _db.Courses.FindAsync(dto.CourseId);
+        var course = await _db.Courses.FirstOrDefaultAsync(x => x.CourseId == courseId);
+
         if (course == null)
-        {
-            return BadRequest(new { message = $"Course with ID {dto.CourseId} does not exist." });
-        }
+            return BadRequest("Course does not exist");
+
+        var schema = await _db.Schemas.FirstOrDefaultAsync(x => x.SchemaId == dto.SchemaId);
+
+        if (schema == null)
+            return BadRequest("Schema does not exist");
 
         var newChapter = new Chapter
         {
@@ -70,16 +77,47 @@ public class ChapterController : ControllerBase
             ChapterNameEN = dto.ChapterNameEN,
             ChapterDescriptionNL = dto.ChapterDescriptionNL,
             ChapterDescriptionEN = dto.ChapterDescriptionEN,
-            //DbSchema = dto.DbSchema,
             AmountOfExercises = dto.AmountOfExercises,
             Course = course,
+            Schema = schema,
             CreatedAt = DateTime.UtcNow
-
         };
-        await _db.Chapters.AddAsync(newChapter);
+
+        _db.Chapters.Add(newChapter);
         await _db.SaveChangesAsync();
-        return Ok();
-        //return CreatedAtAction(nameof(GetChapterByChapterId), new { id = newChapter.ChapterId }, newChapter);
+
+        return Ok(newChapter);
+    }
+
+    [HttpPut("{id}")]
+    public async Task<ActionResult> UpdateChapter(int id, [FromBody] UpdateChapterDTO dto)
+    {
+        var chapter = await _db.Chapters.FirstOrDefaultAsync(x => x.ChapterId == id && x.DeletedAt == null);
+
+        if (chapter == null)
+        {
+            return NotFound(new { message = $"Chapter with ID {id} not found." });
+        }
+
+        if (dto.ChapterNameNL != null)chapter.ChapterNameNL = dto.ChapterNameNL;
+        if (dto.ChapterNameEN != null)chapter.ChapterNameEN = dto.ChapterNameEN;
+        if (dto.ChapterDescriptionNL != null)chapter.ChapterDescriptionNL = dto.ChapterDescriptionNL;
+        if (dto.ChapterDescriptionEN != null)chapter.ChapterDescriptionEN = dto.ChapterDescriptionEN;
+        if (dto.AmountOfExercises.HasValue)chapter.AmountOfExercises = dto.AmountOfExercises.Value;
+
+        if (dto.SchemaId.HasValue)
+        {
+            var schema = await _db.Schemas.FirstOrDefaultAsync(x => x.SchemaId == dto.SchemaId.Value);
+
+            if (schema == null)
+                return BadRequest("Schema does not exist");
+
+            chapter.Schema = schema;
+        }
+
+        chapter.UpdatedAt = DateTime.UtcNow;
+        await _db.SaveChangesAsync();
+        return Ok(chapter);
     }
 
     [HttpDelete("{id}")]
