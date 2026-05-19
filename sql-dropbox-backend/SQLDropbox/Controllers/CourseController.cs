@@ -56,14 +56,18 @@ public class CourseController : ControllerBase
             course.CourseDescriptionNL,
             course.Lecturer,
             course.IsActive,
-            chapters = course.Chapters.Select(x => new
+            chapters = course.Chapters
+            .Where(x => x.DeletedAt == null)
+            .Select(x => new
             {
                 x.ChapterId,
                 x.ChapterNameEN,
                 x.ChapterNameNL,
                 x.ChapterDescriptionEN,
                 x.ChapterDescriptionNL,
-                x.AmountOfExercises
+                x.AmountOfExercises,
+                x.Course.CourseId,
+                //.DbSchema
             })
         });
     }

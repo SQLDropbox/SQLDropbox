@@ -1,28 +1,154 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
+import {
+    useMutation,
+    useQueryClient,
+} from "@tanstack/react-query";
+
 import { FaTimes } from "react-icons/fa";
+
 import { Chapter } from "@/types/types";
+import { chapterService } from "@/services/chapterService";
+import ConfirmDialog from "@/components/dialog/confirmDialog";
 
 interface Props {
     open: boolean;
     onClose: () => void;
-    chapter: Chapter;
+
+    mode: "add" | "edit";
+
+    courseId: string;
+
+    chapter?: Chapter;
 }
 
-export default function EditChapterDialog({ open, onClose, chapter }: Props) {
+type FormErrors = Partial<
+    Record<keyof Chapter, string>
+>;
+
+const emptyForm: Partial<Chapter> = {
+    chapterNameNL: "",
+    chapterNameEN: "",
+    chapterDescriptionNL: "",
+    chapterDescriptionEN: "",
+    amountOfExercises: 0,
+};
+
+export default function EditChapterDialog({
+    open,
+    onClose,
+    mode,
+    courseId,
+    chapter,
+}: Props) {
+    const queryClient = useQueryClient();
+
+    const isEdit = mode === "edit";
+
+    const [form, setForm] =
+        useState<Partial<Chapter>>(emptyForm);
+
+    const [errors, setErrors] =
+        useState<FormErrors>({});
+
+    useEffect(() => {
+        if (!open) return;
+
+        if (chapter && isEdit) {
+            setForm(chapter);
+        } else {
+            setForm({
+                ...emptyForm,
+                courseId,
+            });
+        }
+
+        setErrors({});
+    }, [open, chapter, isEdit, courseId]);
+
+    function validate() {
+        const newErrors: FormErrors = {};
+
+        if (!form.chapterNameNL?.trim()) {
+            newErrors.chapterNameNL =
+                "Dutch name is required";
+        }
+
+        if (!form.chapterNameEN?.trim()) {
+            newErrors.chapterNameEN =
+                "English name is required";
+        }
+
+        return newErrors;
+    }
+
+    const mutation = useMutation({
+        mutationFn: async () => {
+            if (mode === "edit" && chapter) {
+            return chapterService.updateChapter(
+                chapter.chapterId,
+                form
+            );
+        }
+        
+        return chapterService.addChapter(courseId, form);
+        },
+    
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: ["course", courseId],
+            });
+        
+            onClose();
+        },
+    });
+
+    const [confirmDeleteDialogOpen, setConfirmDeleteDialogOpen] = useState(false);
+    function onDelete() {
+        if (!isEdit || !chapter) return;
+        setConfirmDeleteDialogOpen(true);
+    }
+
+    async function handleSubmit() {
+        const newErrors = validate();
+
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            return;
+        }
+
+        mutation.mutate();
+    }
+
     if (!open) return null;
 
+    const inputClass = (
+        field: keyof Chapter
+    ) =>
+        `w-full border rounded-lg px-4 py-2 ${
+            errors[field]
+                ? "border-red-400 bg-red-50"
+                : "border-gray-300"
+        }`;
+
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
-            <div className="w-full max-w-lg rounded-lg bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
-                <div className="flex justify-between items-start mb-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="w-full max-w-2xl rounded-lg bg-white shadow-xl">
+                {/* HEADER */}
+                <div className="flex justify-between items-start px-6 py-5 border-b">
                     <div>
-                        <h2 className="text-2xl font-semibold text-gray-900">
-                            Edit Chapter
+                        <h2 className="text-xl font-semibold">
+                            {isEdit
+                                ? "Edit Chapter"
+                                : "Add Chapter"}
                         </h2>
 
                         <p className="text-sm text-gray-500 mt-1">
-                            Update chapter settings
+                            {isEdit
+                                ? "Update chapter information."
+                                : "Create a new chapter."}
                         </p>
                     </div>
 
@@ -34,25 +160,174 @@ export default function EditChapterDialog({ open, onClose, chapter }: Props) {
                     </button>
                 </div>
 
-                <div className="space-y-5">
-                    {/* FORM */}
+                {/* BODY */}
+                <div className="p-6 space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <input
+                                placeholder="Chapter Name EN"
+                                value={
+                                    form.chapterNameEN ?? ""
+                                }
+                                onChange={(e) =>
+                                    setForm({
+                                        ...form,
+                                        chapterNameEN:
+                                            e.target.value,
+                                    })
+                                }
+                                className={inputClass(
+                                    "chapterNameEN"
+                                )}
+                            />
+
+                            {errors.chapterNameEN && (
+                                <p className="text-xs text-red-500 mt-1">
+                                    {
+                                        errors.chapterNameEN
+                                    }
+                                </p>
+                            )}
+                        </div>
+
+                        <div>
+                            <input
+                                placeholder="Chapter Name NL"
+                                value={
+                                    form.chapterNameNL ?? ""
+                                }
+                                onChange={(e) =>
+                                    setForm({
+                                        ...form,
+                                        chapterNameNL:
+                                            e.target.value,
+                                    })
+                                }
+                                className={inputClass(
+                                    "chapterNameNL"
+                                )}
+                            />
+
+                            {errors.chapterNameNL && (
+                                <p className="text-xs text-red-500 mt-1">
+                                    {
+                                        errors.chapterNameNL
+                                    }
+                                </p>
+                            )}
+                        </div>
+                    </div>
+
+                    <textarea
+                        placeholder="Description EN"
+                        rows={4}
+                        value={
+                            form.chapterDescriptionEN ??
+                            ""
+                        }
+                        onChange={(e) =>
+                            setForm({
+                                ...form,
+                                chapterDescriptionEN:
+                                    e.target.value,
+                            })
+                        }
+                        className={inputClass(
+                            "chapterDescriptionEN"
+                        )}
+                    />
+
+                    <textarea
+                        placeholder="Description NL"
+                        rows={4}
+                        value={
+                            form.chapterDescriptionNL ??
+                            ""
+                        }
+                        onChange={(e) =>
+                            setForm({
+                                ...form,
+                                chapterDescriptionNL:
+                                    e.target.value,
+                            })
+                        }
+                        className={inputClass(
+                            "chapterDescriptionNL"
+                        )}
+                    />
+
+                    <input
+                        type="number"
+                        placeholder="Exercise count"
+                        value={
+                            form.amountOfExercises ?? 0
+                        }
+                        onChange={(e) =>
+                            setForm({
+                                ...form,
+                                amountOfExercises:
+                                    Number(
+                                        e.target.value
+                                    ),
+                            })
+                        }
+                        className={inputClass(
+                            "amountOfExercises"
+                        )}
+                    />
                 </div>
 
-                <div className="flex justify-end gap-3 mt-8">
-                    <button
-                        onClick={onClose}
-                        className="border px-4 py-2 rounded-lg hover:bg-gray-50"
-                    >
-                        Cancel
-                    </button>
+                {/* FOOTER */}
+                <div className="flex justify-between gap-3 px-6 py-4 border-t">
+                    {isEdit && (
+                        <button
+                            onClick={onDelete}
+                            className="border border-gray-300 px-4 py-2 rounded-lg text-sm bg-red-600 text-white hover:bg-red-400 transition-colors cursor-pointer"
+                        >
+                            Delete
+                        </button>
+                    )}
 
-                    <button
-                        onClick={onClose}
-                        className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800"
-                    >
-                        Save Changes
-                    </button>
+                    <div className="flex gap-3 ml-auto">
+                        <button
+                            onClick={onClose}
+                            className="border border-gray-300 px-4 py-2 rounded-lg text-sm hover:bg-gray-200 transition-colors cursor-pointer"
+                        >
+                            Cancel
+                        </button>
+                
+                        <button
+                            onClick={handleSubmit}
+                            disabled={mutation.isPending}
+                            className="bg-black text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-700 transition-colors cursor-pointer"
+                        >
+                            {mutation.isPending
+                                ? "Saving..."
+                                : isEdit
+                                ? "Save Changes"
+                                : "Create Chapter"}
+                        </button>
+                    </div>
                 </div>
+                <ConfirmDialog
+                    open={confirmDeleteDialogOpen}
+                    onClose={() => setConfirmDeleteDialogOpen(false)}
+                    onConfirm={async () => {
+                        if (!chapter) return;
+                    
+                        await chapterService.deleteChapter(chapter.chapterId);
+                    
+                        queryClient.invalidateQueries({
+                            queryKey: ["course", courseId],
+                        });
+                    
+                        setConfirmDeleteDialogOpen(false);
+                        onClose();
+                    }}
+                    title="Delete Chapter"
+                    description="Are you sure you want to delete this chapter? This action cannot be undone."
+                    type="delete"
+                />
             </div>
         </div>
     );
