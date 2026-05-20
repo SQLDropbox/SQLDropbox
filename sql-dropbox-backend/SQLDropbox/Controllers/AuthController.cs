@@ -51,7 +51,7 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
                 _db.Users.Update(user);
 
                 await _db.SaveChangesAsync();
-                return Ok(new { name = user.FirstName, role = user.Role.ToString(), token = _jwtService.GenerateAccessToken(user.UserId, user.Role) });
+                return Ok(new { token = _jwtService.GenerateAccessToken(user.UserId, user.Role) });
             }
 
             return NotFound("This account does not exist.");
@@ -82,7 +82,7 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
                 if (!_passwordService.ValidatePassword(user.Password, dto.Password))
                     return BadRequest("Incorrect credentials.");
 
-                return Ok(new { name = user.FirstName, role = user.Role.ToString(), token = _jwtService.GenerateAccessToken(user.UserId, user.Role) });
+                return Ok(new { token = _jwtService.GenerateAccessToken(user.UserId, user.Role) });
             }
 
             return BadRequest("Incorrect credentials.");
