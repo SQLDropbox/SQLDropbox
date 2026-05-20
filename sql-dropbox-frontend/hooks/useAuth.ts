@@ -6,6 +6,9 @@ const ROLE_CLAIM = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role
 
 interface JwtPayload {
     id: string;
+    code: string;
+    firstName: string;
+    lastName: string;
     [ROLE_CLAIM]: string;
     exp: number;
 }
