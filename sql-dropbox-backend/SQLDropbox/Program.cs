@@ -28,6 +28,9 @@ builder.Services.AddScoped<PasswordService>();
 builder.Services.AddScoped<PostgreSQLQueryValidator>();
 builder.Services.AddScoped<SchemaService>();
 builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<SchemaService>();
+builder.Services.AddScoped<SqlQueryService>();
+builder.Services.AddScoped<CsvExportService>();
 
 // Add controllers to the container
 builder.Services.AddControllers();
