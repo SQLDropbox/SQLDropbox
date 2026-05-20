@@ -40,7 +40,7 @@ export default function Header() {
                 {isAdmin && canToggle && (
                     <button
                         onClick={toggleAdminMode}
-                        className="text-blue-600 text-xl"
+                        className="text-blue-600 hover:text-blue-800 text-xl cursor-pointer transition-colors"
                     >
                         {isAdminRoute ? <FaDesktop /> : <FaCog />}
                     </button>

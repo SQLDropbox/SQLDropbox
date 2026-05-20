@@ -30,6 +30,7 @@ export function useAuth() {
     return {
         user,
         isAdmin: user?.role === "Admin",
+        isLecturer: user?.role === "Lecturer",
         hasRole: (role: string) => user?.role === role,
     };
 }
