@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
@@ -11,11 +12,17 @@ import { Exercise, Chapter } from "@/types/types";
 
 import { exerciseService } from "@/services/exerciseService";
 import { chapterService } from "@/services/chapterService";
+import EditExerciseDialog from "@/components/admin/exercise/editExerciseCard";
 
 export default function ChapterExercisesPage() {
     const params = useParams();
     const courseId = params.courseId as string;
     const chapterId = params.chapterId as string;
+    const chapterIdNumber = Number(chapterId);
+
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [dialogMode, setDialogMode] = useState<"add" | "edit">("add");
+    const [selectedExercise, setSelectedExercise] = useState<Exercise | undefined>(undefined);
 
     const { data: chapter } = useQuery<Chapter>({
         queryKey: ["chapter", chapterId],
@@ -28,13 +35,21 @@ export default function ChapterExercisesPage() {
         isLoading,
         error,
     } = useQuery<Exercise[]>({
-        queryKey: ["exercises", chapterId],
+        queryKey: ["exercises", chapterIdNumber],
         queryFn: () => exerciseService.getExercisesByChapterId(chapterId),
         enabled: !!chapterId,
     });
 
-    const handleEditExercise = (exerciseId: number) => {
-        console.log(`Bewerk oefening met ID: ${exerciseId}`);
+    const handleAddExercise = () => {
+        setDialogMode("add");
+        setSelectedExercise(undefined);
+        setIsDialogOpen(true);
+    };
+
+    const handleEditExercise = (exercise: Exercise) => {
+        setDialogMode("edit");
+        setSelectedExercise(exercise);
+        setIsDialogOpen(true);
     };
 
     if (isLoading) {
@@ -81,9 +96,7 @@ export default function ChapterExercisesPage() {
                 <div className="flex justify-end mb-4">
                     <button
                         className="bg-black text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-800 transition-colors flex items-center gap-2"
-                        onClick={() => {
-                            console.log("Nieuwe oefening modal openen");
-                        }}
+                        onClick={handleAddExercise}
                     >
                         <FaPlus />
                         New Exercise
@@ -100,12 +113,19 @@ export default function ChapterExercisesPage() {
                             <AdminExerciseCard 
                                 key={exercise.exerciseId} 
                                 exercise={exercise} 
-                                onEdit={() => handleEditExercise(exercise.exerciseId)} 
+                                onEdit={() => handleEditExercise(exercise)} 
                             />
                         ))}
                     </div>
                 )}
             </div>
+            <EditExerciseDialog
+                open={isDialogOpen}
+                onClose={() => setIsDialogOpen(false)}
+                mode={dialogMode}
+                chapterId={chapterIdNumber}
+                exercise={selectedExercise}
+            />
         </div>
     );
 }
