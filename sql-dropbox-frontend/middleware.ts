@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
 
 const ROLE_ROUTES: Record<string, string[]> = {
-    "/admin": ["Admin"],
+    "/admin": ["Admin", "Lecturer"],
 };
 
 export async function middleware(req: NextRequest) {

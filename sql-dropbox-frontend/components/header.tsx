@@ -12,7 +12,7 @@ const toggleableRoutes: (string | RegExp)[] = [
 ];
 
 export default function Header() {
-    const { user, isAdmin } = useAuth();
+    const { user, isAdmin, isLecturer } = useAuth();
     const router = useRouter();
     const pathname = usePathname();
 
@@ -37,7 +37,7 @@ export default function Header() {
                 Databasement
             </Link>
             <div className="flex gap-4 items-center">
-                {isAdmin && canToggle && (
+                {(isAdmin || isLecturer) && canToggle && (
                     <button
                         onClick={toggleAdminMode}
                         className="text-blue-600 hover:text-blue-800 text-xl cursor-pointer transition-colors"
