@@ -39,7 +39,7 @@ namespace SQLDropbox.Services
             Claim[] claims =
             [
                 new Claim("id", userId.ToString()),
-                new Claim("role", role.ToString())
+                new Claim(ClaimTypes.Role, role.ToString())
             ];
 
             JwtSecurityToken token = new(

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SQLDropbox.Data;
 using SQLDropbox.DTO;
+using SQLDropbox.Helpers;
 using SQLDropbox.Models;
 using SQLDropbox.Repositories;
 using SQLDropbox.Services;
@@ -71,5 +72,13 @@ public class UtilitiesController(AppDbContext db, PasswordService passwordServic
 
         var checkedQuery = _formatter.CheckQueryRequirements(requirements, format.Query);
         return Ok($"{checkedQuery.Valid}: {checkedQuery.Message}");
+    }
+
+    [HttpGet("who-am-i")]
+    public async Task<IActionResult> WhoAmI()
+    {
+        var result = AuthHelper.GetUserClaims(this);
+        if (result.Result != null) return BadRequest(result.Result);       
+        return Ok(result.Value.ToString());
     }
 }
