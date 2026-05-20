@@ -74,7 +74,7 @@ public class CourseController : ControllerBase
             }),
             students = course.Students.Select(x => new
             {
-                x.StudentCode,
+                x.UserCode,
                 x.FirstName,
                 x.LastName
             })
