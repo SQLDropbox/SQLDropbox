@@ -24,3 +24,11 @@ export interface Chapter {
     dbSchema?: string; 
     schemaId?: number | null; 
 }
+
+export interface Exercise {
+    exerciseId: number;
+    questionNL: string;
+    questionEN: string;
+    hintNL: string;
+    hintEN: string;
+}
