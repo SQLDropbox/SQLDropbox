@@ -26,16 +26,14 @@ public class UtilitiesController(AppDbContext db, PasswordService passwordServic
     [HttpGet("empty-db")]
     public async Task<IActionResult> EmptyTheDb()
     {
-        await _db.Admins.ExecuteDeleteAsync();
         await _db.Requirements.ExecuteDeleteAsync();
         await _db.StudentSolutions.ExecuteDeleteAsync();
         await _db.StudentExercises.ExecuteDeleteAsync();
-        await _db.Students.ExecuteDeleteAsync();
         await _db.Solutions.ExecuteDeleteAsync();
         await _db.Exercises.ExecuteDeleteAsync();
         await _db.Chapters.ExecuteDeleteAsync();
         await _db.Courses.ExecuteDeleteAsync();
-        await _db.Lecturers.ExecuteDeleteAsync();
+        await _db.Users.ExecuteDeleteAsync();
         return Ok("The DB should have been emptied.");
     }
 

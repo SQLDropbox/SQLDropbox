@@ -1,4 +1,5 @@
 ﻿using Microsoft.IdentityModel.Tokens;
+using SQLDropbox.Enums;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -27,7 +28,7 @@ namespace SQLDropbox.Services
                 ?? throw new InvalidOperationException("Jwt Access Token Days is not configured"));
         }
 
-        public string GenerateAccessToken(Guid userId, string userCode, string role)
+        public string GenerateAccessToken(Guid userId, Role role)
         {
             SymmetricSecurityKey key = new(
                 Encoding.UTF8.GetBytes(_key)
@@ -37,9 +38,8 @@ namespace SQLDropbox.Services
 
             Claim[] claims =
             [
-                new Claim("userId", userId.ToString()),
-                new Claim("userCode", userCode),
-                new Claim("userRole", role)
+                new Claim("id", userId.ToString()),
+                new Claim("role", role.ToString())
             ];
 
             JwtSecurityToken token = new(
