@@ -30,7 +30,7 @@ export default function Page() {
             `${student.firstName} ${student.lastName}`
                 .toLowerCase()
                 .includes(search.toLowerCase()) ||
-            student.studentCode.toLowerCase().includes(search.toLowerCase()),
+            student.userCode.toLowerCase().includes(search.toLowerCase()),
     );
 
     if (isLoading) {
@@ -86,11 +86,11 @@ export default function Page() {
                                 <tbody className="divide-y divide-gray-200">
                                     {filteredStudents.map((student) => (
                                         <tr
-                                            key={student.studentCode}
+                                            key={student.userCode}
                                             className="hover:bg-gray-50"
                                         >
                                             <td className="px-4 py-3">
-                                                {student.studentCode}
+                                                {student.userCode}
                                             </td>
                                             <td className="px-4 py-3">
                                                 {student.firstName}{" "}

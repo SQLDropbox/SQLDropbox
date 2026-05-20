@@ -27,7 +27,7 @@ export interface Chapter {
 }
 
 export interface Student {
-    studentCode: string;
+    userCode: string;
     firstName: string;
     lastName: string;
     email: string;
