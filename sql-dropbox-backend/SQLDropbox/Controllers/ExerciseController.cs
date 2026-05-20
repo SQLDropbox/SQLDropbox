@@ -82,4 +82,43 @@ public class ExerciseController : ControllerBase
         return Ok();
     }
 
+    [HttpPut("{id}")]
+    public ActionResult UpdateExercise(int id, [FromBody] ExerciseDTO dto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var existing = _db.Exercises.Include(e => e.Solutions).FirstOrDefault(e => e.ExerciseId == id);
+        
+        if (existing == null)
+            return NotFound();
+        
+        var chapter = _db.Chapters.Find(dto.ChapterId);
+
+        if (chapter == null)
+            return BadRequest("Chapter not found.");
+        
+        existing.Chapter = chapter;
+        
+        existing.QuestionNL = dto.QuestionNL;
+        existing.QuestionEN = dto.QuestionEN;
+        existing.HintNL = dto.HintNL;
+        existing.HintEN = dto.HintEN;
+        existing.QueryOutput = dto.QueryOutput;
+        
+        existing.UpdatedAt = DateTime.Now;
+        
+        _db.Solutions.RemoveRange(existing.Solutions);
+        
+        existing.Solutions = dto.SolutionQueries.Select(queryStr => new Solution
+        {
+            Query = queryStr,
+            CreatedAt = DateTime.Now
+        }).ToList();
+        
+        _db.SaveChanges();
+        return Ok();
+        
+    }
+
 }
