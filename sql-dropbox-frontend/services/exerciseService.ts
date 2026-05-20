@@ -7,7 +7,7 @@ const getExercisesByChapterId = async (chapterId: string) => {
     });
 };
 
-/* const addExercise = async (chapterId: string, exercise: Partial<Exercise>) => {
+const addExercise = async (exercise: Partial<Exercise>) => {
     return api.publicFetch(`/Exercise`, {
         method: "POST",
         body: JSON.stringify(exercise),
@@ -15,21 +15,21 @@ const getExercisesByChapterId = async (chapterId: string) => {
 };
 
 const updateExercise = async (exerciseId: number, exercise: Partial<Exercise>) => {
-    return api.publicFetch(`/Exercise`, {
+    return api.publicFetch(`/Exercise/${exerciseId}`, {
         method: "PUT",
         body: JSON.stringify(exercise),
     });
 };
 
 const deleteExercise = async (exerciseId: number) => {
-    return api.publicFetch(`/Exercise`, {
+    return api.publicFetch(`/Exercise/${exerciseId}`, {
         method: "DELETE",
     });
-}; */
+}; 
 
 export const exerciseService = {
     getExercisesByChapterId,
-    // addExercise,
-    // updateExercise,
-    // deleteExercise,
+    addExercise,
+    updateExercise,
+    deleteExercise,
 };
