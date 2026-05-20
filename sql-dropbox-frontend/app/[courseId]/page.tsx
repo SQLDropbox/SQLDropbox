@@ -27,8 +27,6 @@ export default function Page() {
         retry: false,
     });
 
-    console.log("data:", data);
-
     if (error) {
         notFound();
     }
