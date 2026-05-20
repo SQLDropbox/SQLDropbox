@@ -13,6 +13,7 @@ import {
     FaClock,
     FaMedal,
     FaRegCircle,
+    FaArrowLeft,
 } from "react-icons/fa6";
 
 export default function Page() {
@@ -33,6 +34,13 @@ export default function Page() {
             <Header />
             <div className="max-w-350 mx-auto p-6">
                 <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-lg flex flex-col gap-6">
+                    <Link
+                    href="/"
+                    className="flex items-center text-blue-500 hover:text-blue-700 gap-1"
+                >
+                    <FaArrowLeft />
+                    Back to courses
+                </Link>
                     <div className="flex items-center gap-4">
                         <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-blue-100 text-blue-600 text-2xl shrink-0">
                             <FaBookOpen />
