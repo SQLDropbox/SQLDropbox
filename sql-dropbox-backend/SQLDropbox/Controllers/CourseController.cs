@@ -106,12 +106,11 @@ public class CourseController(AppDbContext db) : BaseController
     }
 
     [Authorize("Admin")]
-    [Authorize("Lecturer")]
     [HttpPost]
     public ActionResult AddCourse([FromBody] CourseDTO course)
     {
         if (!ModelState.IsValid)
-            return BadRequest(ModelState);
+            return BadRequest(ModelState);       
 
         if (_db.Courses.Any(x => x.CourseId == course.CourseId))
         {
@@ -141,8 +140,10 @@ public class CourseController(AppDbContext db) : BaseController
         return Ok(newCourse);
     }
 
+    [Authorize("Admin")]
+    [Authorize("Lecturer")]
     [HttpPut("{courseId}")]
-    public ActionResult updateCourse(string courseId, [FromBody] CourseDTO course)
+    public ActionResult UpdateCourse(string courseId, [FromBody] CourseDTO course)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
@@ -165,8 +166,9 @@ public class CourseController(AppDbContext db) : BaseController
         return Ok(existing);
     }
 
+    [Authorize("Admin")]
     [HttpDelete("{courseID}")]
-    public ActionResult deleteCourse(string courseID)
+    public ActionResult DeleteCourse(string courseID)
     {
         var course = _db.Courses.FirstOrDefault(x => x.CourseId == courseID);
 
