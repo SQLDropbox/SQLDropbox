@@ -11,7 +11,7 @@ namespace SQLDropbox.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class UtilitiesController(AppDbContext db, PasswordService passwordService, PostgreSQLQueryValidator formatter) : ControllerBase
+public class UtilitiesController(AppDbContext db, PasswordService passwordService, PostgreSQLQueryValidator formatter) : BaseController
 {
     private readonly AppDbContext _db = db;
     private readonly PasswordService _passwordService = passwordService;

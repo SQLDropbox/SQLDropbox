@@ -8,13 +8,9 @@ namespace SQLDropbox.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class StudentExerciseController : ControllerBase
+public class StudentExerciseController(AppDbContext db) : BaseController
 {
-    private readonly AppDbContext _db;
-    public StudentExerciseController(AppDbContext db)
-    {
-        _db = db;
-    }
+    private readonly AppDbContext _db = db;
 
     [HttpPost("submit")]
     public async Task<IActionResult> SubmitSolution([FromBody] SubmitSolutionDTO dto)
@@ -24,7 +20,7 @@ public class StudentExerciseController : ControllerBase
 
         if (exercise == null || student == null)
         {
-            return BadRequest(new { message = "Exercise or student not found." });
+            return BadRequest(new {message = "Exercise or student not found."});
         }
         var studentExercise = await _db.StudentExercises
             .Include(se => se.StudentSolutions)
@@ -75,7 +71,7 @@ public class StudentExerciseController : ControllerBase
         {
             return false;
         }
-
+        
         var normalizedStudentQuery = studentQuery.Trim().ToUpperInvariant();
 
         foreach (var solution in validSolutions)

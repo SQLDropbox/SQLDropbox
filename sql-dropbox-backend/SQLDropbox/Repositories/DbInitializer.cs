@@ -1,7 +1,7 @@
-﻿using SQLDropbox.Data;
-using SQLDropbox.Enums;
+﻿using SQLDropbox.Services;
+using SQLDropbox.Data;
 using SQLDropbox.Models;
-using SQLDropbox.Services;
+using SQLDropbox.Enums;
 
 namespace SQLDropbox.Repositories
 {

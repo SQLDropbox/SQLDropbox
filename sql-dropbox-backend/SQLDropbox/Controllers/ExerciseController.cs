@@ -8,14 +8,9 @@ namespace SQLDropbox.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class ExerciseController : ControllerBase
+public class ExerciseController(AppDbContext db) : BaseController
 {
-    private readonly AppDbContext _db;
-
-    public ExerciseController(AppDbContext db)
-    {
-        _db = db;
-    }
+    private readonly AppDbContext _db = db;
 
     [HttpGet]
     public async Task<IActionResult> GetAllExercises()
@@ -28,7 +23,7 @@ public class ExerciseController : ControllerBase
     public async Task<IActionResult> CreateExercise([FromBody] ExerciseDTO dto)
     {
         var chapter = await _db.Chapters.FirstOrDefaultAsync(c => c.ChapterId == dto.ChapterId && c.DeletedAt == null);
-
+        
         if (chapter == null)
         {
             return BadRequest(new { message = $"Chapter with ID {dto.ChapterId} could not be found." });
@@ -52,8 +47,8 @@ public class ExerciseController : ControllerBase
         };
         await _db.Exercises.AddAsync(newExercise);
         await _db.SaveChangesAsync();
-
-        return CreatedAtAction(nameof(CreateExercise), new { id = newExercise.ExerciseId }, newExercise);
+        
+        return CreatedAtAction(nameof(CreateExercise), new {id = newExercise.ExerciseId},  newExercise);
     }
 
     [HttpGet("{id}")]
@@ -67,5 +62,5 @@ public class ExerciseController : ControllerBase
         }
         return Ok(exercise);
     }
-
+        
 }
