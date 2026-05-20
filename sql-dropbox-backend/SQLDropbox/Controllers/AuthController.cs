@@ -6,7 +6,6 @@ using SQLDropbox.DTO;
 using SQLDropbox.Models;
 using SQLDropbox.Services;
 using Watchlist_Backend.DTOs;
-using static SqlParser.Ast.JsonPathElement;
 
 namespace SQLDropbox.Controllers;
 
@@ -24,19 +23,12 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
         if (!Guid.TryParse(userId, out Guid guid))
             return BadRequest("Not a valid setup code.");
 
-        var student = await _db.Students.FirstOrDefaultAsync(s => s.StudentId == guid);
-        if (student != null)
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.UserId == guid);
+        if (user != null)
         {
-            if (student.Password != null) return BadRequest("This account is already set up.");
-            return Ok(new { type = "student", userId = student.StudentCode, firstName = student.FirstName });
-        }
-
-        var lecturer = await _db.Lecturers.FirstOrDefaultAsync(l => l.LecturerId == guid);
-        if (lecturer != null)
-        {
-            if (lecturer.Password != null) return BadRequest("This account is already set up.");
-            return Ok(new { type = "lecturer", userId = lecturer.LecturerCode, firstName = lecturer.FirstName });
-        }
+            if (user.Password != null) return BadRequest("This account is already set up.");
+            return Ok(new { type = user.Role.ToString(), userId = user.UserCode, firstName = user.FirstName });
+        }      
 
         return NotFound("This Account does not exist.");
     }
@@ -49,33 +41,19 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
             if (!Guid.TryParse(dto.Guid, out Guid guid))
                 return BadRequest("Not a valid setup code.");            
 
-            Student? student = await _db.Students.FirstOrDefaultAsync(s => s.StudentId == guid);
-            if (student != null)
+            User? user = await _db.Users.FirstOrDefaultAsync(u => u.UserId == guid);
+            if (user != null)
             {
-                if (student.Password != null)
+                if (user.Password != null)
                     return BadRequest("This account is already set up.");
 
                 string hashedPassword = _passwordService.HashPassword(dto.Password);
-                student.Password = hashedPassword;
-                _db.Students.Update(student);
+                user.Password = hashedPassword;
+                _db.Users.Update(user);
 
                 await _db.SaveChangesAsync();
-                return Ok(new { type = "student", name = student.FirstName, token = _jwtService.GenerateAccessToken(student.StudentId, student.StudentCode, "student") });
+                return Ok(new { type = user.Role.ToString(), name = user.FirstName, token = _jwtService.GenerateAccessToken(user.UserId, user.Role) });
             }
-
-            Lecturer? lecturer = await _db.Lecturers.FirstOrDefaultAsync(l => l.LecturerId == guid);
-            if (lecturer != null)
-            {
-                if (lecturer.Password != null)
-                    return BadRequest("This account is already set up.");
-
-                string hashedPassword = _passwordService.HashPassword(dto.Password);
-                lecturer.Password = hashedPassword;
-                _db.Lecturers.Update(lecturer);
-
-                await _db.SaveChangesAsync();
-                return Ok(new { type = "lecturer", name = lecturer.LecturerCode, token = _jwtService.GenerateAccessToken(lecturer.LecturerId, lecturer.LecturerCode, "lecturer") });
-            }                                      
   
             return NotFound("This account does not exist.");
         }
@@ -91,44 +69,20 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
         if (dto.EmailOrCode == null || dto.Password == null)
             return BadRequest("Email or code and password are required.");
 
-        Student? student = dto.EmailOrCode.Contains('@') ?
-            await _db.Students.FirstOrDefaultAsync(s => s.Email == dto.EmailOrCode) :
-            await _db.Students.FirstOrDefaultAsync(s => s.StudentCode == dto.EmailOrCode);
+        User? user = dto.EmailOrCode.Contains('@') ?
+            await _db.Users.FirstOrDefaultAsync(u => u.Email == dto.EmailOrCode) :
+            await _db.Users.FirstOrDefaultAsync(u => u.UserCode == dto.EmailOrCode);
 
-        if (student != null)
+        if (user != null)
         {
-            if (student.Password == null)
+            if (user.Password == null)
                 return BadRequest("This account has not yet been setup, please refer to the mail you received to do this.");
 
-            if (!_passwordService.ValidatePassword(student.Password, dto.Password))
+            if (!_passwordService.ValidatePassword(user.Password, dto.Password))
                 return Unauthorized("The email/code or password are incorrect.");
 
-            return Ok(new { type = "student", name = student.FirstName, jwt = _jwtService.GenerateAccessToken(student.StudentId, student.StudentCode, "student") });
-        }
-
-        Lecturer? lecturer = dto.EmailOrCode.Contains('@') ?
-           await _db.Lecturers.FirstOrDefaultAsync(l => l.Email == dto.EmailOrCode) :
-           await _db.Lecturers.FirstOrDefaultAsync(l => l.LecturerCode == dto.EmailOrCode);
-
-        if (lecturer != null)
-        {
-            if (lecturer.Password == null)
-                return BadRequest("This account has not yet been setup, please refer to the mail you received to do this.");
-
-            if (!_passwordService.ValidatePassword(lecturer.Password, dto.Password))
-                return Unauthorized("The email/code or password are incorrect.");
-
-            return Ok(new { type = "lecturer", name = lecturer.LecturerCode, token = _jwtService.GenerateAccessToken(lecturer.LecturerId, lecturer.LecturerCode, "lecturer") });
-        }
-
-        Admin? admin = await _db.Admins.FirstOrDefaultAsync(a => a.Name == dto.EmailOrCode);
-        if (admin != null)
-        {
-            if (!_passwordService.ValidatePassword(admin.Password!, dto.Password))
-                return Unauthorized("The name or password are incorrect.");
-
-            return Ok(new { type = "admin", name = admin.Name, token = _jwtService.GenerateAccessToken(admin.AdminId, admin.Name, "admin") });
-        }
+            return Ok(new { type = user.Role.ToString(), name = user.FirstName, token = _jwtService.GenerateAccessToken(user.UserId, user.Role) });
+        }        
 
         return NotFound("This account does not exist.");
     }

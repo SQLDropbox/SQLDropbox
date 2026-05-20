@@ -2,6 +2,7 @@
 using SQLDropbox.Services;
 using SQLDropbox.Data;
 using SQLDropbox.Models;
+using SQLDropbox.Enums;
 
 namespace SQLDropbox.Repositories
 {
@@ -10,10 +11,12 @@ namespace SQLDropbox.Repositories
         public static async Task SeedAsync(AppDbContext context, PasswordService passwordService)
         {
             /* ADMINS */
-            var admin = new Admin
+            var admin = new User
             {
-                Name = "Admin",
+                FirstName = "Admin",
+                Email = "Admin@ucll.be",
                 Password = passwordService.HashPassword("Admin"),
+                Role = Role.Admin,
                 CreatedAt = DateTime.UtcNow,
             };
 
@@ -112,41 +115,44 @@ namespace SQLDropbox.Repositories
             var solution3 = new Solution { Query = joinQuery, Exercise = exercise3, CreatedAt = DateTime.UtcNow };
 
             /* LECTURERS */
-            var lecturer = new Lecturer
+            var lecturer = new User
             {
-                LecturerCode = "u0123456",
+                UserCode = "u0123456",
                 FirstName = "Lector-Lander",
                 LastName = "Dirix",
                 Email = "u0123456@ucll.be",
                 Password = null,
-                Courses = [course1, course2],
+                Role = Role.Lecturer,
+                LecturerCourses = [course1, course2],
                 CreatedAt = DateTime.UtcNow,
             };
 
             /* STUDENTS */
-            var student1 = new Student
+            var student1 = new User
             {
-                StudentCode = "r0123456",
+                UserCode = "r0123456",
                 FirstName = "Example",
                 LastName = "student",
                 Email = "r0123456@ucll.be",
                 Password = null,
-                Courses = [course1],
+                Role = Role.Student,
+                StudentCourses = [course1],
                 CreatedAt = DateTime.UtcNow,
             };
 
-            var student2 = new Student
+            var student2 = new User
             {
-                StudentCode = "r0933070",
+                UserCode = "r0933070",
                 FirstName = "Lander",
                 LastName = "Dirix",
                 Email = "r0933070@ucll.be",
                 Password = null,
+                Role = Role.Student,
                 CreatedAt = DateTime.UtcNow,
             };
 
             /* STUDENT EXERCISES */
-            var studentExercise1 = new StudentExercise
+            var studentExercise1 = new UserExercise
             {
                 IsCompleted = false,
                 Exercise = exercise1,
@@ -155,25 +161,25 @@ namespace SQLDropbox.Repositories
             };
 
             /* STUDENT SOLUTIONS */
-            var studentSolution1 = new StudentSolution
+            var studentSolution1 = new UserSolution
             {
                 Query = "SELECT * FROM animals",
                 IsCorrect = false,
-                Error = "Table name does not exist. Did you mean \"animal\"?",
+                ErrorMessage = "Table name does not exist. Did you mean \"animal\"?",
                 StudentExercise = studentExercise1,
                 CreatedAt = DateTime.UtcNow,
             };
 
 
             /* ADD */
-            context.Admins.Add(admin);
             context.Courses.AddRange(course1, course2);
             context.Schemas.AddRange(schema1, schema2);
             context.Chapters.AddRange(chapter1, chapter2);
             context.Exercises.AddRange(exercise1, exercise2, exercise3);
             context.Solutions.AddRange(solution1, solution2, solution3);
-            context.Lecturers.Add(lecturer);
-            context.Students.AddRange(student1, student2);
+            context.Users.Add(admin);
+            context.Users.Add(lecturer);
+            context.Users.AddRange(student1, student2);
             context.StudentExercises.Add(studentExercise1);
             context.StudentSolutions.Add(studentSolution1);
 

@@ -1,24 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 namespace SQLDropbox.Models
 {
-    [Table("StudentExercise")]
-    public class StudentExercise
+    [Table("UserExercise")]
+    public class UserExercise
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int StudentExerciseId { get; set; }
-        public bool IsCompleted { get; set; }
+        public int UserExerciseId { get; set; }
+        public bool IsCompleted { get; set; } = false;
 
         [JsonIgnore]
         public Exercise Exercise { get; set; } = null!;
         [JsonIgnore]
-        public Student Student {  set; get; } = null!;
-        public ICollection<StudentSolution> StudentSolutions { get; set; } = [];
+        public User Student {  set; get; } = null!;
+        public ICollection<UserSolution> StudentSolutions { get; set; } = [];
 
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
