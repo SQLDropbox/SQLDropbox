@@ -24,7 +24,7 @@ export default function AdminChapterCard({chapter, onEdit}: {chapter: Chapter; o
 
             <div className="flex gap-2 items-center">
                 <Link
-                    href={`/admin/course/${chapter.courseId}/chapter/${chapter.chapterId}`}
+                    href={`/admin/${chapter.courseId}/chapter/${chapter.chapterId}/exercises`}
                     className="flex items-center justify-center gap-2 bg-black text-white text-sm px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors"
                 >
                     <FaBookOpen />
