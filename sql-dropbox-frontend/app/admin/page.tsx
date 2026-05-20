@@ -8,8 +8,11 @@ import { useQuery } from "@tanstack/react-query";
 import EditCourseDialog from "@/components/admin/course/editCourseDialog";
 import { useState } from "react";
 import CourseCard from "@/components/admin/course/courseCard";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Page() {
+    const { isAdmin } = useAuth();
+
     const [editDialogOpen, setEditDialogOpen] = useState(false);
     const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
 
@@ -26,16 +29,18 @@ export default function Page() {
                     <div>
                         <h1>Manage Courses</h1>
                     </div>
-                    <button
-                        className="bg-gray-900 hover:bg-gray-700 transition-colors text-white py-1 px-2 rounded text-sm"
-                        onClick={() => {
-                            setSelectedCourse(null);
-                            setEditDialogOpen(true);
-                        }}
-                    >
-                        <FaPlus className="inline-block mr-1" />
-                        New course
-                    </button>
+                    {isAdmin && (
+                        <button
+                            className="bg-gray-900 hover:bg-gray-700 transition-colors text-white py-1 px-2 rounded text-sm"
+                            onClick={() => {
+                                setSelectedCourse(null);
+                                setEditDialogOpen(true);
+                            }}
+                        >
+                            <FaPlus className="inline-block mr-1" />
+                            New course
+                        </button>
+                    )}
                 </div>
 
                 {isLoading && <p className="mt-6 text-gray-500">Loading...</p>}
