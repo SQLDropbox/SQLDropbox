@@ -28,7 +28,7 @@ namespace SQLDropbox.Services
                 ?? throw new InvalidOperationException("Jwt Access Token Days is not configured"));
         }
 
-        public string GenerateAccessToken(Guid userId, string userCode, string firstName, string lastName, Role role)
+        public string GenerateAccessToken(Guid userId, string? userCode, string? firstName, string? lastName, Role role)
         {
             SymmetricSecurityKey key = new(
                 Encoding.UTF8.GetBytes(_key)
@@ -39,9 +39,9 @@ namespace SQLDropbox.Services
             Claim[] claims =
             [
                 new Claim("id", userId.ToString()),
-                new Claim("code", userCode),
-                new Claim("firstName", firstName),
-                new Claim("lastName", lastName),
+                new Claim("code", userCode ?? ""),
+                new Claim("firstName", firstName ?? ""),
+                new Claim("lastName", lastName ?? ""),
                 new Claim(ClaimTypes.Role, role.ToString())
             ];
 

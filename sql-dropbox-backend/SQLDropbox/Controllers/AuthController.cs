@@ -82,7 +82,7 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
                 if (!_passwordService.ValidatePassword(user.Password, dto.Password))
                     return BadRequest("Incorrect credentials.");
 
-                return Ok(new { token = _jwtService.GenerateAccessToken(user.UserId, user.UserCode!, user.FirstName!, user.LastName!, user.Role) });
+                return Ok(new { token = _jwtService.GenerateAccessToken(user.UserId, user.UserCode, user.FirstName, user.LastName, user.Role) });
             }
 
             return BadRequest("Incorrect credentials.");
