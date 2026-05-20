@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using SQLDropbox.Data;
 using SQLDropbox.DTO;
+using SQLDropbox.Enums;
 using SQLDropbox.Models;
 using SQLDropbox.Services;
 
@@ -19,24 +20,26 @@ namespace SQLDropbox.Controllers
         {
             try
             {
-                Student? student = await _db.Students.FirstOrDefaultAsync(s => s.StudentCode == dto.StudentCode);
-                if(student != null) throw new Exception("A user with this student code already exists");
+                User? user = await _db.Users.FirstOrDefaultAsync(u => u.UserCode == dto.UserCode);
+                if(user != null) throw new Exception("A user with this code already exists");
 
-                if (dto.StudentCode == null || dto.Email == null)
-                    return BadRequest("Student code and Email are required.");
+                if (dto.UserCode == null || dto.Email == null)
+                    return BadRequest("Usercode and Email are required.");
               
-                Student newStudent = new()
+                User newStudent = new()
                 { 
-                    StudentCode = dto.StudentCode,
+                    UserCode = dto.UserCode,
                     FirstName = dto.FirstName,
                     LastName = dto.LastName,
                     Email = dto.Email,
+                    Role = Role.Student,
                     CreatedAt = DateTime.UtcNow
                 };
-                _db.Students.Add(newStudent);
+
+                _db.Users.Add(newStudent);
                 await _db.SaveChangesAsync();
 
-                return Ok($"Account created for student with code {newStudent.StudentCode}.");
+                return Ok($"Account created for user with code {newStudent.UserCode}.");
             }
             catch (Exception ex)
             {
