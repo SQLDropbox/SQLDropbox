@@ -1,14 +1,31 @@
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { logout } from "@/utils/logout";
 import { useAuth } from "@/hooks/useAuth";
+import { logout } from "@/utils/logout";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { FaCog, FaDesktop } from "react-icons/fa";
+
+const toggleableRoutes: (string | RegExp)[] = [
+    "/",
+    "/admin",
+    /^\/[^/]+$/,
+    /^\/admin\/[^/]+$/,
+];
 
 export default function Header() {
     const { user, isAdmin } = useAuth();
     const router = useRouter();
+    const pathname = usePathname();
 
-    const handleLogout = () => {
-        logout(router);
+    const isAdminRoute = pathname.startsWith("/admin");
+    const canToggle = toggleableRoutes.some((route) =>
+        typeof route === "string" ? pathname === route : route.test(pathname),
+    );
+    const toggleAdminMode = () => {
+        if (isAdminRoute) {
+            router.push(pathname.replace("/admin", "") || "/");
+        } else {
+            router.push(`/admin${pathname}`);
+        }
     };
 
     return (
@@ -20,24 +37,22 @@ export default function Header() {
                 Databasement
             </Link>
             <div className="flex gap-4 items-center">
-                {isAdmin && (
-                    <Link
-                        href="/admin"
-                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                {isAdmin && canToggle && (
+                    <button
+                        onClick={toggleAdminMode}
+                        className="text-blue-600 text-xl"
                     >
-                        Admin
-                    </Link>
+                        {isAdminRoute ? <FaDesktop /> : <FaCog />}
+                    </button>
                 )}
 
                 {user ? (
-                    <>
-                        <button
-                            onClick={handleLogout}
-                            className="flex items-center px-4 py-2 border border-blue-600 rounded-md hover:bg-blue-100 transition-colors"
-                        >
-                            Log out
-                        </button>
-                    </>
+                    <button
+                        onClick={() => logout(router)}
+                        className="flex items-center px-4 py-2 border border-blue-600 rounded-md hover:bg-blue-100 transition-colors"
+                    >
+                        Log out
+                    </button>
                 ) : (
                     <Link
                         href="/login"
