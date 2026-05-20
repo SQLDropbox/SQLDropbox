@@ -27,8 +27,11 @@ export interface Chapter {
 
 export interface Exercise {
     exerciseId: number;
+    chapterId: number;
     questionNL: string;
     questionEN: string;
     hintNL: string;
     hintEN: string;
+    queryOutput?: string;
+    solutionQueries?: string[];
 }
