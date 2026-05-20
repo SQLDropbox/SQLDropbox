@@ -2,9 +2,11 @@
 import { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 
+const ROLE_CLAIM = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role";
+
 interface JwtPayload {
     id: string;
-    role: string;
+    [ROLE_CLAIM]: string;
     exp: number;
 }
 
@@ -27,10 +29,15 @@ export function useAuth() {
         }
     }, []);
 
+    const role = user?.[ROLE_CLAIM];
+
+    console.log(role)
+
     return {
         user,
-        isAdmin: user?.role === "Admin",
-        isLecturer: user?.role === "Lecturer",
-        hasRole: (role: string) => user?.role === role,
+        role,
+        isAdmin: role === "Admin",
+        isLecturer: role === "Lecturer",
+        hasRole: (role: string) => role === role,
     };
 }
