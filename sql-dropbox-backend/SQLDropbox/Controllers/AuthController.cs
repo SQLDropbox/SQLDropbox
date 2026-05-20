@@ -52,7 +52,7 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
                 _db.Users.Update(user);
 
                 await _db.SaveChangesAsync();
-                return Ok(new { type = user.Role.ToString(), name = user.FirstName, token = _jwtService.GenerateAccessToken(user.UserId, user.Role) });
+                return Ok(new { name = user.FirstName, role = user.Role.ToString(), token = _jwtService.GenerateAccessToken(user.UserId, user.Role) });
             }
   
             return NotFound("This account does not exist.");
@@ -79,12 +79,12 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
                 return BadRequest("This account has not yet been setup, please refer to the mail you received to do this.");
 
             if (!_passwordService.ValidatePassword(user.Password, dto.Password))
-                return Unauthorized("The email/code or password are incorrect.");
+                return BadRequest("Incorrect credentials.");
 
-            return Ok(new { type = user.Role.ToString(), name = user.FirstName, token = _jwtService.GenerateAccessToken(user.UserId, user.Role) });
+            return Ok(new { name = user.FirstName, role = user.Role.ToString(), token = _jwtService.GenerateAccessToken(user.UserId, user.Role) });
         }        
 
-        return NotFound("This account does not exist.");
+        return BadRequest("Incorrect credentials.");
     }
 
 }

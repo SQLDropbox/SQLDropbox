@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using SQLDropbox.Services;
+﻿using SQLDropbox.Services;
 using SQLDropbox.Data;
 using SQLDropbox.Models;
 using SQLDropbox.Enums;
@@ -13,6 +12,7 @@ namespace SQLDropbox.Repositories
             /* ADMINS */
             var admin = new User
             {
+                UserCode = "admin",
                 FirstName = "Admin",
                 Email = "Admin@ucll.be",
                 Password = passwordService.HashPassword("Admin"),

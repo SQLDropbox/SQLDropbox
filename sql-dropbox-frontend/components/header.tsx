@@ -3,8 +3,8 @@ import { useEffect, useState } from "react";
 
 export default function Header() {
   const [loggedInUser, setLoggedInUser] = useState<{
-    type: string;
     name: string;
+    role: string;
     token: string;
   } | null>(null);
 
@@ -36,7 +36,7 @@ export default function Header() {
         </Link>
         <div className="flex flex-col">
           <p>WELCOME</p>
-          <p>{loggedInUser?.name}({loggedInUser?.type})</p>
+          <p>{loggedInUser?.name}({loggedInUser?.role})</p>
         </div>
       </div>
     </nav>

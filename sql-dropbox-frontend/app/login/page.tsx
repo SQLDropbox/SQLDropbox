@@ -27,8 +27,8 @@ export default function Page() {
     try {
       const response = await authService.login(emailOrCode, password);
       const loggedInUser = {
-        type: response.type,
         name: response.name,
+        role: response.role,
         token: response.token,
       };
       localStorage.setItem("loggedInUser", JSON.stringify(loggedInUser));
