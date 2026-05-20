@@ -66,25 +66,32 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
     [HttpPost("login")]
     public async Task<ActionResult> Login(LoginDTO dto)
     {
-        if (dto.EmailOrCode == null || dto.Password == null)
-            return BadRequest("Email or code and password are required.");
-
-        User? user = dto.EmailOrCode.Contains('@') ?
-            await _db.Users.FirstOrDefaultAsync(u => u.Email == dto.EmailOrCode) :
-            await _db.Users.FirstOrDefaultAsync(u => u.UserCode == dto.EmailOrCode);
-
-        if (user != null)
+        try
         {
-            if (user.Password == null)
-                return BadRequest("This account has not yet been setup, please refer to the mail you received to do this.");
+            if (dto.EmailOrCode == null || dto.Password == null)
+                return BadRequest("Email or code and password are required.");
 
-            if (!_passwordService.ValidatePassword(user.Password, dto.Password))
-                return BadRequest("Incorrect credentials.");
+            User? user = dto.EmailOrCode.Contains('@') ?
+                await _db.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == dto.EmailOrCode.ToLower()) :
+                await _db.Users.FirstOrDefaultAsync(u => u.UserCode.ToLower() == dto.EmailOrCode.ToLower());
 
-            return Ok(new { name = user.FirstName, role = user.Role.ToString(), token = _jwtService.GenerateAccessToken(user.UserId, user.Role) });
-        }        
+            if (user != null)
+            {
+                if (user.Password == null)
+                    return BadRequest("This account has not yet been setup, please refer to the mail you received to do this.");
 
-        return BadRequest("Incorrect credentials.");
+                if (!_passwordService.ValidatePassword(user.Password, dto.Password))
+                    return BadRequest("Incorrect credentials.");
+
+                return Ok(new { name = user.FirstName, role = user.Role.ToString(), token = _jwtService.GenerateAccessToken(user.UserId, user.Role) });
+            }
+
+            return BadRequest("Incorrect credentials.");
+        }
+        catch(Exception ex)
+        {
+            return BadRequest("Incorrect credentials.");
+        }       
     }
 
 }

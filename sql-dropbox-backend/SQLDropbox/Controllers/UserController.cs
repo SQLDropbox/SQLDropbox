@@ -1,8 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration.UserSecrets;
 using SQLDropbox.Data;
 using SQLDropbox.DTO;
 using SQLDropbox.Enums;
+using SQLDropbox.Helpers;
 using SQLDropbox.Models;
 using SQLDropbox.Services;
 
@@ -15,11 +18,12 @@ namespace SQLDropbox.Controllers
         private readonly AppDbContext _db = db;
         private readonly PasswordService _passwordService = passwordService;
 
+        [Authorize(Roles = "Admin")]
         [HttpPost("create")]
         public async Task<ActionResult> CreateStudent(StudentDTO dto)
         {
             try
-            {
+            {                
                 User? user = await _db.Users.FirstOrDefaultAsync(u => u.UserCode == dto.UserCode);
                 if(user != null) throw new Exception("A user with this code already exists");
 
