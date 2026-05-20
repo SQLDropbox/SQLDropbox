@@ -29,7 +29,7 @@ public class CourseController : ControllerBase
         Guid id = result.Value.id;
         Role role = result.Value.role;
 
-        var query = _db.Courses.Where(x => x.DeletedAt == null).AsEnumerable();
+        var query = _db.Courses.Where(x => x.DeletedAt == null).AsQueryable();
 
         switch (role)
         {
