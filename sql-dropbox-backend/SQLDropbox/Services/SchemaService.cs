@@ -1,4 +1,5 @@
-﻿using Npgsql;
+﻿using Microsoft.AspNetCore.Mvc;
+using Npgsql;
 using System.Text;
 
 namespace SQLDropbox.Services
@@ -7,7 +8,7 @@ namespace SQLDropbox.Services
     {
         private readonly string _connectionString;
 
-        public SchemaService(IConfiguration config) { _connectionString = config.GetConnectionString("DefaultConnection"); }
+        public SchemaService(IConfiguration config) {_connectionString = config.GetConnectionString("DefaultConnection");}
 
         public async Task<bool> SchemaExistsAsync(string schemaName)
         {
@@ -41,15 +42,15 @@ namespace SQLDropbox.Services
 
         public bool IsSafeSelectQuery(string query)
         {
-            if (string.IsNullOrWhiteSpace(query)) return false;
+            if (string.IsNullOrWhiteSpace(query))return false;
 
             var trimmed = query.Trim();
 
-            if (trimmed.EndsWith(";")) trimmed = trimmed[..^1].Trim();
-            if (!trimmed.StartsWith("SELECT", StringComparison.OrdinalIgnoreCase)) return false;
-            if (trimmed.Contains("--") || trimmed.Contains("/*") || trimmed.Contains("*/")) return false;
+            if (trimmed.EndsWith(";"))trimmed = trimmed[..^1].Trim();
+            if (!trimmed.StartsWith("SELECT", StringComparison.OrdinalIgnoreCase))return false;
+            if (trimmed.Contains("--") || trimmed.Contains("/*") || trimmed.Contains("*/"))return false;
 
-            var forbidden = new[] { "INSERT ", "UPDATE ", "DELETE ", "DROP ", "ALTER ", "CREATE ", "TRUNCATE ", "CALL ", "DO ", "COPY ", "GRANT ", "REVOKE " };
+            var forbidden = new[] {"INSERT ", "UPDATE ", "DELETE ", "DROP ", "ALTER ", "CREATE ", "TRUNCATE ", "CALL ", "DO ", "COPY ", "GRANT ", "REVOKE "};
 
             return !forbidden.Any(x => trimmed.Contains(x, StringComparison.OrdinalIgnoreCase));
         }

@@ -4,41 +4,34 @@ using Microsoft.EntityFrameworkCore;
 using SQLDropbox.Data;
 using SQLDropbox.DTO;
 using SQLDropbox.Enums;
-using SQLDropbox.Helpers;
 using SQLDropbox.Models;
 
 namespace SQLDropbox.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class CourseController : ControllerBase
+public class CourseController(AppDbContext db) : BaseController
 {
-    private readonly AppDbContext _db;
-
-    public CourseController(AppDbContext db)
-    {
-        _db = db;
-    }
+    private readonly AppDbContext _db = db;
 
     [Authorize]
     [HttpGet]
-    public ActionResult getCourses()
+    public ActionResult GetCourses()
     {
-        var result = AuthHelper.GetUserClaims(this);
-        if (result.Result != null) return BadRequest(result.Result);
-        Guid id = result.Value.id;
-        Role role = result.Value.role;
+        var id = GetUserId();
+        var role = GetUserRole();
+        if (id == null || role == null) return Unauthorized();
 
         var query = _db.Courses.Where(x => x.DeletedAt == null).AsQueryable();
 
         switch (role)
         {
             case Role.Student:
-                query = query.Where(q => q.Students.Any(s => s.UserId == id));
+                query = query.Where(x => x.Students.Any(s => s.UserId == id));
                 break;
             case Role.Lecturer:
-                query = query.Where(q => q.Lecturers.Any(l => l.UserId == id));
-                break;          
+                query = query.Where(x => x.Lecturers.Any(l => l.UserId == id));
+                break;
         }
 
 
@@ -58,13 +51,26 @@ public class CourseController : ControllerBase
         return Ok(courses);
     }
 
+    [Authorize]
     [HttpGet("{courseId}")]
-    public ActionResult getCourseByCourseId(string courseId)
+    public ActionResult GetCourseByCourseId(string courseId)
     {
-        var course = _db.Courses
+        var id = GetUserId();
+        var role = GetUserRole();
+        if (id == null || role == null) return Unauthorized();
+
+        var query = _db.Courses
             .Include(x => x.Chapters)
             .Include(x => x.Students)
-            .FirstOrDefault(x => x.CourseId == courseId);
+            .Where(x => x.DeletedAt == null)
+            .AsQueryable();
+
+        if (role == Role.Student)
+        {
+            query = query.Where(x => x.IsActive && x.Students.Any(s => s.UserId == id)); 
+        }
+
+        var course = query.FirstOrDefault(x => x.CourseId == courseId);
 
         if (course == null)
             return NotFound();
@@ -90,17 +96,19 @@ public class CourseController : ControllerBase
                 x.AmountOfExercises,
                 x.Course.CourseId,
             }),
-            students = course.Students.Select(x => new
+            students = (role == Role.Admin || role == Role.Lecturer) ? course.Students.Select(x => new
             {
                 x.UserCode,
                 x.FirstName,
                 x.LastName
-            })
+            }) : null
         });
     }
 
+    [Authorize("Admin")]
+    [Authorize("Lecturer")]
     [HttpPost]
-    public ActionResult addCourse([FromBody] CourseDTO course)
+    public ActionResult AddCourse([FromBody] CourseDTO course)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
