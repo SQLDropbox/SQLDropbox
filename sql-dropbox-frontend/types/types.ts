@@ -7,6 +7,7 @@ export interface Course {
     lecturer: string;
     isActive: boolean;
 
+    students?: Student[];
     chapters?: Chapter[];
 
     studentCount?: number;
@@ -23,4 +24,11 @@ export interface Chapter {
     amountOfExercises?: number;
     dbSchema?: string; 
     schemaId?: number | null; 
+}
+
+export interface Student {
+    studentCode: string;
+    firstName: string;
+    lastName: string;
+    email: string;
 }

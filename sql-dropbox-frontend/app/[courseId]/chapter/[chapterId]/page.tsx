@@ -19,6 +19,8 @@ export default function Page() {
         enabled: !!chapterId,
     });
 
+    console.log(data, isLoading, error);
+
     return (
         <div>
             <Header />

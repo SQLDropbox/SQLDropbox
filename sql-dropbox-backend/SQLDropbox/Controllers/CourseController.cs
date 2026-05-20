@@ -43,7 +43,10 @@ public class CourseController : ControllerBase
     [HttpGet("{courseId}")]
     public ActionResult getCourseByCourseId(string courseId)
     {
-        var course = _db.Courses.Include(x => x.Chapters).FirstOrDefault(x => x.CourseId == courseId);
+        var course = _db.Courses
+            .Include(x => x.Chapters)
+            .Include(x => x.Students)
+            .FirstOrDefault(x => x.CourseId == courseId);
 
         if (course == null)
             return NotFound();
@@ -68,7 +71,12 @@ public class CourseController : ControllerBase
                 x.ChapterDescriptionNL,
                 x.AmountOfExercises,
                 x.Course.CourseId,
-                //.DbSchema
+            }),
+            students = course.Students.Select(x => new
+            {
+                x.StudentCode,
+                x.FirstName,
+                x.LastName
             })
         });
     }
