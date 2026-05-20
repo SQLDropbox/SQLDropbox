@@ -67,5 +67,19 @@ public class ExerciseController : ControllerBase
         }
         return Ok(exercise);
     }
-        
+
+    [HttpDelete("{id}")]
+    public ActionResult DeleteExercise(int id)
+    {
+        var exercise = _db.Exercises.FirstOrDefault(x => x.ExerciseId == id);
+
+        if (exercise == null)
+        {
+            return BadRequest("Exercise not found.");
+        }
+        exercise.DeletedAt = DateTime.Now;
+        _db.SaveChanges();
+        return Ok();
+    }
+
 }
