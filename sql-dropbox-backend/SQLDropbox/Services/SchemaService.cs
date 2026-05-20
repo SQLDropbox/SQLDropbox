@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Npgsql;
 using System.Text;
+using static SqlParser.Ast.GrantObjects;
+using static SqlParser.Ast.Statement;
 
 namespace SQLDropbox.Services
 {
@@ -31,7 +33,7 @@ namespace SQLDropbox.Services
             await using var conn = new NpgsqlConnection(_connectionString);
             await conn.OpenAsync();
 
-            await using var cmd = new NpgsqlCommand("CALL animals.sp_clone_schema(@source, @target);", conn);
+            await using var cmd = new NpgsqlCommand("CALL util.sp_clone_schema(@source, @target);", conn);
             cmd.Parameters.AddWithValue("source", sourceSchema);
             cmd.Parameters.AddWithValue("target", targetSchema);
 
@@ -123,7 +125,7 @@ namespace SQLDropbox.Services
     }
 
     // had to add do this in pgAdmin:
-    // GRANT USAGE ON SCHEMA animals TO sqldropbox_admin;
-    // GRANT SELECT ON ALL TABLES IN SCHEMA animals TO sqldropbox_admin;
-    // GRANT INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA animals TO sqldropbox_admin;
-}
+    //GRANT USAGE ON SCHEMA util TO sqldropbox_admin;
+    //GRANT SELECT ON ALL TABLES IN SCHEMA util TO sqldropbox_admin;
+    //GRANT INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA util TO sqldropbox_admin;
+    }
