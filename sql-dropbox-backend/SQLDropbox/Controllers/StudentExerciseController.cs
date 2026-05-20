@@ -8,13 +8,9 @@ namespace SQLDropbox.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class StudentExerciseController : ControllerBase
+public class StudentExerciseController(AppDbContext db) : BaseController
 {
-    private readonly AppDbContext _db;
-    public StudentExerciseController(AppDbContext db)
-    {
-        _db = db;
-    }
+    private readonly AppDbContext _db = db;
 
     [HttpPost("submit")]
     public async Task<IActionResult> SubmitSolution([FromBody] SubmitSolutionDTO dto)

@@ -7,7 +7,7 @@ namespace SQLDropbox.Services
     {
         public string ParseQuery(string query)
         {
-            var ast = new SqlQueryParser().Parse(query);           
+            var ast = new SqlQueryParser().Parse(query);
             return ast.ToSql();
         }
 
@@ -16,7 +16,7 @@ namespace SQLDropbox.Services
             string psdQuery = ParseQuery(query);
             foreach (Requirement requirement in requirements)
             {
-                if(!requirement.Use ?
+                if (!requirement.Use ?
                          psdQuery.Contains(requirement.Statement) :
                          !psdQuery.Contains(requirement.Statement))
                 {

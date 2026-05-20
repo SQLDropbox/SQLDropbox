@@ -11,7 +11,7 @@ namespace SQLDropbox.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class UtilitiesController(AppDbContext db, PasswordService passwordService, PostgreSQLQueryValidator formatter) : ControllerBase
+public class UtilitiesController(AppDbContext db, PasswordService passwordService, PostgreSQLQueryValidator formatter) : BaseController
 {
     private readonly AppDbContext _db = db;
     private readonly PasswordService _passwordService = passwordService;
@@ -19,7 +19,7 @@ public class UtilitiesController(AppDbContext db, PasswordService passwordServic
 
     [HttpGet("seed-db")]
     public async Task<IActionResult> SeedTheDb()
-    {        
+    {
         await DbInitializer.SeedAsync(_db, _passwordService);
         return Ok("The DB should have been seeded.");
     }
@@ -74,11 +74,11 @@ public class UtilitiesController(AppDbContext db, PasswordService passwordServic
         return Ok($"{checkedQuery.Valid}: {checkedQuery.Message}");
     }
 
-    [HttpGet("who-am-i")]
-    public async Task<IActionResult> WhoAmI()
+    [HttpGet("me")]
+    public async Task<IActionResult> Me()
     {
         var result = AuthHelper.GetUserClaims(this);
-        if (result.Result != null) return BadRequest(result.Result);       
+        if (result.Result != null) return BadRequest(result.Result);
         return Ok(result.Value.ToString());
     }
 }

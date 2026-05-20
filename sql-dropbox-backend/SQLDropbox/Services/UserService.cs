@@ -20,8 +20,8 @@ namespace SQLDropbox.Services
                 Email = email,
                 Role = Role.Student,
                 CreatedAt = DateTime.UtcNow
-            };           
-           
+            };
+
             var entity = _db.Users.Add(newStudent);
             await _db.SaveChangesAsync();
             return entity.Entity;

@@ -32,6 +32,7 @@ export default function Page() {
         queryKey: ["course", courseId],
         queryFn: () => courseService.getCourseByCourseId(courseId),
         enabled: !!courseId,
+        retry: false,
     });
 
     if (isLoading) {
