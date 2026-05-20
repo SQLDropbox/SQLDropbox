@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SQLDropbox.Data;
 using SQLDropbox.DTO;
@@ -28,7 +27,7 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
         {
             if (user.Password != null) return BadRequest("This account is already set up.");
             return Ok(new { type = user.Role.ToString(), userId = user.UserCode, firstName = user.FirstName });
-        }      
+        }
 
         return NotFound("This Account does not exist.");
     }
@@ -39,7 +38,7 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
         try
         {
             if (!Guid.TryParse(dto.Guid, out Guid guid))
-                return BadRequest("Not a valid setup code.");            
+                return BadRequest("Not a valid setup code.");
 
             User? user = await _db.Users.FirstOrDefaultAsync(u => u.UserId == guid);
             if (user != null)
@@ -54,13 +53,13 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
                 await _db.SaveChangesAsync();
                 return Ok(new { name = user.FirstName, role = user.Role.ToString(), token = _jwtService.GenerateAccessToken(user.UserId, user.Role) });
             }
-  
+
             return NotFound("This account does not exist.");
         }
         catch (Exception ex)
         {
             return BadRequest(ex.Message);
-        }        
+        }
     }
 
     [HttpPost("login")]
@@ -88,10 +87,10 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
 
             return BadRequest("Incorrect credentials.");
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             return BadRequest("Incorrect credentials.");
-        }       
+        }
     }
 
 }

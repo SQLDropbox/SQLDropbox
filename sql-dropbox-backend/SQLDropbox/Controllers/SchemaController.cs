@@ -11,7 +11,7 @@ public class SchemaController : ControllerBase
 
     private static string? _lastSchema;
 
-    public SchemaController(SchemaService schemaService){_schemaService = schemaService;}
+    public SchemaController(SchemaService schemaService) { _schemaService = schemaService; }
 
     [HttpPost("clone-dynamic")]
     public async Task<IActionResult> CloneSchemaDynamic([FromQuery] string sourceSchema)
@@ -30,7 +30,7 @@ public class SchemaController : ControllerBase
         var clonedSchema = await _schemaService.CloneSchemaAsync(sourceSchema);
         _lastSchema = clonedSchema;
 
-        return Ok(new {sourceSchema, clonedSchema});
+        return Ok(new { sourceSchema, clonedSchema });
     }
 
     [HttpPost("clone-and-query-dynamic")]

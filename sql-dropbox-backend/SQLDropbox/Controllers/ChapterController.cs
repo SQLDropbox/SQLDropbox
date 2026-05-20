@@ -99,11 +99,11 @@ public class ChapterController : ControllerBase
             return NotFound(new { message = $"Chapter with ID {id} not found." });
         }
 
-        if (dto.ChapterNameNL != null)chapter.ChapterNameNL = dto.ChapterNameNL;
-        if (dto.ChapterNameEN != null)chapter.ChapterNameEN = dto.ChapterNameEN;
-        if (dto.ChapterDescriptionNL != null)chapter.ChapterDescriptionNL = dto.ChapterDescriptionNL;
-        if (dto.ChapterDescriptionEN != null)chapter.ChapterDescriptionEN = dto.ChapterDescriptionEN;
-        if (dto.AmountOfExercises.HasValue)chapter.AmountOfExercises = dto.AmountOfExercises.Value;
+        if (dto.ChapterNameNL != null) chapter.ChapterNameNL = dto.ChapterNameNL;
+        if (dto.ChapterNameEN != null) chapter.ChapterNameEN = dto.ChapterNameEN;
+        if (dto.ChapterDescriptionNL != null) chapter.ChapterDescriptionNL = dto.ChapterDescriptionNL;
+        if (dto.ChapterDescriptionEN != null) chapter.ChapterDescriptionEN = dto.ChapterDescriptionEN;
+        if (dto.AmountOfExercises.HasValue) chapter.AmountOfExercises = dto.AmountOfExercises.Value;
 
         if (dto.SchemaId.HasValue)
         {
@@ -129,7 +129,7 @@ public class ChapterController : ControllerBase
         {
             return NotFound(new { message = $"Chapter with ID {id} not found." });
         }
-        
+
         chapter.DeletedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync();
         return Ok(new { message = $"Chapter with ID {id} successfully deleted." });
@@ -143,7 +143,7 @@ public class ChapterController : ControllerBase
         {
             return NotFound($"Chapter with ID {id} not found.");
         }
-        var exercises =  await _db.Exercises.Where(e => e.Chapter.ChapterId == id && e.DeletedAt == null).ToListAsync();
+        var exercises = await _db.Exercises.Where(e => e.Chapter.ChapterId == id && e.DeletedAt == null).ToListAsync();
         return Ok(exercises);
     }
 }

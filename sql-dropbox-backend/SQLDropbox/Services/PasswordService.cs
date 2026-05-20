@@ -1,7 +1,4 @@
-﻿using SqlParser.Ast;
-using System.Text;
-
-namespace SQLDropbox.Services
+﻿namespace SQLDropbox.Services
 {
     public class PasswordService
     {
@@ -20,7 +17,7 @@ namespace SQLDropbox.Services
         /// Hashes a password (with BCrypt (salt and pepper))
         /// </summary>
         public string HashPassword(string password)
-        {           
+        {
             string salt = BCrypt.Net.BCrypt.GenerateSalt(_salt);
             string passwordWithPepper = password + _pepper;
             string hashedPassword = BCrypt.Net.BCrypt.HashPassword(passwordWithPepper, salt);
@@ -60,6 +57,6 @@ namespace SQLDropbox.Services
         {
             string passwordWithPepper = password + _pepper;
             return BCrypt.Net.BCrypt.Verify(passwordWithPepper, hashedPassword);
-        }       
+        }
     }
 }

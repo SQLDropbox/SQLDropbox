@@ -1,11 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SQLDropbox.Data;
 using SQLDropbox.DTO;
 using SQLDropbox.Enums;
+using SQLDropbox.Helpers;
 using SQLDropbox.Models;
-using System;
-using System.Linq;
 
 namespace SQLDropbox.Controllers;
 
@@ -14,17 +14,35 @@ namespace SQLDropbox.Controllers;
 public class CourseController : ControllerBase
 {
     private readonly AppDbContext _db;
-    
+
     public CourseController(AppDbContext db)
     {
         _db = db;
     }
 
+    [Authorize]
     [HttpGet]
     public ActionResult getCourses()
     {
-        var courses = _db.Courses.Where(x => x.DeletedAt == null
-        ).Select(x => new
+        var result = AuthHelper.GetUserClaims(this);
+        if (result.Result != null) return BadRequest(result.Result);
+        Guid id = result.Value.id;
+        Role role = result.Value.role;
+
+        var query = _db.Courses.Where(x => x.DeletedAt == null).AsEnumerable();
+
+        switch (role)
+        {
+            case Role.Student:
+                query = query.Where(q => q.Students.Any(s => s.UserId == id));
+                break;
+            case Role.Lecturer:
+                query = query.Where(q => q.Lecturers.Any(l => l.UserId == id));
+                break;          
+        }
+
+
+        var courses = query.Select(x => new
         {
             x.CourseId,
             x.CourseNameEN,
@@ -33,8 +51,8 @@ public class CourseController : ControllerBase
             x.CourseDescriptionNL,
             x.Lecturer,
             x.IsActive,
-            studentCount = x.Students.Count(),
-            chapterCount = x.Chapters.Count(),
+            studentCount = x.Students.Count,
+            chapterCount = x.Chapters.Count,
         }).OrderBy(x => x.CourseId).ToList();
 
         return Ok(courses);

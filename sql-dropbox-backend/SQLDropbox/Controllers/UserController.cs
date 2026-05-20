@@ -1,11 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration.UserSecrets;
 using SQLDropbox.Data;
 using SQLDropbox.DTO;
 using SQLDropbox.Enums;
-using SQLDropbox.Helpers;
 using SQLDropbox.Models;
 using SQLDropbox.Services;
 
@@ -23,15 +21,15 @@ namespace SQLDropbox.Controllers
         public async Task<ActionResult> CreateStudent(StudentDTO dto)
         {
             try
-            {                
+            {
                 User? user = await _db.Users.FirstOrDefaultAsync(u => u.UserCode == dto.UserCode);
-                if(user != null) throw new Exception("A user with this code already exists");
+                if (user != null) throw new Exception("A user with this code already exists");
 
                 if (dto.UserCode == null || dto.Email == null)
                     return BadRequest("Usercode and Email are required.");
-              
+
                 User newStudent = new()
-                { 
+                {
                     UserCode = dto.UserCode,
                     FirstName = dto.FirstName,
                     LastName = dto.LastName,
