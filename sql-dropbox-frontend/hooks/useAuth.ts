@@ -34,8 +34,6 @@ export function useAuth() {
 
     const role = user?.[ROLE_CLAIM];
 
-    console.log(role)
-
     return {
         user,
         role,
