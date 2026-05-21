@@ -16,6 +16,7 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
     private readonly PasswordService _passwordService = passwordService;
     private readonly JwtService _jwtService = jwtService;
 
+
     [HttpGet("setup/{userId}")]
     public async Task<ActionResult> GetAccountSetup(string userId)
     {
@@ -92,5 +93,4 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
             return BadRequest("Incorrect credentials.");
         }
     }
-
 }

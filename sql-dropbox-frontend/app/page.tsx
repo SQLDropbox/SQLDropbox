@@ -10,6 +10,7 @@ export default function Page() {
     const { data, isLoading, error } = useQuery<Course[]>({
         queryKey: ["courses"],
         queryFn: courseService.getCourses,
+        retry: false,
     });
 
     return (

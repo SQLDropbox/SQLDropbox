@@ -2,6 +2,7 @@
 
 import Header from "@/components/header";
 import { authService } from "@/services/authService";
+import { authUtils } from "@/utils/authUtils";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { FaUser, FaLock } from "react-icons/fa";
@@ -25,9 +26,7 @@ export default function Page() {
 
         try {
             const response = await authService.login(emailOrCode, password);
-
-            document.cookie = `token=${response.token}; path=/; max-age=${60 * 60 * 24}; SameSite=Strict`;
-            router.push("/");
+            authUtils.login(router, response.token);
         } catch (err: any) {
             setErrorMessage(err.message ?? "Something went wrong.");
         }

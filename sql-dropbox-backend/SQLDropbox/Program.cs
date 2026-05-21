@@ -3,6 +3,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using SQLDropbox.Data;
 using SQLDropbox.Services;
+using System.Security.Cryptography;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -61,6 +62,10 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 // JWT
+var publicKeyPem = File.ReadAllText(builder.Configuration["Jwt:PublicKeyPath"]!);
+var rsa = RSA.Create();
+rsa.ImportFromPem(publicKeyPem);
+
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer("Bearer", options =>
     {
@@ -73,11 +78,9 @@ builder.Services.AddAuthentication("Bearer")
 
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)
-            ),
+            IssuerSigningKey = new RsaSecurityKey(rsa),
 
-            ClockSkew = TimeSpan.Zero // No extra tolerance
+            ClockSkew = TimeSpan.Zero
         };
     });
 builder.Services.AddAuthorization();

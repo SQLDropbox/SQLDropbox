@@ -1,5 +1,5 @@
 import { useAuth } from "@/hooks/useAuth";
-import { logout } from "@/utils/logout";
+import { authUtils } from "@/utils/authUtils";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { FaCog, FaDesktop } from "react-icons/fa";
@@ -48,7 +48,7 @@ export default function Header() {
 
                 {user ? (
                     <button
-                        onClick={() => logout(router)}
+                        onClick={() => authUtils.logout(router)}
                         className="flex items-center px-4 py-2 border border-blue-600 rounded-md hover:bg-blue-100 transition-colors"
                     >
                         Log out
