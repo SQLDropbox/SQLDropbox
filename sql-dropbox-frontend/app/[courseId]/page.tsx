@@ -6,10 +6,10 @@ import { Course } from "@/types/types";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { notFound, useParams } from "next/navigation";
-import { FaExclamationCircle } from "react-icons/fa";
+//import { FaExclamationCircle } from "react-icons/fa";
 import {
     FaBookOpen,
-    FaCircleXmark,
+    //FaCircleXmark,
     FaClock,
     FaMedal,
     FaRegCircle,
@@ -51,12 +51,12 @@ export default function Page() {
             <div className="max-w-350 mx-auto p-6">
                 <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-lg flex flex-col gap-6">
                     <Link
-                    href="/"
-                    className="flex items-center text-blue-500 hover:text-blue-700 gap-1"
-                >
-                    <FaArrowLeft />
-                    Back to courses
-                </Link>
+                        href="/"
+                        className="flex items-center text-blue-500 hover:text-blue-700 gap-1"
+                    >
+                        <FaArrowLeft />
+                        Back to courses
+                    </Link>
                     <div className="flex items-center gap-4">
                         <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-blue-100 text-blue-600 text-2xl shrink-0">
                             <FaBookOpen />
@@ -86,32 +86,50 @@ export default function Page() {
                             href={`/${courseId}/chapter/${chapter.chapterId}`}
                             className="flex items-center gap-6 rounded-xl border border-gray-300 bg-gray-100 bg-gray px-6 py-4 cursor-pointer"
                         >
-                            <div className="flex gap-1">
-                                <FaMedal
-                                    className="text-2xl text-yellow-500"
-                                    title="Completed"
-                                />
-                                <FaMedal
-                                    className="text-2xl text-gray-400"
-                                    title="Halfway"
-                                />
-                                <FaClock
-                                    className="text-2xl text-blue-500"
-                                    title="Started"
-                                />
-                                <FaRegCircle
-                                    className="text-2xl text-gray-400"
-                                    title="Not Started"
-                                />
-                                <FaExclamationCircle
+                            {chapter.amountOfExercises !== undefined &&
+                                chapter.completedAmount !== undefined && (
+                                    <div className="flex gap-1">
+                                        {chapter.completedAmount === 0 && (
+                                            <FaRegCircle
+                                                className="text-2xl text-gray-400"
+                                                title="Not Started"
+                                            />
+                                        )}
+                                        {chapter.completedAmount > 0 &&
+                                            chapter.completedAmount <
+                                                chapter.amountOfExercises /
+                                                    2 && (
+                                                <FaClock
+                                                    className="text-2xl text-blue-500"
+                                                    title="Started"
+                                                />
+                                            )}
+                                        {chapter.completedAmount >=
+                                            chapter.amountOfExercises / 2 &&
+                                            chapter.completedAmount <
+                                                chapter.amountOfExercises && (
+                                                <FaMedal
+                                                    className="text-2xl text-gray-400"
+                                                    title="Halfway"
+                                                />
+                                            )}
+                                        {chapter.completedAmount ===
+                                            chapter.amountOfExercises && (
+                                            <FaMedal
+                                                className="text-2xl text-yellow-500"
+                                                title="Completed"
+                                            />
+                                        )}
+                                        {/* <FaExclamationCircle
                                     className="text-2xl text-orange-400"
                                     title="Deadline almost passed"
                                 />
                                 <FaCircleXmark
                                     className="text-2xl text-red-500"
                                     title="Deadline passed"
-                                />
-                            </div>
+                                /> */}
+                                    </div>
+                                )}
                             <div className="flex-1">
                                 <h2 className="text-xl font-semibold text-gray-900">
                                     {chapter.chapterNameEN}
@@ -121,7 +139,8 @@ export default function Page() {
                                 </p>
                             </div>
                             <div className="bg-black text-white text-sm rounded-lg px-2 py-1">
-                                0 / {chapter.amountOfExercises}
+                                {chapter.completedAmount} /{" "}
+                                {chapter.amountOfExercises}
                             </div>
                         </Link>
                     ))}

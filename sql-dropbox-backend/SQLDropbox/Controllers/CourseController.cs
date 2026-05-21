@@ -61,13 +61,15 @@ public class CourseController(AppDbContext db) : BaseController
 
         var query = _db.Courses
             .Include(x => x.Chapters)
+            .ThenInclude(c => c.Exercises)
+            .ThenInclude(e => e.UserExercises)           
             .Include(x => x.Students)
             .Where(x => x.DeletedAt == null)
             .AsQueryable();
 
         if (role == Role.Student)
         {
-            query = query.Where(x => x.IsActive && x.Students.Any(s => s.UserId == id)); 
+            query = query.Where(x => x.IsActive && x.Students.Any(s => s.UserId == id));            
         }
 
         var course = query.FirstOrDefault(x => x.CourseId == courseId);
@@ -84,7 +86,7 @@ public class CourseController(AppDbContext db) : BaseController
             course.CourseDescriptionNL,
             course.Lecturer,
             course.IsActive,
-            chapters = course.Chapters
+            chapters = course.Chapters            
             .Where(x => x.DeletedAt == null)
             .Select(x => new
             {
@@ -95,6 +97,7 @@ public class CourseController(AppDbContext db) : BaseController
                 x.ChapterDescriptionNL,
                 x.AmountOfExercises,
                 x.Course.CourseId,
+                completedAmount = (role == Role.Student) ? x.Exercises.Sum(e => e.UserExercises.Count(ue => ue.User.UserId == id && ue.IsCompleted)) : 0
             }),
             students = (role == Role.Admin || role == Role.Lecturer) ? course.Students.Select(x => new
             {
