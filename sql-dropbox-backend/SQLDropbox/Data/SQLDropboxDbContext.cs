@@ -12,8 +12,8 @@ namespace SQLDropbox.Data
         public DbSet<Schema> Schemas => Set<Schema>();
         public DbSet<Solution> Solutions => Set<Solution>();
         public DbSet<User> Users => Set<User>();
-        public DbSet<UserExercise> StudentExercises => Set<UserExercise>();
-        public DbSet<UserSolution> StudentSolutions => Set<UserSolution>();
+        public DbSet<UserExercise> UserExercises => Set<UserExercise>();
+        public DbSet<UserSolution> UserSolutions => Set<UserSolution>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

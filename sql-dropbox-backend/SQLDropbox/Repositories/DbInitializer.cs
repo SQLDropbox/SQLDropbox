@@ -223,14 +223,14 @@ namespace SQLDropbox.Repositories
             {
                 IsCompleted = true,
                 Exercise = exercise1,
-                Student = student1,
+                User = student1,
                 CreatedAt = DateTime.UtcNow,
             };
             var studentExercise2 = new UserExercise
             {
                 IsCompleted = false,
                 Exercise = exercise2,
-                Student = student1,
+                User = student1,
                 CreatedAt = DateTime.UtcNow,
             };
 
@@ -261,8 +261,8 @@ namespace SQLDropbox.Repositories
             context.Users.Add(admin);
             context.Users.AddRange(lecturer1, lecturer2);
             context.Users.AddRange(student1, student2);
-            context.StudentExercises.AddRange(studentExercise1, studentExercise2);
-            context.StudentSolutions.AddRange(studentSolution1, studentSolution2);
+            context.UserExercises.AddRange(studentExercise1, studentExercise2);
+            context.UserSolutions.AddRange(studentSolution1, studentSolution2);
 
             await context.SaveChangesAsync();
         }

@@ -22,19 +22,19 @@ public class StudentExerciseController(AppDbContext db) : BaseController
         {
             return BadRequest(new {message = "Exercise or student not found."});
         }
-        var studentExercise = await _db.StudentExercises
+        var studentExercise = await _db.UserExercises
             .Include(se => se.UserSolutions)
-            .FirstOrDefaultAsync(se => se.Exercise.ExerciseId == dto.ExerciseId && se.Student.UserCode == dto.StudentCode);
+            .FirstOrDefaultAsync(se => se.Exercise.ExerciseId == dto.ExerciseId && se.User.UserCode == dto.StudentCode);
         if (studentExercise == null)
         {
             studentExercise = new UserExercise
             {
                 Exercise = exercise,
-                Student = student,
+                User = student,
                 IsCompleted = false,
                 CreatedAt = DateTime.Now
             };
-            await _db.StudentExercises.AddAsync(studentExercise);
+            await _db.UserExercises.AddAsync(studentExercise);
         }
 
         bool isCorrect = EvaluateStudentQuery(dto.Query, exercise.Solutions);
