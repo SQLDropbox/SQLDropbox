@@ -1,12 +1,37 @@
 "use client";
 
 import Header from "@/components/header";
+import { authService } from "@/services/authService";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { FaUser, FaLock } from "react-icons/fa";
 
 export default function Page() {
-    const [username, setUsername] = useState("");
+    const router = useRouter();
+
+    const [emailOrCode, setEmailOrCode] = useState("");
     const [password, setPassword] = useState("");
+
+    const [errorMessage, setErrorMessage] = useState("");
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setErrorMessage("");
+
+        if (!password) {
+            setErrorMessage("Password field cannot be empty.");
+            return;
+        }
+
+        try {
+            const response = await authService.login(emailOrCode, password);
+
+            document.cookie = `token=${response.token}; path=/; max-age=${60 * 60 * 24}; SameSite=Strict`;
+            router.push("/");
+        } catch (err: any) {
+            setErrorMessage(err.message ?? "Something went wrong.");
+        }
+    };
 
     return (
         <div className="min-h-screen">
@@ -18,12 +43,10 @@ export default function Page() {
                         <h1 className="text-xl font-semibold text-gray-900 mb-2">
                             Login
                         </h1>
-                        <p className="text-lg text-gray-600">
-                            Databasement
-                        </p>
+                        <p className="text-lg text-gray-600">Databasement</p>
                     </div>
 
-                    <form className="space-y-5">
+                    <form className="space-y-5" onSubmit={handleSubmit}>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Username
@@ -34,11 +57,11 @@ export default function Page() {
 
                                 <input
                                     type="text"
-                                    value={username}
+                                    value={emailOrCode}
                                     onChange={(e) =>
-                                        setUsername(e.target.value)
+                                        setEmailOrCode(e.target.value)
                                     }
-                                    placeholder="Enter username"
+                                    placeholder="Enter email or code"
                                     className="w-full outline-none text-sm text-gray-900 placeholder:text-gray-400 bg-transparent"
                                 />
                             </div>
@@ -64,8 +87,19 @@ export default function Page() {
                             </div>
                         </div>
 
+                        {errorMessage && (
+                            <div className="text-center">
+                                <p className="text-sm text-red-600">
+                                    {errorMessage}
+                                </p>
+                            </div>
+                        )}
+
                         <button
                             type="submit"
+                            disabled={
+                                emailOrCode.length == 0 || password.length == 0
+                            }
                             className="w-full flex items-center justify-center gap-2 bg-black text-white text-sm px-4 py-3 rounded-lg hover:bg-gray-800 transition-colors cursor-pointer"
                         >
                             Login

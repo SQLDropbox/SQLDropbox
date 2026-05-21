@@ -5,22 +5,23 @@ using System.Text.Json.Serialization;
 
 namespace SQLDropbox.Models
 {
-    [Table("StudentSolution")]
-    public class StudentSolution
+    [Table("UserSolution")]
+    public class UserSolution
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int StudentSolutionId { get; set; }
+        public int UserSolutionId { get; set; }
 
         [Required]
         public required string Query { get; set; }
-        public bool IsCorrect { get; set; }
-        public string? Error { get; set; }
+        public bool IsCorrect { get; set; } = false;
+        public string? ErrorMessage { get; set; }
 
         [JsonIgnore]
-        public StudentExercise StudentExercise { get; set; } = null!;
+        public UserExercise StudentExercise { get; set; } = null!;
 
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
+        public DateTime? DeletedAt { get; set; }
     }
 }

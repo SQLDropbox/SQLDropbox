@@ -8,19 +8,15 @@ namespace SQLDropbox.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class StudentExerciseController : ControllerBase
+public class StudentExerciseController(AppDbContext db) : BaseController
 {
-    private readonly AppDbContext _db;
-    public StudentExerciseController(AppDbContext db)
-    {
-        _db = db;
-    }
+    private readonly AppDbContext _db = db;
 
     [HttpPost("submit")]
     public async Task<IActionResult> SubmitSolution([FromBody] SubmitSolutionDTO dto)
     {
         var exercise = await _db.Exercises.Include(e => e.Solutions).FirstOrDefaultAsync(e => e.ExerciseId == dto.ExerciseId);
-        var student = await _db.Students.FirstOrDefaultAsync(s => s.StudentCode == dto.StudentCode);
+        var student = await _db.Users.FirstOrDefaultAsync(u => u.UserCode == dto.StudentCode);
 
         if (exercise == null || student == null)
         {
@@ -28,10 +24,10 @@ public class StudentExerciseController : ControllerBase
         }
         var studentExercise = await _db.StudentExercises
             .Include(se => se.StudentSolutions)
-            .FirstOrDefaultAsync(se => se.Exercise.ExerciseId == dto.ExerciseId && se.Student.StudentCode == dto.StudentCode);
+            .FirstOrDefaultAsync(se => se.Exercise.ExerciseId == dto.ExerciseId && se.Student.UserCode == dto.StudentCode);
         if (studentExercise == null)
         {
-            studentExercise = new StudentExercise
+            studentExercise = new UserExercise
             {
                 Exercise = exercise,
                 Student = student,
@@ -44,11 +40,11 @@ public class StudentExerciseController : ControllerBase
         bool isCorrect = EvaluateStudentQuery(dto.Query, exercise.Solutions);
         string? errorMessage = isCorrect ? null : "Syntax error or bad result.";
 
-        var newAttempt = new StudentSolution
+        var newAttempt = new UserSolution
         {
             Query = dto.Query,
             IsCorrect = isCorrect,
-            Error = errorMessage,
+            ErrorMessage = errorMessage,
             CreatedAt = DateTime.Now
         };
         studentExercise.StudentSolutions.Add(newAttempt);
@@ -64,7 +60,7 @@ public class StudentExerciseController : ControllerBase
         return Ok(new
         {
             isCorrect = newAttempt.IsCorrect,
-            error = newAttempt.Error,
+            error = newAttempt.ErrorMessage,
             isExerciseCompleted = studentExercise.IsCompleted,
         });
     }

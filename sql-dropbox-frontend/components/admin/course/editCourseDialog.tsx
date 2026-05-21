@@ -6,6 +6,7 @@ import { Course } from "@/types/types";
 import { courseService } from "@/services/courseService";
 import ConfirmDialog from "@/components/dialog/confirmDialog";
 import AlertDialog from "@/components/dialog/alertDialog";
+import { useAuth } from "@/hooks/useAuth";
 
 interface Props {
     open: boolean;
@@ -61,6 +62,7 @@ export default function EditCourseDialog({
         useState(false);
     const [urlLocked, setUrlLocked] = useState(!isEdit);
     const [errorDialog, setErrorDialog] = useState<string | null>(null);
+    const { isAdmin } = useAuth();
 
     useEffect(() => {
         if (!open) return;
@@ -367,7 +369,7 @@ export default function EditCourseDialog({
                 <div
                     className={`flex ${mode == "edit" ? "justify-between" : "justify-end"} gap-3 px-6 py-4 border-t border-gray-100`}
                 >
-                    {mode == "edit" && (
+                    {mode == "edit" && isAdmin && (
                         <button
                             className="border border-gray-300 px-4 py-2 rounded-lg text-sm bg-red-600 text-white hover:bg-red-400 transition-colors cursor-pointer"
                             onClick={onDelete}

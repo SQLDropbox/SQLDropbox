@@ -1,8 +1,7 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.EntityFrameworkCore;
-using SQLDropbox.Services;
+﻿using SQLDropbox.Services;
 using SQLDropbox.Data;
 using SQLDropbox.Models;
+using SQLDropbox.Enums;
 
 namespace SQLDropbox.Repositories
 {
@@ -10,39 +9,30 @@ namespace SQLDropbox.Repositories
     {
         public static async Task SeedAsync(AppDbContext context, PasswordService passwordService)
         {
-            //await context.Admins.ExecuteDeleteAsync();
-            //await context.Requirements.ExecuteDeleteAsync();
-            //await context.StudentSolutions.ExecuteDeleteAsync();
-            //await context.StudentExercises.ExecuteDeleteAsync();
-            //await context.Students.ExecuteDeleteAsync();
-            //await context.Lecturers.ExecuteDeleteAsync();
-            //await context.Solutions.ExecuteDeleteAsync();
-            //await context.Exercises.ExecuteDeleteAsync();
-            //await context.Chapters.ExecuteDeleteAsync();
-            //await context.Courses.ExecuteDeleteAsync();
-
             /* ADMINS */
-            Admin admin = new()
+            var admin = new User
             {
-                Name = "Admin",
+                UserCode = "admin",
+                FirstName = "Admin",
+                Email = "Admin@ucll.be",
                 Password = passwordService.HashPassword("Admin"),
+                Role = Role.Admin,
                 CreatedAt = DateTime.UtcNow,
             };
-            await context.Admins.AddAsync(admin);
 
             /* COURSES */
-            Course course1 = new()
+            var course1 = new Course
             {
                 CourseId = "data-management",
                 CourseNameNL = "Data Beheer",
                 CourseNameEN = "Data Management",
                 CourseDescriptionNL = "Beheer data.",
-                CourseDescriptionEN = "Manage data.",   
+                CourseDescriptionEN = "Manage data.",
                 IsActive = false,
                 Lecturer = "Lehr Kragt",
                 CreatedAt = DateTime.UtcNow,
             };
-            Course course2 = new()
+            var course2 = new Course
             {
                 CourseId = "data-analytics",
                 CourseNameNL = "Data Analyse",
@@ -53,30 +43,18 @@ namespace SQLDropbox.Repositories
                 Lecturer = "Bro Fesser",
                 CreatedAt = DateTime.UtcNow,
             };
-            await context.Courses.AddAsync(course1);
-            await context.Courses.AddAsync(course2);
 
             /* SCHEMAS */
-            Schema schema1 = new()
-            {
-                SchemaName = "animals",
-                CreatedAt = DateTime.UtcNow,
-            };
-            Schema schema2 = new()
-            {
-                SchemaName = "rooms",
-                CreatedAt = DateTime.UtcNow,
-            };
-            await context.Schemas.AddAsync(schema1);
-            await context.Schemas.AddAsync(schema2);
+            var schema1 = new Schema { SchemaName = "animals", CreatedAt = DateTime.UtcNow };
+            var schema2 = new Schema { SchemaName = "rooms", CreatedAt = DateTime.UtcNow };
 
             /* CHAPTERS */
-            Chapter chapter1 = new()
+            var chapter1 = new Chapter
             {
                 ChapterNameNL = "JOINS Gevorderd",
                 ChapterNameEN = "JOINS Advanced",
                 ChapterDescriptionNL = "Leer werken met verschillende soorten JOINS.",
-                ChapterDescriptionEN = "Learn to use different types of JOINS.",                
+                ChapterDescriptionEN = "Learn to use different types of JOINS.",
                 AmountOfExercises = 10,
                 Order = 1,
                 Deadline = DateTime.UtcNow.AddDays(14),
@@ -84,7 +62,7 @@ namespace SQLDropbox.Repositories
                 Schema = schema1,
                 CreatedAt = DateTime.UtcNow,
             };
-            Chapter chapter2 = new()
+            var chapter2 = new Chapter
             {
                 ChapterNameNL = "SUBQUERIES Basis",
                 ChapterNameEN = "SUBQUERIES Basics",
@@ -97,11 +75,9 @@ namespace SQLDropbox.Repositories
                 Schema = schema2,
                 CreatedAt = DateTime.UtcNow,
             };
-            await context.Chapters.AddAsync(chapter1);
-            await context.Chapters.AddAsync(chapter2);
 
             /* EXERCISES */
-            Exercise exercise1 = new()
+            var exercise1 = new Exercise
             {
                 QuestionNL = "Toon alle dieren en hun lengte.",
                 QuestionEN = "Show all animals and their size.",
@@ -110,7 +86,8 @@ namespace SQLDropbox.Repositories
                 QueryOutput = "This would be the query output",
                 Chapter = chapter1,
                 CreatedAt = DateTime.UtcNow,
-            }; Exercise exercise2 = new()
+            };
+            var exercise2 = new Exercise
             {
                 QuestionNL = "Toon alle dieren en hun snelheid.",
                 QuestionEN = "Show all animals and their speed.",
@@ -120,7 +97,7 @@ namespace SQLDropbox.Repositories
                 Chapter = chapter1,
                 CreatedAt = DateTime.UtcNow,
             };
-            Exercise exercise3 = new()
+            var exercise3 = new Exercise
             {
                 QuestionNL = "Toon alle dieren en hun gewicht.",
                 QuestionEN = "Show all animals and their weight.",
@@ -130,78 +107,82 @@ namespace SQLDropbox.Repositories
                 Chapter = chapter1,
                 CreatedAt = DateTime.UtcNow,
             };
-            await context.Exercises.AddAsync(exercise1);
-            await context.Exercises.AddAsync(exercise2);
-            await context.Exercises.AddAsync(exercise3);            
 
             /* SOLUTIONS */
-            Solution solution1 = new()
-            {
-                Query = "SELECT * FROM animal INNER JOIN animal_specs ON animal.id = animel_specs.animal_id",
-                Exercise = exercise1,
-                CreatedAt = DateTime.UtcNow,
-            };
-            Solution solution2 = new()
-            {
-                Query = "SELECT * FROM animal INNER JOIN animal_specs ON animal.id = animel_specs.animal_id",
-                Exercise = exercise2,
-                CreatedAt = DateTime.UtcNow,
-            };
-            Solution solution3 = new()
-            {
-                Query = "SELECT * FROM animal INNER JOIN animal_specs ON animal.id = animel_specs.animal_id",
-                Exercise = exercise3,
-                CreatedAt = DateTime.UtcNow,
-            };
-            await context.Solutions.AddAsync(solution1);
-            await context.Solutions.AddAsync(solution2);
-            await context.Solutions.AddAsync(solution3);
+            const string joinQuery = "SELECT * FROM animal INNER JOIN animal_specs ON animal.id = animel_specs.animal_id";
+            var solution1 = new Solution { Query = joinQuery, Exercise = exercise1, CreatedAt = DateTime.UtcNow };
+            var solution2 = new Solution { Query = joinQuery, Exercise = exercise2, CreatedAt = DateTime.UtcNow };
+            var solution3 = new Solution { Query = joinQuery, Exercise = exercise3, CreatedAt = DateTime.UtcNow };
 
             /* LECTURERS */
-            Lecturer lecturer = new()
+            var lecturer = new User
             {
-                LecturerCode = "u0123456",
-                Password = passwordService.HashPassword("u0123456"),
-                Courses = [course1, course2],
+                UserCode = "u0123456",
+                FirstName = "Lector-Lander",
+                LastName = "Dirix",
+                Email = "u0123456@ucll.be",
+                Password = null,
+                Role = Role.Lecturer,
+                LecturerCourses = [course1, course2],
                 CreatedAt = DateTime.UtcNow,
             };
-            await context.Lecturers.AddAsync(lecturer);
 
             /* STUDENTS */
-            Student student1 = new()
+            var student1 = new User
             {
-                StudentCode = "r0123456",
-                FirstName = "Eggsample",
-                LastName = "Stewdent",
+                UserCode = "r0123456",
+                FirstName = "Example",
+                LastName = "student",
                 Email = "r0123456@ucll.be",
-                Password = passwordService.HashPassword("r0123456"),
-                Courses = [course1],
+                Password = null,
+                Role = Role.Student,
+                StudentCourses = [course1],
                 CreatedAt = DateTime.UtcNow,
             };
-            await context.Students.AddAsync(student1);
+
+            var student2 = new User
+            {
+                UserCode = "r0933070",
+                FirstName = "Lander",
+                LastName = "Dirix",
+                Email = "r0933070@ucll.be",
+                Password = null,
+                Role = Role.Student,
+                CreatedAt = DateTime.UtcNow,
+            };
 
             /* STUDENT EXERCISES */
-            StudentExercise studentExercise1 = new()
+            var studentExercise1 = new UserExercise
             {
                 IsCompleted = false,
                 Exercise = exercise1,
                 Student = student1,
                 CreatedAt = DateTime.UtcNow,
             };
-            await context.StudentExercises.AddAsync(studentExercise1);
 
             /* STUDENT SOLUTIONS */
-            StudentSolution studentSolution1 = new()
+            var studentSolution1 = new UserSolution
             {
                 Query = "SELECT * FROM animals",
                 IsCorrect = false,
-                Error = "Table name does not exist. Did you mean \"animal\"?",
+                ErrorMessage = "Table name does not exist. Did you mean \"animal\"?",
                 StudentExercise = studentExercise1,
                 CreatedAt = DateTime.UtcNow,
             };
-            await context.StudentSolutions.AddAsync(studentSolution1);
 
-            /* SAVE ALL */
+
+            /* ADD */
+            context.Courses.AddRange(course1, course2);
+            context.Schemas.AddRange(schema1, schema2);
+            context.Chapters.AddRange(chapter1, chapter2);
+            context.Exercises.AddRange(exercise1, exercise2, exercise3);
+            context.Solutions.AddRange(solution1, solution2, solution3);
+            context.Users.Add(admin);
+            context.Users.Add(lecturer);
+            context.Users.AddRange(student1, student2);
+            context.StudentExercises.Add(studentExercise1);
+            context.StudentSolutions.Add(studentSolution1);
+
             await context.SaveChangesAsync();
         }
     }

@@ -18,11 +18,11 @@ export default function Page() {
     const params = useParams();
     const courseId = params.courseId as string;
 
-    const [editDialogOpen, setEditDialogOpen] =
-        useState(false);
+    const [editDialogOpen, setEditDialogOpen] = useState(false);
 
-    const [selectedChapter, setSelectedChapter] =
-        useState<Chapter | null>(null);
+    const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(
+        null,
+    );
 
     const {
         data: course,
@@ -30,19 +30,19 @@ export default function Page() {
         error,
     } = useQuery<Course>({
         queryKey: ["course", courseId],
-        queryFn: () =>
-            courseService.getCourseByCourseId(
-                courseId
-            ),
+        queryFn: () => courseService.getCourseByCourseId(courseId),
         enabled: !!courseId,
+        retry: false,
     });
 
     if (isLoading) {
         return (
-            <div>
+            <div className="min-h-screen flex flex-col">
                 <Header />
-                <div className="max-w-350 mx-auto p-6">
-                    <p>Loading...</p>
+
+                <div className="flex-1 flex flex-col items-center justify-center gap-3">
+                    <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-300 border-t-blue-600" />
+                    <p className="text-sm text-gray-600">Loading...</p>
                 </div>
             </div>
         );
@@ -64,9 +64,7 @@ export default function Page() {
             <Header />
 
             <div className="max-w-350 mx-auto p-6">
-                <AdminCourseDetailsHeader
-                    course={course}
-                />
+                <AdminCourseDetailsHeader course={course} />
 
                 {/* ADD CHAPTER BUTTON */}
                 <div className="flex justify-end mb-4">
@@ -89,17 +87,11 @@ export default function Page() {
 
                         return (
                             <AdminChapterCard
-                                key={
-                                    chapter.chapterId
-                                }
+                                key={chapter.chapterId}
                                 chapter={chapter}
                                 onEdit={() => {
-                                    setSelectedChapter(
-                                        chapter
-                                    );
-                                    setEditDialogOpen(
-                                        true
-                                    );
+                                    setSelectedChapter(chapter);
+                                    setEditDialogOpen(true);
                                 }}
                             />
                         );
@@ -110,17 +102,9 @@ export default function Page() {
             {/* DIALOG */}
             <EditChapterDialog
                 open={editDialogOpen}
-                onClose={() =>
-                    setEditDialogOpen(false)
-                }
-                mode={
-                    selectedChapter
-                        ? "edit"
-                        : "add"
-                }
-                chapter={
-                    selectedChapter ?? undefined
-                }
+                onClose={() => setEditDialogOpen(false)}
+                mode={selectedChapter ? "edit" : "add"}
+                chapter={selectedChapter ?? undefined}
                 courseId={course.courseId}
             />
         </div>

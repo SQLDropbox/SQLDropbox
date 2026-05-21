@@ -11,6 +11,7 @@ namespace SQLDropbox.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int SchemaId { get; set; }
         public string SchemaName { get; set; } = null!;
+        public string? SchemaImage { get; set; } = null!;
 
         [JsonIgnore]
         public ICollection<Chapter> Chapters { get; set; } = [];

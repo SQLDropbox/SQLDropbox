@@ -11,27 +11,27 @@ const addChapter = async (courseId: string, chapter: Partial<Chapter>) => {
         schemaId: chapter.schemaId ?? 2,
     };
 
-    return api.publicFetch(`/Chapter/course/${courseId}`, {
+    return api.privateFetch(`/Chapter/course/${courseId}`, {
         method: "POST",
         body: JSON.stringify(dto),
     });
 };
 
 const updateChapter = async (chapterId: number, chapter: Partial<Chapter>) => {
-    return api.publicFetch(`/Chapter/${chapterId}`, {
+    return api.privateFetch(`/Chapter/${chapterId}`, {
         method: "PUT",
         body: JSON.stringify(chapter),
     });
 };
 
 const deleteChapter = async (chapterId: number) => {
-    return api.publicFetch(`/Chapter/${chapterId}`, {
+    return api.privateFetch(`/Chapter/${chapterId}`, {
         method: "DELETE",
     });
 };
 
 const getChapterByChapterId = async (chapterId: string) => {
-    return api.publicFetch(`/Chapter/${chapterId}`, {
+    return api.privateFetch(`/Chapter/${chapterId}`, {
         method: "GET",
     });
 };

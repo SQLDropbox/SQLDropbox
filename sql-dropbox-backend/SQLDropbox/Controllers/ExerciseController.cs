@@ -8,14 +8,9 @@ namespace SQLDropbox.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class ExerciseController : ControllerBase
+public class ExerciseController(AppDbContext db) : BaseController
 {
-    private readonly AppDbContext _db;
-    
-    public ExerciseController(AppDbContext db)
-    {
-        _db = db;
-    }
+    private readonly AppDbContext _db = db;
 
     [HttpGet]
     public async Task<IActionResult> GetAllExercises()

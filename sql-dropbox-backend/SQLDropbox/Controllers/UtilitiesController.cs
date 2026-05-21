@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SQLDropbox.Data;
 using SQLDropbox.DTO;
+using SQLDropbox.Helpers;
 using SQLDropbox.Models;
 using SQLDropbox.Repositories;
 using SQLDropbox.Services;
@@ -10,7 +11,7 @@ namespace SQLDropbox.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class UtilitiesController(AppDbContext db, PasswordService passwordService, PostgreSQLQueryValidator formatter) : ControllerBase
+public class UtilitiesController(AppDbContext db, PasswordService passwordService, PostgreSQLQueryValidator formatter) : BaseController
 {
     private readonly AppDbContext _db = db;
     private readonly PasswordService _passwordService = passwordService;
@@ -18,7 +19,7 @@ public class UtilitiesController(AppDbContext db, PasswordService passwordServic
 
     [HttpGet("seed-db")]
     public async Task<IActionResult> SeedTheDb()
-    {        
+    {
         await DbInitializer.SeedAsync(_db, _passwordService);
         return Ok("The DB should have been seeded.");
     }
@@ -26,15 +27,14 @@ public class UtilitiesController(AppDbContext db, PasswordService passwordServic
     [HttpGet("empty-db")]
     public async Task<IActionResult> EmptyTheDb()
     {
-        await _db.Admins.ExecuteDeleteAsync();
         await _db.Requirements.ExecuteDeleteAsync();
         await _db.StudentSolutions.ExecuteDeleteAsync();
         await _db.StudentExercises.ExecuteDeleteAsync();
-        await _db.Students.ExecuteDeleteAsync();
         await _db.Solutions.ExecuteDeleteAsync();
         await _db.Exercises.ExecuteDeleteAsync();
         await _db.Chapters.ExecuteDeleteAsync();
         await _db.Courses.ExecuteDeleteAsync();
+        await _db.Users.ExecuteDeleteAsync();
         return Ok("The DB should have been emptied.");
     }
 
@@ -72,5 +72,13 @@ public class UtilitiesController(AppDbContext db, PasswordService passwordServic
 
         var checkedQuery = _formatter.CheckQueryRequirements(requirements, format.Query);
         return Ok($"{checkedQuery.Valid}: {checkedQuery.Message}");
+    }
+
+    [HttpGet("me")]
+    public async Task<IActionResult> Me()
+    {
+        var result = AuthHelper.GetUserClaims(this);
+        if (result.Result != null) return BadRequest(result.Result);
+        return Ok(result.Value.ToString());
     }
 }

@@ -30,9 +30,9 @@ export default function AdminCourseDetailsHeader({
             <ul className="flex px-2 py-1.5 gap-1 mt-4 w-fit rounded-lg bg-gray-200">
                 <li>
                     <Link
-                        href={`/admin/course/${course.courseId}`}
+                        href={`/admin/${course.courseId}`}
                         className={`flex items-center gap-1 px-4 py-1 rounded-lg transition-colors ${
-                            pathname == `/admin/course/${course.courseId}`
+                            pathname == `/admin/${course.courseId}`
                                 ? "bg-white"
                                 : "text-gray-700 hover:bg-gray-200"
                         }`}
@@ -43,10 +43,10 @@ export default function AdminCourseDetailsHeader({
                 </li>
                 <li>
                     <Link
-                        href={`/admin/course/${course.courseId}/students`}
+                        href={`/admin/${course.courseId}/students`}
                         className={`flex items-center gap-1 px-4 py-1 rounded-lg transition-colors ${
                             pathname ==
-                            `/admin/course/${course.courseId}/students`
+                            `/admin/${course.courseId}/students`
                                 ? "bg-white"
                                 : "text-gray-700 hover:bg-gray-200"
                         }`}
