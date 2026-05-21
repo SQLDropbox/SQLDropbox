@@ -6,15 +6,24 @@ import { Course } from "@/types/types";
 import { useQuery } from "@tanstack/react-query";
 import CourseCard from "@/components/admin/course/courseCard";
 import { useTranslations } from "next-intl";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Page() {
     const t = useTranslations("Course");
+    const router = useRouter();
 
     const { data, isLoading, error } = useQuery<Course[]>({
         queryKey: ["courses"],
         queryFn: courseService.getCourses,
         retry: false,
     });
+
+    useEffect(() => {
+        if (data?.length === 1) {
+            router.push(`/${data[0].courseId}`);
+        }
+    }, [data, router]);
 
     return (
         <div>

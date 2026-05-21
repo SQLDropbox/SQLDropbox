@@ -1,6 +1,7 @@
 "use client";
 
 import Header from "@/components/header";
+import { useAuth } from "@/hooks/useAuth";
 import { courseService } from "@/services/courseService";
 import { Course } from "@/types/types";
 import { useQuery } from "@tanstack/react-query";
@@ -18,6 +19,7 @@ import {
 
 export default function Page() {
     const params = useParams();
+    const { isStudent } = useAuth();
 
     const courseId = (params.courseId as string) ?? undefined;
 
@@ -50,13 +52,16 @@ export default function Page() {
             <Header />
             <div className="max-w-350 mx-auto p-6">
                 <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-lg flex flex-col gap-6">
-                    <Link
-                    href="/"
-                    className="flex items-center text-blue-500 hover:text-blue-700 gap-1"
-                >
-                    <FaArrowLeft />
-                    Back to courses
-                </Link>
+                    {!(isStudent && data?.totalCourseCount == 1) && (
+                        <Link
+                            href="/"
+                            className="flex items-center text-blue-500 hover:text-blue-700 gap-1"
+                        >
+                            <FaArrowLeft />
+                            Back to courses
+                        </Link>
+                    )}
+
                     <div className="flex items-center gap-4">
                         <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-blue-100 text-blue-600 text-2xl shrink-0">
                             <FaBookOpen />
