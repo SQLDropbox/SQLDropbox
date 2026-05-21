@@ -32,29 +32,23 @@ public class SchemaController : ControllerBase
     [HttpPost("clone-and-query-dynamic")]
     public async Task<IActionResult> CloneAndQuery([FromQuery] string sourceSchema, [FromQuery] string selectQuery) {
         
-        if (string.IsNullOrWhiteSpace(sourceSchema)) return BadRequest();
-        if (string.IsNullOrWhiteSpace(selectQuery)) return BadRequest();
+        if (string.IsNullOrWhiteSpace(sourceSchema)) return BadRequest("sourceSchema is required");
+        if (string.IsNullOrWhiteSpace(selectQuery)) return BadRequest("selectQuery is required");
+        if (_sql.IsProtectedSchema(sourceSchema)) return BadRequest("This schema is protected and cannot be queried.");
 
         var exists = await _schema.SchemaExistsAsync(sourceSchema);
-        if (!exists)  return NotFound();
+        if (!exists) return NotFound();
 
-        var validation = _sql.Validate(selectQuery);
+        var validation = _sql.ValidateReadOnlyQuery(selectQuery);
         if (!validation.IsValid) return BadRequest(validation.Message);
 
         try
         {
-            var result =
-                await _schema.CloneQueryAndDeleteAsync(
-                    sourceSchema,
-                    validation.NormalizedQuery!);
+            var result = await _schema.CloneQueryAndDeleteAsync(
+                sourceSchema,
+                validation.NormalizedQuery!);
 
-            if (validation.NormalizedQuery!
-                .StartsWith("SELECT", StringComparison.OrdinalIgnoreCase))
-            {
-                return Content((string)result, "text/csv");
-            }
-
-            return Ok(result);
+            return Content((string)result, "text/csv");
         }
         catch (PostgresException ex)
         {
@@ -63,6 +57,7 @@ public class SchemaController : ControllerBase
                 "42601" => BadRequest("Invalid SQL syntax"),
                 "42P01" => BadRequest("Missing table"),
                 "42703" => BadRequest("Missing column"),
+                "42501" => BadRequest("Permission denied"),
                 _ => StatusCode(500)
             };
         }

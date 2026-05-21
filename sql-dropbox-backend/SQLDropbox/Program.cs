@@ -31,6 +31,7 @@ builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<SchemaService>();
 builder.Services.AddScoped<SqlQueryService>();
 builder.Services.AddScoped<CsvExportService>();
+builder.Services.AddScoped<RoutineService>();
 
 // Add controllers to the container
 builder.Services.AddControllers();

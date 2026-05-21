@@ -4,20 +4,22 @@ using SQLDropbox.Models;
 
 namespace SQLDropbox.Services
 {
-    public class SchemaService
-    {
+    public class SchemaService {
+
         private readonly string _connectionString;
         private readonly SqlQueryService _sql;
         private readonly CsvExportService _csv;
+        private readonly RoutineService _routineService;
 
-        public SchemaService(IConfiguration config, SqlQueryService sql, CsvExportService csv) {
-            
+        public SchemaService(IConfiguration config, SqlQueryService sql, CsvExportService csv, RoutineService routineService){
+           
             _connectionString = config.GetConnectionString("DefaultConnection")!;
             _sql = sql;
             _csv = csv;
+            _routineService = routineService;
         }
 
-        private async Task<NpgsqlConnection> OpenConnectionAsync(){
+        private async Task<NpgsqlConnection> OpenConnectionAsync() {
             
             var conn = new NpgsqlConnection(_connectionString);
             await conn.OpenAsync();
@@ -28,10 +30,12 @@ namespace SQLDropbox.Services
             
             await using var conn = await OpenConnectionAsync();
 
-            const string sql =
-                @"SELECT EXISTS (
-                    SELECT 1 FROM information_schema.schemata
-                    WHERE schema_name = @schemaName);";
+            const string sql = @"
+                SELECT EXISTS (
+                    SELECT 1
+                    FROM information_schema.schemata
+                    WHERE schema_name = @schemaName
+                );";
 
             await using var cmd = new NpgsqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("schemaName", schemaName);
@@ -45,9 +49,7 @@ namespace SQLDropbox.Services
             var target = $"{sourceSchema}_session_{Guid.NewGuid():N}";
 
             await using var conn = await OpenConnectionAsync();
-
-            await using var cmd = new NpgsqlCommand(
-                "CALL util.sp_clone_schema(@source, @target);", conn);
+            await using var cmd = new NpgsqlCommand("CALL util.sp_clone_schema(@source, @target);", conn);
 
             cmd.Parameters.AddWithValue("source", sourceSchema);
             cmd.Parameters.AddWithValue("target", target);
@@ -57,7 +59,7 @@ namespace SQLDropbox.Services
             return target;
         }
 
-        public async Task DeleteSchemaAsync(string schemaName){
+        public async Task DeleteSchemaAsync(string schemaName) {
             
             await using var conn = await OpenConnectionAsync();
 
@@ -73,13 +75,15 @@ namespace SQLDropbox.Services
             await using var tx = await conn.BeginTransactionAsync();
 
             await using (var setPath = new NpgsqlCommand(
-                $"SET LOCAL search_path TO \"{schemaName}\";", conn, tx))
+                $@"SET LOCAL search_path TO ""{schemaName}"";",
+                conn,
+                tx))
             {
                 await setPath.ExecuteNonQueryAsync();
             }
 
             var trimmed = sql.Trim();
-            if (trimmed.EndsWith(";")) trimmed = trimmed[..^1];
+            if (trimmed.EndsWith(";"))  trimmed = trimmed[..^1];
 
             var commandType = _sql.GetCommandType(trimmed);
             var tableName = _sql.ExtractTableName(trimmed, commandType);
@@ -105,15 +109,27 @@ namespace SQLDropbox.Services
             }
             else if (commandType is "CREATE" or "ALTER")
             {
-                var csv = await _csv.ExportTableAsync(conn, tableName!);
-
-                result = new QueryExecutionResult
+                if (!string.IsNullOrWhiteSpace(tableName))
                 {
-                    CommandType = commandType,
-                    TableName = tableName,
-                    Message = $"{commandType} executed successfully.",
-                    CsvContent = csv
-                };
+                    var csv = await _csv.ExportTableAsync(conn, tableName);
+
+                    result = new QueryExecutionResult
+                    {
+                        CommandType = commandType,
+                        TableName = tableName,
+                        Message = $"{commandType} executed successfully.",
+                        CsvContent = csv
+                    };
+                }
+                else
+                {
+                    result = new QueryExecutionResult
+                    {
+                        CommandType = commandType,
+                        TableName = tableName,
+                        Message = $"{commandType} executed successfully."
+                    };
+                }
             }
             else
             {
@@ -130,10 +146,10 @@ namespace SQLDropbox.Services
         }
 
         public async Task<string> ExecuteSelectOnSchemaAsync(string schemaName, string selectQuery) {
+            
             await using var conn = await OpenConnectionAsync();
 
-            await using (var cmd = new NpgsqlCommand(
-                $"SET search_path TO \"{schemaName}\";", conn))
+            await using (var cmd = new NpgsqlCommand($@"SET search_path TO ""{schemaName}"";", conn))
             {
                 await cmd.ExecuteNonQueryAsync();
             }
@@ -152,8 +168,7 @@ namespace SQLDropbox.Services
             {
                 cloned = await CloneSchemaAsync(sourceSchema);
 
-                if (query.TrimStart()
-                    .StartsWith("SELECT", StringComparison.OrdinalIgnoreCase))
+                if (query.TrimStart().StartsWith("SELECT", StringComparison.OrdinalIgnoreCase))
                 {
                     return await ExecuteSelectOnSchemaAsync(cloned, query);
                 }
@@ -164,8 +179,43 @@ namespace SQLDropbox.Services
             {
                 if (!string.IsNullOrWhiteSpace(cloned))
                 {
-                    try { await DeleteSchemaAsync(cloned); }
-                    catch { /* ignore */ }
+                    try
+                    {
+                        await DeleteSchemaAsync(cloned);
+                    }
+                    catch
+                    {
+                        // ignore cleanup failures
+                    }
+                }
+            }
+        }
+
+        public async Task<object?> CloneExecuteRoutineAndDeleteAsync(string sourceSchema, string routineSql, string? invokeSql) {
+            
+            string? cloned = null;
+
+            try
+            {
+                cloned = await CloneSchemaAsync(sourceSchema);
+
+                return await _routineService.ExecuteRoutineAsync(
+                    cloned,
+                    routineSql,
+                    invokeSql);
+            }
+            finally
+            {
+                if (!string.IsNullOrWhiteSpace(cloned))
+                {
+                    try
+                    {
+                        await DeleteSchemaAsync(cloned);
+                    }
+                    catch
+                    {
+                        // ignore cleanup failures
+                    }
                 }
             }
         }
@@ -176,3 +226,8 @@ namespace SQLDropbox.Services
 //GRANT USAGE ON SCHEMA util TO sqldropbox_admin;
 //GRANT SELECT ON ALL TABLES IN SCHEMA util TO sqldropbox_admin;
 //GRANT INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA util TO sqldropbox_admin;
+
+
+//GRANT USAGE, CREATE ON SCHEMA animals TO sqldropbox_admin;
+//GRANT USAGE ON LANGUAGE plpgsql TO sqldropbox_admin;
+//GRANT SELECT ON ALL TABLES IN SCHEMA animals TO sqldropbox_admin;
