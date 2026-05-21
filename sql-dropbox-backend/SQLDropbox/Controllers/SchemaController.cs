@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Npgsql;
 using SQLDropbox.Services;
 
 namespace SQLDropbox.Controllers;
@@ -7,51 +8,85 @@ namespace SQLDropbox.Controllers;
 [Route("api/[controller]")]
 public class SchemaController : ControllerBase
 {
-    private readonly SchemaService _schemaService;
+    private readonly SchemaService _schema;
+    private readonly SqlQueryService _sql;
 
-    private static string? _lastSchema;
-
-    public SchemaController(SchemaService schemaService){_schemaService = schemaService;}
+    public SchemaController(SchemaService schema, SqlQueryService sql)
+    {
+        _schema = schema;
+        _sql = sql;
+    }
 
     [HttpPost("clone-dynamic")]
-    public async Task<IActionResult> CloneSchemaDynamic([FromQuery] string sourceSchema)
+    public async Task<IActionResult> CloneSchema([FromQuery] string sourceSchema)
     {
         if (string.IsNullOrWhiteSpace(sourceSchema))
-        {
-            return BadRequest("Parameter 'sourceSchema' is required.");
-        }
+            return BadRequest("sourceSchema is required");
 
-        var exists = await _schemaService.SchemaExistsAsync(sourceSchema);
-        if (!exists)
-        {
-            return NotFound($"Schema '{sourceSchema}' does not exist.");
-        }
+        if (_sql.IsProtectedSchema(sourceSchema))
+            return BadRequest("This schema is protected and cannot be cloned.");
 
-        var clonedSchema = await _schemaService.CloneSchemaAsync(sourceSchema);
-        _lastSchema = clonedSchema;
+        if (!await _schema.SchemaExistsAsync(sourceSchema))
+            return NotFound();
 
-        return Ok(new {sourceSchema, clonedSchema});
+        var cloned = await _schema.CloneSchemaAsync(sourceSchema);
+
+        return Ok(new { sourceSchema, cloned });
     }
 
     [HttpPost("clone-and-query-dynamic")]
     public async Task<IActionResult> CloneAndQuery(
-    [FromQuery] string sourceSchema,
-    [FromQuery] string selectQuery)
+        [FromQuery] string sourceSchema,
+        [FromQuery] string selectQuery)
     {
         if (string.IsNullOrWhiteSpace(sourceSchema))
-            return BadRequest("Parameter 'sourceSchema' is required.");
+            return BadRequest("sourceSchema is required");
 
         if (string.IsNullOrWhiteSpace(selectQuery))
-            return BadRequest("Parameter 'selectQuery' is required.");
+            return BadRequest("selectQuery is required");
 
-        var exists = await _schemaService.SchemaExistsAsync(sourceSchema);
+        if (_sql.IsProtectedSchema(sourceSchema))
+            return BadRequest("This schema is protected and cannot be queried.");
+
+        var exists = await _schema.SchemaExistsAsync(sourceSchema);
         if (!exists)
-            return NotFound($"Schema '{sourceSchema}' does not exist.");
+            return NotFound();
 
-        if (!_schemaService.IsSafeSelectQuery(selectQuery))
-            return BadRequest("Only a single SELECT query is allowed.");
+        var validation = _sql.Validate(selectQuery);
+        if (!validation.IsValid)
+            return BadRequest(validation.Message);
 
-        var csv = await _schemaService.CloneQueryAndDeleteAsync(sourceSchema, selectQuery);
-        return Content(csv, "text/plain");
+        try
+        {
+            var sql = validation.NormalizedQuery!;
+            var commandType = _sql.GetCommandType(sql);
+
+            object result;
+
+            if (commandType.Equals("SELECT", StringComparison.OrdinalIgnoreCase))
+            {
+                result = await _schema.CloneQueryAndDeleteAsync(sourceSchema, sql);
+            }
+            else
+            {
+                result = await _schema.CloneQueryAndDeleteAsync(sourceSchema, sql);
+            }
+
+            if (result is string csv)
+                return Content(csv, "text/csv");
+
+            return Ok(result);
+        }
+        catch (PostgresException ex)
+        {
+            return ex.SqlState switch
+            {
+                "42601" => BadRequest("Invalid SQL syntax"),
+                "42P01" => BadRequest("Missing table"),
+                "42703" => BadRequest("Missing column"),
+                "42501" => BadRequest("Permission denied"),
+                _ => StatusCode(500, "Database error")
+            };
+        }
     }
 }
