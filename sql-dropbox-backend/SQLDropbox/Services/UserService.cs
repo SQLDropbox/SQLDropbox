@@ -1,27 +1,27 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using SQLDropbox.Data;
+﻿using SQLDropbox.Data;
+using SQLDropbox.Enums;
 using SQLDropbox.Models;
-using System.Data;
 
 namespace SQLDropbox.Services
 {
-    public class UserService(AppDbContext db) : ControllerBase
+    public class UserService(AppDbContext db)
     {
         private readonly AppDbContext _db = db;
 
-        public async Task<Student> CreateStudentAsync(string studentCode, string email)
+        public async Task<User> CreateStudentAsync(string userCode, string email)
         {
-            if (string.IsNullOrEmpty(studentCode) || string.IsNullOrEmpty(email))
-                throw new ArgumentException("Student code and Email are required.");
+            if (string.IsNullOrEmpty(userCode) || string.IsNullOrEmpty(email))
+                throw new ArgumentException("Usercode and Email are required.");
 
-            Student newStudent = new()
+            User newStudent = new()
             {
-                StudentCode = studentCode,
+                UserCode = userCode,
                 Email = email,
+                Role = Role.Student,
                 CreatedAt = DateTime.UtcNow
-            };           
-           
-            var entity = _db.Students.Add(newStudent);
+            };
+
+            var entity = _db.Users.Add(newStudent);
             await _db.SaveChangesAsync();
             return entity.Entity;
         }

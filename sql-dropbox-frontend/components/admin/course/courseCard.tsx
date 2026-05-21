@@ -3,6 +3,7 @@
 import { Course } from "@/types/types";
 import Link from "next/link";
 import { FaUsers, FaFileAlt, FaBookOpen, FaEdit, FaPlay } from "react-icons/fa";
+import { useLocale, useTranslations } from "next-intl";
 
 export default function CourseCard({
     course,
@@ -13,20 +14,23 @@ export default function CourseCard({
     onEdit?: () => void;
     adminMode?: boolean;
 }) {
+    const t = useTranslations("Course");
+    const locale = useLocale();
+
     return (
         <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm hover:shadow-lg transition-shadow flex flex-col gap-6">
             <div className="flex items-start justify-between">
                 <div className="flex-1">
                     <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                        {course.courseNameEN}
+                        {locale === "en" ? course.courseNameEN : course.courseNameNL}
                     </h3>
 
                     <p className="text-sm text-gray-500">
-                        Lecturer: {course.lecturer}
+                        {t("lecturer")}: {course.lecturer}
                     </p>
 
                     <p className="text-sm text-gray-600 mt-2 line-clamp-2">
-                        {course.courseDescriptionEN}
+                        {locale === "en" ? course.courseDescriptionEN : course.courseDescriptionNL}
                     </p>
                 </div>
 
@@ -38,7 +42,7 @@ export default function CourseCard({
                                 : "bg-gray-200 text-gray-600"
                         }`}
                     >
-                        {course.isActive ? "Active" : "Inactive"}
+                        {course.isActive ? t("active") : t("inactive")}
                     </span>
                 )}
             </div>
@@ -46,12 +50,12 @@ export default function CourseCard({
             <div className="flex flex-col gap-2 pt-4 border-t border-gray-200">
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                     <FaUsers className="text-sm" />
-                    {course.studentCount ?? 0} students
+                    {t("students", { count: course.studentCount ?? 0 })}
                 </div>
 
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                     <FaFileAlt className="text-sm" />
-                    {course.chapterCount ?? 0} chapters
+                    {t("chapters", { count: course.chapterCount ?? 0 })}
                 </div>
             </div>
 
@@ -65,7 +69,7 @@ export default function CourseCard({
                     className="flex-1 w-full flex items-center justify-center gap-2 bg-black text-white text-sm px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors cursor-pointer"
                 >
                     {adminMode ? <FaBookOpen /> : <FaPlay />}
-                    {adminMode ? "Manage" : "Start Learning"}
+                    {adminMode ? t("manage") : t("startLearning")}
                 </Link>
 
                 {adminMode && (
@@ -73,7 +77,7 @@ export default function CourseCard({
                         <Link
                             href={`/admin/${course.courseId}/students`}
                             className="flex items-center border border-gray-400 rounded-lg px-3 py-2 transition-colors bg-white hover:bg-gray-200 text-gray-900 text-sm cursor-pointer"
-                            title="Manage students"
+                            title={t("manageStudents")}
                         >
                             <FaUsers />
                         </Link>
@@ -81,7 +85,7 @@ export default function CourseCard({
                         <button
                             className="border border-gray-400 rounded-lg px-3 py-2 transition-colors bg-white hover:bg-gray-200 text-gray-900 text-sm cursor-pointer"
                             onClick={onEdit}
-                            title="Edit course"
+                            title={t("editCourse")}
                         >
                             <FaEdit />
                         </button>

@@ -1,20 +1,20 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SQLDropbox.Data;
 using SQLDropbox.DTO;
+using SQLDropbox.Enums;
 using SQLDropbox.Models;
+using SQLDropbox.Services;
 
 namespace SQLDropbox.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class ChapterController : ControllerBase
+public class ChapterController(AppDbContext db, RandomExerciseSelectorService ress) : BaseController
 {
-    private readonly AppDbContext _db;
-    public ChapterController(AppDbContext db)
-    {
-        _db = db;
-    }
+    private readonly AppDbContext _db = db;
+    private readonly RandomExerciseSelectorService _ress = ress;
 
     [HttpGet]
     public ActionResult GetChapters()
@@ -135,15 +135,63 @@ public class ChapterController : ControllerBase
         return Ok(new { message = $"Chapter with ID {id} successfully deleted." });
     }
 
-    [HttpGet("{id}/exercises")]
-    public async Task<ActionResult<IEnumerable<Exercise>>> GetExercisesByChapter(int id)
+    //[Authorize]
+    [HttpGet("{chapterId}/exercises")]
+    public async Task<ActionResult<IEnumerable<Exercise>>> GetExercisesByChapter(int chapterId)
     {
-        var chapterExists = await _db.Chapters.AnyAsync(c => c.ChapterId == id);
-        if (!chapterExists)
+        try
         {
-            return NotFound($"Chapter with ID {id} not found.");
+            //var userId = GetUserId();
+            //var role = GetUserRole();
+            //if (userId == null || role == null) return Unauthorized();
+
+            Chapter? chapter = await _db.Chapters
+               .Where(c => c.DeletedAt == null && c.ChapterId == chapterId)
+               .Include(c => c.Exercises
+                   .Where(e => e.DeletedAt == null)
+                   .OrderBy(e => e.ExerciseId)
+               )
+               .FirstOrDefaultAsync();
+
+            if (chapter == null)
+                return BadRequest($"Chapter with ID {chapterId} not found.");
+
+            //if (role == Role.Student)
+            //{
+            //    User? student = await _db.Users
+            //        .Where(u => u.UserId == userId)
+            //        .FirstOrDefaultAsync();
+
+            //    if (student == null)
+            //        return BadRequest("Student not found.");
+
+            //    int amount = chapter.AmountOfExercises ?? 0;
+            //    List<Exercise> exercises = [];
+            //    List<UserExercise> userExercises = [];
+
+            //    for (int i = 0; i < amount; i++)
+            //    {
+            //        var res = await _ress.GetRandomExerciseForChapter(chapterId, userId);
+            //        if (res.Exercise == null) return BadRequest(res.Message);
+
+            //        userExercises.Add(new UserExercise
+            //        {
+            //            IsCompleted = false,
+            //            Exercise = res.Exercise,
+            //            Student = student,
+            //            CreatedAt = DateTime.UtcNow,
+            //        });
+            //    }
+
+            //    await _db.StudentExercises.AddRangeAsync(userExercises);
+            //    return Ok(exercises);
+            //}
+
+            return Ok(chapter.Exercises);
         }
-        var exercises =  await _db.Exercises.Where(e => e.Chapter.ChapterId == id && e.DeletedAt == null).ToListAsync();
-        return Ok(exercises);
+        catch (Exception ex) 
+        {
+            return BadRequest(ex);
+        }        
     }
 }

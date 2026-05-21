@@ -22,56 +22,34 @@ namespace SQLDropbox.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("CourseLecturer", b =>
+            modelBuilder.Entity("CourseLecturers", b =>
                 {
-                    b.Property<string>("CoursesCourseId")
+                    b.Property<string>("CourseId")
                         .HasColumnType("text");
 
-                    b.Property<Guid>("LecturersLecturerId")
+                    b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
-                    b.HasKey("CoursesCourseId", "LecturersLecturerId");
+                    b.HasKey("CourseId", "UserId");
 
-                    b.HasIndex("LecturersLecturerId");
+                    b.HasIndex("UserId");
 
-                    b.ToTable("CourseLecturer");
+                    b.ToTable("CourseLecturers", (string)null);
                 });
 
-            modelBuilder.Entity("CourseStudent", b =>
+            modelBuilder.Entity("CourseStudents", b =>
                 {
-                    b.Property<string>("CoursesCourseId")
+                    b.Property<string>("CourseId")
                         .HasColumnType("text");
 
-                    b.Property<Guid>("StudentsStudentId")
+                    b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
-                    b.HasKey("CoursesCourseId", "StudentsStudentId");
+                    b.HasKey("CourseId", "UserId");
 
-                    b.HasIndex("StudentsStudentId");
+                    b.HasIndex("UserId");
 
-                    b.ToTable("CourseStudent");
-                });
-
-            modelBuilder.Entity("SQLDropbox.Models.Admin", b =>
-                {
-                    b.Property<Guid>("AdminId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Password")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("AdminId");
-
-                    b.ToTable("Admin");
+                    b.ToTable("CourseStudents", (string)null);
                 });
 
             modelBuilder.Entity("SQLDropbox.Models.Chapter", b =>
@@ -206,43 +184,6 @@ namespace SQLDropbox.Migrations
                     b.ToTable("Exercise");
                 });
 
-            modelBuilder.Entity("SQLDropbox.Models.Lecturer", b =>
-                {
-                    b.Property<Guid>("LecturerId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("FirstName")
-                        .HasColumnType("text");
-
-                    b.Property<string>("LastName")
-                        .HasColumnType("text");
-
-                    b.Property<string>("LecturerCode")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Password")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.HasKey("LecturerId");
-
-                    b.ToTable("Lecturer");
-                });
-
             modelBuilder.Entity("SQLDropbox.Models.Requirement", b =>
                 {
                     b.Property<int>("RequirementId")
@@ -254,12 +195,18 @@ namespace SQLDropbox.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp without time zone");
 
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp without time zone");
+
                     b.Property<int>("ExerciseId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Statement")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<bool>("Use")
                         .HasColumnType("boolean");
@@ -284,6 +231,9 @@ namespace SQLDropbox.Migrations
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("SchemaImage")
+                        .HasColumnType("text");
 
                     b.Property<string>("SchemaName")
                         .IsRequired()
@@ -322,9 +272,9 @@ namespace SQLDropbox.Migrations
                     b.ToTable("Solution");
                 });
 
-            modelBuilder.Entity("SQLDropbox.Models.Student", b =>
+            modelBuilder.Entity("SQLDropbox.Models.User", b =>
                 {
-                    b.Property<Guid>("StudentId")
+                    b.Property<Guid>("UserId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
@@ -347,25 +297,27 @@ namespace SQLDropbox.Migrations
                     b.Property<string>("Password")
                         .HasColumnType("text");
 
-                    b.Property<string>("StudentCode")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("Role")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp without time zone");
 
-                    b.HasKey("StudentId");
+                    b.Property<string>("UserCode")
+                        .HasColumnType("text");
 
-                    b.ToTable("Student");
+                    b.HasKey("UserId");
+
+                    b.ToTable("User");
                 });
 
-            modelBuilder.Entity("SQLDropbox.Models.StudentExercise", b =>
+            modelBuilder.Entity("SQLDropbox.Models.UserExercise", b =>
                 {
-                    b.Property<int>("StudentExerciseId")
+                    b.Property<int>("UserExerciseId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("StudentExerciseId"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("UserExerciseId"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp without time zone");
@@ -379,33 +331,36 @@ namespace SQLDropbox.Migrations
                     b.Property<bool>("IsCompleted")
                         .HasColumnType("boolean");
 
-                    b.Property<Guid>("StudentId")
-                        .HasColumnType("uuid");
-
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp without time zone");
 
-                    b.HasKey("StudentExerciseId");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("UserExerciseId");
 
                     b.HasIndex("ExerciseId");
 
-                    b.HasIndex("StudentId");
+                    b.HasIndex("UserId");
 
-                    b.ToTable("StudentExercise");
+                    b.ToTable("UserExercise");
                 });
 
-            modelBuilder.Entity("SQLDropbox.Models.StudentSolution", b =>
+            modelBuilder.Entity("SQLDropbox.Models.UserSolution", b =>
                 {
-                    b.Property<int>("StudentSolutionId")
+                    b.Property<int>("UserSolutionId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("StudentSolutionId"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("UserSolutionId"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<string>("Error")
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("ErrorMessage")
                         .HasColumnType("text");
 
                     b.Property<bool>("IsCorrect")
@@ -415,45 +370,45 @@ namespace SQLDropbox.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("StudentExerciseId")
-                        .HasColumnType("integer");
-
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp without time zone");
 
-                    b.HasKey("StudentSolutionId");
+                    b.Property<int>("UserExerciseId")
+                        .HasColumnType("integer");
 
-                    b.HasIndex("StudentExerciseId");
+                    b.HasKey("UserSolutionId");
 
-                    b.ToTable("StudentSolution");
+                    b.HasIndex("UserExerciseId");
+
+                    b.ToTable("UserSolution");
                 });
 
-            modelBuilder.Entity("CourseLecturer", b =>
+            modelBuilder.Entity("CourseLecturers", b =>
                 {
                     b.HasOne("SQLDropbox.Models.Course", null)
                         .WithMany()
-                        .HasForeignKey("CoursesCourseId")
+                        .HasForeignKey("CourseId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SQLDropbox.Models.Lecturer", null)
+                    b.HasOne("SQLDropbox.Models.User", null)
                         .WithMany()
-                        .HasForeignKey("LecturersLecturerId")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("CourseStudent", b =>
+            modelBuilder.Entity("CourseStudents", b =>
                 {
                     b.HasOne("SQLDropbox.Models.Course", null)
                         .WithMany()
-                        .HasForeignKey("CoursesCourseId")
+                        .HasForeignKey("CourseId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SQLDropbox.Models.Student", null)
+                    b.HasOne("SQLDropbox.Models.User", null)
                         .WithMany()
-                        .HasForeignKey("StudentsStudentId")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -508,34 +463,34 @@ namespace SQLDropbox.Migrations
                     b.Navigation("Exercise");
                 });
 
-            modelBuilder.Entity("SQLDropbox.Models.StudentExercise", b =>
+            modelBuilder.Entity("SQLDropbox.Models.UserExercise", b =>
                 {
                     b.HasOne("SQLDropbox.Models.Exercise", "Exercise")
-                        .WithMany("StudentExercises")
+                        .WithMany("UserExercises")
                         .HasForeignKey("ExerciseId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SQLDropbox.Models.Student", "Student")
-                        .WithMany("StudentExercises")
-                        .HasForeignKey("StudentId")
+                    b.HasOne("SQLDropbox.Models.User", "User")
+                        .WithMany("UserExercises")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Exercise");
 
-                    b.Navigation("Student");
+                    b.Navigation("User");
                 });
 
-            modelBuilder.Entity("SQLDropbox.Models.StudentSolution", b =>
+            modelBuilder.Entity("SQLDropbox.Models.UserSolution", b =>
                 {
-                    b.HasOne("SQLDropbox.Models.StudentExercise", "StudentExercise")
-                        .WithMany("StudentSolutions")
-                        .HasForeignKey("StudentExerciseId")
+                    b.HasOne("SQLDropbox.Models.UserExercise", "UserExercise")
+                        .WithMany("UserSolutions")
+                        .HasForeignKey("UserExerciseId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("StudentExercise");
+                    b.Navigation("UserExercise");
                 });
 
             modelBuilder.Entity("SQLDropbox.Models.Chapter", b =>
@@ -554,7 +509,7 @@ namespace SQLDropbox.Migrations
 
                     b.Navigation("Solutions");
 
-                    b.Navigation("StudentExercises");
+                    b.Navigation("UserExercises");
                 });
 
             modelBuilder.Entity("SQLDropbox.Models.Schema", b =>
@@ -562,14 +517,14 @@ namespace SQLDropbox.Migrations
                     b.Navigation("Chapters");
                 });
 
-            modelBuilder.Entity("SQLDropbox.Models.Student", b =>
+            modelBuilder.Entity("SQLDropbox.Models.User", b =>
                 {
-                    b.Navigation("StudentExercises");
+                    b.Navigation("UserExercises");
                 });
 
-            modelBuilder.Entity("SQLDropbox.Models.StudentExercise", b =>
+            modelBuilder.Entity("SQLDropbox.Models.UserExercise", b =>
                 {
-                    b.Navigation("StudentSolutions");
+                    b.Navigation("UserSolutions");
                 });
 #pragma warning restore 612, 618
         }

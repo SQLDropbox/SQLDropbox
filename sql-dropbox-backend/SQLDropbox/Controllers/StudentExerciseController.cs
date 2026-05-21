@@ -8,50 +8,46 @@ namespace SQLDropbox.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class StudentExerciseController : ControllerBase
+public class StudentExerciseController(AppDbContext db) : BaseController
 {
-    private readonly AppDbContext _db;
-    public StudentExerciseController(AppDbContext db)
-    {
-        _db = db;
-    }
+    private readonly AppDbContext _db = db;
 
     [HttpPost("submit")]
     public async Task<IActionResult> SubmitSolution([FromBody] SubmitSolutionDTO dto)
     {
         var exercise = await _db.Exercises.Include(e => e.Solutions).FirstOrDefaultAsync(e => e.ExerciseId == dto.ExerciseId);
-        var student = await _db.Students.FirstOrDefaultAsync(s => s.StudentCode == dto.StudentCode);
+        var student = await _db.Users.FirstOrDefaultAsync(u => u.UserCode == dto.StudentCode);
 
         if (exercise == null || student == null)
         {
             return BadRequest(new {message = "Exercise or student not found."});
         }
-        var studentExercise = await _db.StudentExercises
-            .Include(se => se.StudentSolutions)
-            .FirstOrDefaultAsync(se => se.Exercise.ExerciseId == dto.ExerciseId && se.Student.StudentCode == dto.StudentCode);
+        var studentExercise = await _db.UserExercises
+            .Include(se => se.UserSolutions)
+            .FirstOrDefaultAsync(se => se.Exercise.ExerciseId == dto.ExerciseId && se.User.UserCode == dto.StudentCode);
         if (studentExercise == null)
         {
-            studentExercise = new StudentExercise
+            studentExercise = new UserExercise
             {
                 Exercise = exercise,
-                Student = student,
+                User = student,
                 IsCompleted = false,
                 CreatedAt = DateTime.Now
             };
-            await _db.StudentExercises.AddAsync(studentExercise);
+            await _db.UserExercises.AddAsync(studentExercise);
         }
 
         bool isCorrect = EvaluateStudentQuery(dto.Query, exercise.Solutions);
         string? errorMessage = isCorrect ? null : "Syntax error or bad result.";
 
-        var newAttempt = new StudentSolution
+        var newAttempt = new UserSolution
         {
             Query = dto.Query,
             IsCorrect = isCorrect,
-            Error = errorMessage,
+            ErrorMessage = errorMessage,
             CreatedAt = DateTime.Now
         };
-        studentExercise.StudentSolutions.Add(newAttempt);
+        studentExercise.UserSolutions.Add(newAttempt);
 
         if (isCorrect)
         {
@@ -64,7 +60,7 @@ public class StudentExerciseController : ControllerBase
         return Ok(new
         {
             isCorrect = newAttempt.IsCorrect,
-            error = newAttempt.Error,
+            error = newAttempt.ErrorMessage,
             isExerciseCompleted = studentExercise.IsCompleted,
         });
     }

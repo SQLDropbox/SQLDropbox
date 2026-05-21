@@ -13,4 +13,8 @@
         font-weight: bold;
         color: var(--color-gray-900);
     }
+    
+    button {
+        cursor: pointer;
+    }
 }

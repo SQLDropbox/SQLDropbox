@@ -20,7 +20,6 @@ const login = async (emailOrCode: string, password: string) => {
     });
 };
 
-
 export const authService = {
     getAccountSetup,
     setupAccount,

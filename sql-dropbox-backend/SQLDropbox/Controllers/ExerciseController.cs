@@ -8,14 +8,9 @@ namespace SQLDropbox.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class ExerciseController : ControllerBase
+public class ExerciseController(AppDbContext db) : BaseController
 {
-    private readonly AppDbContext _db;
-    
-    public ExerciseController(AppDbContext db)
-    {
-        _db = db;
-    }
+    private readonly AppDbContext _db = db;
 
     [HttpGet]
     public async Task<IActionResult> GetAllExercises()
@@ -67,5 +62,58 @@ public class ExerciseController : ControllerBase
         }
         return Ok(exercise);
     }
+
+    [HttpDelete("{id}")]
+    public ActionResult DeleteExercise(int id)
+    {
+        var exercise = _db.Exercises.FirstOrDefault(x => x.ExerciseId == id);
+
+        if (exercise == null)
+        {
+            return BadRequest("Exercise not found.");
+        }
+        exercise.DeletedAt = DateTime.Now;
+        _db.SaveChanges();
+        return Ok();
+    }
+
+    [HttpPut("{id}")]
+    public ActionResult UpdateExercise(int id, [FromBody] ExerciseDTO dto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var existing = _db.Exercises.Include(e => e.Solutions).FirstOrDefault(e => e.ExerciseId == id);
         
+        if (existing == null)
+            return NotFound();
+        
+        var chapter = _db.Chapters.Find(dto.ChapterId);
+
+        if (chapter == null)
+            return BadRequest("Chapter not found.");
+        
+        existing.Chapter = chapter;
+        
+        existing.QuestionNL = dto.QuestionNL;
+        existing.QuestionEN = dto.QuestionEN;
+        existing.HintNL = dto.HintNL;
+        existing.HintEN = dto.HintEN;
+        existing.QueryOutput = dto.QueryOutput;
+        
+        existing.UpdatedAt = DateTime.Now;
+        
+        _db.Solutions.RemoveRange(existing.Solutions);
+        
+        existing.Solutions = dto.SolutionQueries.Select(queryStr => new Solution
+        {
+            Query = queryStr,
+            CreatedAt = DateTime.Now
+        }).ToList();
+        
+        _db.SaveChanges();
+        return Ok();
+        
+    }
+
 }

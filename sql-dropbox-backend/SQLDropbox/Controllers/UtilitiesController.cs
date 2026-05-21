@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SQLDropbox.Data;
 using SQLDropbox.DTO;
+using SQLDropbox.Helpers;
 using SQLDropbox.Models;
 using SQLDropbox.Repositories;
 using SQLDropbox.Services;
@@ -10,32 +11,31 @@ namespace SQLDropbox.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class UtilitiesController(AppDbContext db, PasswordService passwordService, PostgreSQLQueryValidator formatter) : ControllerBase
+public class UtilitiesController(AppDbContext db, PasswordService ps, PostgreSQLQueryValidator f, RandomExerciseSelectorService ress) : BaseController
 {
     private readonly AppDbContext _db = db;
-    private readonly PasswordService _passwordService = passwordService;
-    private readonly PostgreSQLQueryValidator _formatter = formatter;
+    private readonly PasswordService _ps = ps;
+    private readonly PostgreSQLQueryValidator _f = f;
+    private readonly RandomExerciseSelectorService _ress = ress;
 
     [HttpGet("seed-db")]
     public async Task<IActionResult> SeedTheDb()
-    {        
-        await DbInitializer.SeedAsync(_db, _passwordService);
+    {
+        await DbInitializer.SeedAsync(_db, _ps);
         return Ok("The DB should have been seeded.");
     }
 
     [HttpGet("empty-db")]
     public async Task<IActionResult> EmptyTheDb()
     {
-        await _db.Admins.ExecuteDeleteAsync();
         await _db.Requirements.ExecuteDeleteAsync();
-        await _db.StudentSolutions.ExecuteDeleteAsync();
-        await _db.StudentExercises.ExecuteDeleteAsync();
-        await _db.Students.ExecuteDeleteAsync();
+        await _db.UserSolutions.ExecuteDeleteAsync();
+        await _db.UserExercises.ExecuteDeleteAsync();
         await _db.Solutions.ExecuteDeleteAsync();
         await _db.Exercises.ExecuteDeleteAsync();
         await _db.Chapters.ExecuteDeleteAsync();
         await _db.Courses.ExecuteDeleteAsync();
-        await _db.Lecturers.ExecuteDeleteAsync();
+        await _db.Users.ExecuteDeleteAsync();
         return Ok("The DB should have been emptied.");
     }
 
@@ -45,7 +45,10 @@ public class UtilitiesController(AppDbContext db, PasswordService passwordServic
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var formatted = _formatter.ParseQuery(format.Query);
+        if (format.Query == null)
+            return BadRequest("Query is required.");
+
+        var formatted = _f.ParseQuery(format.Query);
         return Ok(formatted);
     }
 
@@ -71,7 +74,39 @@ public class UtilitiesController(AppDbContext db, PasswordService passwordServic
         };
         requirements.Add(r2);
 
-        var checkedQuery = _formatter.CheckQueryRequirements(requirements, format.Query);
+        var checkedQuery = _f.CheckQueryRequirements(requirements, format.Query);
         return Ok($"{checkedQuery.Valid}: {checkedQuery.Message}");
+    }
+
+    [HttpGet("me")]
+    public async Task<IActionResult> Me()
+    {
+        var result = AuthHelper.GetUserClaims(this);
+        if (result.Result != null) return BadRequest(result.Result);
+        return Ok(result.Value.ToString());
+    }
+
+    [HttpGet("random-exercise/{chapterIdStr}/{userIdStr}")]
+    public async Task<IActionResult> GetRandomExercise(string chapterIdStr, string userIdStr)
+    {
+        try
+        {
+            if (!int.TryParse(chapterIdStr, out int chapterId))
+                return BadRequest("Not a valid chapter id.");
+
+            if (!Guid.TryParse(userIdStr, out Guid userId))
+                return BadRequest("Not a valid user id.");
+
+            var res = await _ress.GetRandomExerciseForChapter(chapterId, userId);
+
+            if (res.Exercise == null)
+                return BadRequest(res.Message);
+
+            return Ok(res.Exercise.QuestionEN);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex);
+        }       
     }
 }

@@ -6,11 +6,15 @@ export interface Course {
     courseDescriptionEN: string;
     lecturer: string;
     isActive: boolean;
+    amountOfExercises: number;
 
+    students?: Student[];
     chapters?: Chapter[];
 
     studentCount?: number;
     chapterCount?: number;
+
+    totalCourseCount?: number;
 }
 
 export interface Chapter {
@@ -21,6 +25,24 @@ export interface Chapter {
     chapterDescriptionEN: string;
     courseId: string;
     amountOfExercises?: number;
-    dbSchema?: string; 
-    schemaId?: number | null; 
+    dbSchema?: string;
+    schemaId?: number | null;
+    completedAmount?: number;
+}
+
+export interface Exercise {
+    exerciseId: number;
+    chapterId: number;
+    questionNL: string;
+    questionEN: string;
+    hintNL: string;
+    hintEN: string;
+    queryOutput?: string;
+    solutionQueries?: string[];
+}
+export interface Student {
+    userCode: string;
+    firstName: string;
+    lastName: string;
+    email: string;
 }
