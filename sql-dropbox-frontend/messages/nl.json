@@ -1,0 +1,8 @@
+{
+    "CoursesPage": {
+        "title": "Vakken",
+        "loading": "Laden...",
+        "error": "Er is een fout opgetreden",
+        "empty": "Geen vakken gevonden."
+    }
+}

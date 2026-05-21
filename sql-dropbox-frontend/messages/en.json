@@ -1,0 +1,8 @@
+{
+    "CoursesPage": {
+        "title": "Courses",
+        "loading": "Loading...",
+        "error": "Something went wrong",
+        "empty": "No courses found."
+    }
+}
