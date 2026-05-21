@@ -22,7 +22,7 @@ namespace SQLDropbox.Models
         public Chapter Chapter { get; set; } = null!;
         public ICollection<Requirement> Requirements { get; set; } = [];
         public ICollection<Solution> Solutions { get; set; } = [];
-        public ICollection<UserExercise> StudentExercises { get; set; } = [];
+        public ICollection<UserExercise> UserExercises { get; set; } = [];
 
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }

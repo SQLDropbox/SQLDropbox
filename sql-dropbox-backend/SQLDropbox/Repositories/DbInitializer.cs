@@ -166,7 +166,7 @@ namespace SQLDropbox.Repositories
                 Query = "SELECT * FROM animals",
                 IsCorrect = false,
                 ErrorMessage = "Table name does not exist. Did you mean \"animal\"?",
-                StudentExercise = studentExercise1,
+                UserExercise = studentExercise1,
                 CreatedAt = DateTime.UtcNow,
             };
 

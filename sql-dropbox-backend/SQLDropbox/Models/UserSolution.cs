@@ -18,7 +18,7 @@ namespace SQLDropbox.Models
         public string? ErrorMessage { get; set; }
 
         [JsonIgnore]
-        public UserExercise StudentExercise { get; set; } = null!;
+        public UserExercise UserExercise { get; set; } = null!;
 
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }

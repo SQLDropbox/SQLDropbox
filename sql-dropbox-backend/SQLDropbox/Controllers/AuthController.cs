@@ -88,7 +88,7 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
 
             return BadRequest("Incorrect credentials.");
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return BadRequest("Incorrect credentials.");
         }

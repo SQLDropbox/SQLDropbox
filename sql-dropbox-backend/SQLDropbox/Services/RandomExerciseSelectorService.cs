@@ -18,7 +18,7 @@ namespace SQLDropbox.Services
 
             List<Exercise> exercises = await _db.Exercises               
                 .Where(e => e.DeletedAt == null &&
-                    !e.StudentExercises.Any(se =>
+                    !e.UserExercises.Any(se =>
                         se.Student.UserId == userId)
                 )
                 .OrderBy(e => e.ExerciseId)
