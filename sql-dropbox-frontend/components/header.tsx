@@ -1,5 +1,6 @@
 import { useAuth } from "@/hooks/useAuth";
 import { authUtils } from "@/utils/authUtils";
+import LocaleSwitcher from "@/components/localeSwitcher";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { FaCog, FaDesktop } from "react-icons/fa";
@@ -20,6 +21,7 @@ export default function Header() {
     const canToggle = toggleableRoutes.some((route) =>
         typeof route === "string" ? pathname === route : route.test(pathname),
     );
+
     const toggleAdminMode = () => {
         if (isAdminRoute) {
             router.push(pathname.replace("/admin", "") || "/");
@@ -45,6 +47,8 @@ export default function Header() {
                         {isAdminRoute ? <FaDesktop /> : <FaCog />}
                     </button>
                 )}
+
+                <LocaleSwitcher />
 
                 {user ? (
                     <button

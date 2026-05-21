@@ -9,9 +9,11 @@ import EditCourseDialog from "@/components/admin/course/editCourseDialog";
 import { useState } from "react";
 import CourseCard from "@/components/admin/course/courseCard";
 import { useAuth } from "@/hooks/useAuth";
+import { useTranslations } from "next-intl";
 
 export default function Page() {
     const { isAdmin } = useAuth();
+    const t = useTranslations("Course");
 
     const [editDialogOpen, setEditDialogOpen] = useState(false);
     const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
@@ -27,7 +29,7 @@ export default function Page() {
             <div className="max-w-350 mx-auto p-6">
                 <div className="flex justify-between items-center">
                     <div>
-                        <h1>Manage Courses</h1>
+                        <h1>{t("manageTitle")}</h1>
                     </div>
                     {isAdmin && (
                         <button
@@ -38,19 +40,19 @@ export default function Page() {
                             }}
                         >
                             <FaPlus className="inline-block mr-1" />
-                            New course
+                            {t("newCourse")}
                         </button>
                     )}
                 </div>
 
-                {isLoading && <p className="mt-6 text-gray-500">Loading...</p>}
-
-                {error && (
-                    <p className="mt-6 text-red-500">Something went wrong</p>
+                {isLoading && (
+                    <p className="mt-6 text-gray-500">{t("loading")}</p>
                 )}
 
+                {error && <p className="mt-6 text-red-500">{t("error")}</p>}
+
                 {data?.length === 0 && !isLoading && (
-                    <p className="mt-6 text-gray-500">No courses found.</p>
+                    <p className="mt-6 text-gray-500">{t("empty")}</p>
                 )}
 
                 <div className="grid grid-cols-3 gap-6 my-6">
