@@ -210,3 +210,17 @@ namespace SQLDropbox.Services
         }
     }
 }
+
+// had to add do this in pgAdmin:
+
+//GRANT USAGE ON SCHEMA util TO sqldropbox_admin;
+//GRANT SELECT ON ALL TABLES IN SCHEMA util TO sqldropbox_admin;
+//GRANT INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA util TO sqldropbox_admin;
+
+
+//GRANT USAGE, CREATE ON SCHEMA util TO sqldropbox_admin;
+//GRANT USAGE ON LANGUAGE plpgsql TO sqldropbox_admin;
+//GRANT SELECT ON ALL TABLES IN SCHEMA util TO sqldropbox_admin;
+
+//GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA util TO sqldropbox_admin;
+//GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA util TO sqldropbox_admin;
