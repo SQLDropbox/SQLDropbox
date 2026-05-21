@@ -13,6 +13,8 @@ export interface Course {
 
     studentCount?: number;
     chapterCount?: number;
+
+    totalCourseCount?: number;
 }
 
 export interface Chapter {

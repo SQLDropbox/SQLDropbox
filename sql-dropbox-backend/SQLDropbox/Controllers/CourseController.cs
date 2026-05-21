@@ -27,7 +27,7 @@ public class CourseController(AppDbContext db) : BaseController
         switch (role)
         {
             case Role.Student:
-                query = query.Where(x => x.Students.Any(s => s.UserId == id));
+                query = query.Where(x => x.Students.Any(s => s.UserId == id) && x.IsActive);
                 break;
             case Role.Lecturer:
                 query = query.Where(x => x.Lecturers.Any(l => l.UserId == id));
@@ -72,10 +72,13 @@ public class CourseController(AppDbContext db) : BaseController
             query = query.Where(x => x.IsActive && x.Students.Any(s => s.UserId == id));            
         }
 
+        var totalCourseCount = query.Count();
+
         var course = query.FirstOrDefault(x => x.CourseId == courseId);
 
         if (course == null)
             return NotFound();
+
 
         return Ok(new
         {
@@ -86,7 +89,8 @@ public class CourseController(AppDbContext db) : BaseController
             course.CourseDescriptionNL,
             course.Lecturer,
             course.IsActive,
-            chapters = course.Chapters            
+            totalCourseCount,
+            chapters = course.Chapters
             .Where(x => x.DeletedAt == null)
             .Select(x => new
             {
