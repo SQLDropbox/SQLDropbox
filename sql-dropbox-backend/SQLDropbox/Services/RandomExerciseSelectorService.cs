@@ -9,10 +9,12 @@ namespace SQLDropbox.Services
     {
         private readonly AppDbContext _db = db;
 
-        public async Task<(Exercise? Exercise, string? Message)> GetRandomExerciseForChapter(int chapterId, Guid userId)
+        public async Task<(Exercise? Exercise, string? Message)> GetRandomExerciseForChapter(int chapterId, Guid? userId)
         {
             if (chapterId <= 0)
                 return (null, "Chapter doesn't exist.");
+            if (userId == null)
+                return (null, "User id is required.");
 
             List<Exercise> exercises = await _db.Exercises               
                 .Where(e => e.DeletedAt == null &&

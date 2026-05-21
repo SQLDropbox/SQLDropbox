@@ -7,7 +7,7 @@ namespace SQLDropbox.Repositories
 {
     public static class DbInitializer
     {
-        public static async Task SeedAsync(AppDbContext context, PasswordService passwordService)
+        public static async Task SeedAsync(AppDbContext context, PasswordService ps)
         {
             /* ADMINS */
             var admin = new User
@@ -15,7 +15,7 @@ namespace SQLDropbox.Repositories
                 UserCode = "admin",
                 FirstName = "Admin",
                 Email = "Admin@ucll.be",
-                Password = passwordService.HashPassword("Admin"),
+                Password = ps.HashPassword("Admin"),
                 Role = Role.Admin,
                 CreatedAt = DateTime.UtcNow,
             };
@@ -134,7 +134,7 @@ namespace SQLDropbox.Repositories
                 FirstName = "Example",
                 LastName = "student",
                 Email = "r0123456@ucll.be",
-                Password = null,
+                Password = ps.HashPassword("r0123456"),
                 Role = Role.Student,
                 StudentCourses = [course1],
                 CreatedAt = DateTime.UtcNow,
