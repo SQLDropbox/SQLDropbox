@@ -105,7 +105,7 @@ public class CourseController(AppDbContext db) : BaseController
         });
     }
 
-    [Authorize("Admin")]
+    [Authorize(Roles = "Admin")]
     [HttpPost]
     public ActionResult AddCourse([FromBody] CourseDTO course)
     {
@@ -140,8 +140,7 @@ public class CourseController(AppDbContext db) : BaseController
         return Ok(newCourse);
     }
 
-    [Authorize("Admin")]
-    [Authorize("Lecturer")]
+    [Authorize(Roles = "Admin,Lecturer")]
     [HttpPut("{courseId}")]
     public ActionResult UpdateCourse(string courseId, [FromBody] CourseDTO course)
     {
@@ -166,7 +165,7 @@ public class CourseController(AppDbContext db) : BaseController
         return Ok(existing);
     }
 
-    [Authorize("Admin")]
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{courseID}")]
     public ActionResult DeleteCourse(string courseID)
     {
