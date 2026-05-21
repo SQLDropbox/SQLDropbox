@@ -57,6 +57,7 @@ namespace SQLDropbox.Services
 
             normalized = Regex.Replace(trimmed.ToUpperInvariant(), @"\s+", " ").Trim();
 
+
             if (!allowedStarts.Any(x => normalized.StartsWith(x)))
             {
                 return QueryValidationResult.Fail("Only allowed SQL statements are permitted.");

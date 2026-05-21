@@ -37,6 +37,16 @@ public class RoutineController : ControllerBase
         var validation = _sql.Validate(request.Sql);
         if (!validation.IsValid)
             return BadRequest(validation.Message);
+        
+        if (!string.IsNullOrWhiteSpace(request.SetupSql))
+        {
+            var setupValidation = _sql.Validate(request.SetupSql);
+
+            if (!setupValidation.IsValid)
+                return BadRequest(setupValidation.Message);
+
+            request.SetupSql = setupValidation.NormalizedQuery!;
+        }
 
         if (!string.IsNullOrWhiteSpace(request.InvokeSql))
         {
@@ -70,6 +80,7 @@ public class RoutineController : ControllerBase
             var result = await _schema.CloneExecuteRoutineAndDeleteAsync(
                 schema,
                 validation.NormalizedQuery!,
+                request.SetupSql,
                 request.InvokeSql,
                 request.TestSql,
                 request.VerifySql);
