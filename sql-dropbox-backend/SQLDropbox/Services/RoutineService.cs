@@ -28,55 +28,107 @@ namespace SQLDropbox.Services
             return sql.EndsWith(";") ? sql[..^1] : sql;
         }
 
-        public async Task<object?> ExecuteRoutineAsync(string schema, string sql, string? invokeSql = null) {
-            
-            await using var conn = await OpenConnectionAsync();
-            await using var tx = await conn.BeginTransactionAsync();
+        public async Task<object?> ExecuteRoutineAsync(
+    string schema,
+    string sql,
+    string? invokeSql = null,
+    string? testSql = null,
+    string? verifySql = null)
+{
+    await using var conn = await OpenConnectionAsync();
+    await using var tx = await conn.BeginTransactionAsync();
 
-            await using (var setPath = new NpgsqlCommand($"SET LOCAL search_path TO \"{schema}\";", conn, tx))
-            {
-                await setPath.ExecuteNonQueryAsync();
-            }
+    await using (var setPath = new NpgsqlCommand(
+        $"SET LOCAL search_path TO \"{schema}\";", conn, tx))
+    {
+        await setPath.ExecuteNonQueryAsync();
+    }
 
-            sql = StripSemicolon(sql);
+    sql = StripSemicolon(sql);
 
-            await using (var createCmd = new NpgsqlCommand(sql, conn, tx))
-            {
-                await createCmd.ExecuteNonQueryAsync();
-            }
+    await using (var createCmd = new NpgsqlCommand(sql, conn, tx))
+    {
+        await createCmd.ExecuteNonQueryAsync();
+    }
 
-            if (string.IsNullOrWhiteSpace(invokeSql))
-            {
-                await tx.CommitAsync();
-                return null;
-            }
+    if (!string.IsNullOrWhiteSpace(invokeSql))
+    {
+        var invokeValidation = _sql.ValidateRoutineInvocation(invokeSql);
+        if (!invokeValidation.IsValid)
+            throw new InvalidOperationException(invokeValidation.Message);
 
-            var invokeValidation = _sql.ValidateRoutineInvocation(invokeSql);
-            if (!invokeValidation.IsValid) throw new InvalidOperationException(invokeValidation.Message);
+        var finalInvokeSql = StripSemicolon(invokeValidation.NormalizedQuery!);
 
-            var finalInvokeSql = StripSemicolon(invokeValidation.NormalizedQuery!);
+        await using var invokeCmd = new NpgsqlCommand(finalInvokeSql, conn, tx);
+        await using var reader = await invokeCmd.ExecuteReaderAsync();
 
-            await using var invokeCmd = new NpgsqlCommand(finalInvokeSql, conn, tx);
-            await using var reader = await invokeCmd.ExecuteReaderAsync();
+        var rows = new List<Dictionary<string, object?>>();
 
-            var rows = new List<Dictionary<string, object?>>();
+        while (await reader.ReadAsync())
+        {
+            var row = new Dictionary<string, object?>();
+            for (int i = 0; i < reader.FieldCount; i++)
+                row[reader.GetName(i)] = await reader.IsDBNullAsync(i) ? null : reader.GetValue(i);
 
-            while (await reader.ReadAsync())
-            {
-                var row = new Dictionary<string, object?>();
-                for (int i = 0; i < reader.FieldCount; i++)
-                    row[reader.GetName(i)] = await reader.IsDBNullAsync(i) ? null : reader.GetValue(i);
-
-                rows.Add(row);
-            }
-
-            await reader.CloseAsync();
-            await tx.CommitAsync();
-
-            if (rows.Count == 1 && rows[0].Count == 1)
-                return rows[0].First().Value;
-
-            return rows;
+            rows.Add(row);
         }
+
+        await reader.CloseAsync();
+        await tx.CommitAsync();
+
+        if (rows.Count == 1 && rows[0].Count == 1)
+            return rows[0].First().Value;
+
+        return rows;
+    }
+
+    if (!string.IsNullOrWhiteSpace(testSql))
+    {
+        var testValidation = _sql.ValidateTriggerTestQuery(testSql);
+        if (!testValidation.IsValid)
+            throw new InvalidOperationException(testValidation.Message);
+
+        var finalTestSql = StripSemicolon(testValidation.NormalizedQuery!);
+
+        await using (var testCmd = new NpgsqlCommand(finalTestSql, conn, tx))
+        {
+            await testCmd.ExecuteNonQueryAsync();
+        }
+    }
+
+    if (!string.IsNullOrWhiteSpace(verifySql))
+    {
+        var verifyValidation = _sql.ValidateReadOnlyQuery(verifySql);
+        if (!verifyValidation.IsValid)
+            throw new InvalidOperationException(verifyValidation.Message);
+
+        var finalVerifySql = StripSemicolon(verifyValidation.NormalizedQuery!);
+
+        await using var verifyCmd = new NpgsqlCommand(finalVerifySql, conn, tx);
+        await using var reader = await verifyCmd.ExecuteReaderAsync();
+
+        var rows = new List<Dictionary<string, object?>>();
+
+        while (await reader.ReadAsync())
+        {
+            var row = new Dictionary<string, object?>();
+            for (int i = 0; i < reader.FieldCount; i++)
+                row[reader.GetName(i)] = await reader.IsDBNullAsync(i) ? null : reader.GetValue(i);
+
+            rows.Add(row);
+        }
+
+        await reader.CloseAsync();
+        await tx.CommitAsync();
+
+        if (rows.Count == 1 && rows[0].Count == 1)
+            return rows[0].First().Value;
+
+        return rows;
+    }
+
+    await tx.CommitAsync();
+    return new { message = "Routine created successfully" };
+}
     }
 }

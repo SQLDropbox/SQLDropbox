@@ -20,15 +20,23 @@ public class RoutineController : ControllerBase
 
     [HttpPost("{schema}")]
     [Consumes("application/json")]
-    public async Task<IActionResult> Execute(string schema, [FromBody] RoutineExecuteRequest request) {
-        
-        if (string.IsNullOrWhiteSpace(schema)) return BadRequest("Schema required");
-        if (_sql.IsProtectedSchema(schema)) return BadRequest("Schema is protected");
-        if (!await _schema.SchemaExistsAsync(schema)) return NotFound("Schema not found");
-        if (request == null || string.IsNullOrWhiteSpace(request.Sql)) return BadRequest("SQL required");
+    public async Task<IActionResult> Execute(string schema, [FromBody] RoutineExecuteRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(schema))
+            return BadRequest("Schema required");
+
+        if (_sql.IsProtectedSchema(schema))
+            return BadRequest("Schema is protected");
+
+        if (!await _schema.SchemaExistsAsync(schema))
+            return NotFound("Schema not found");
+
+        if (request == null || string.IsNullOrWhiteSpace(request.Sql))
+            return BadRequest("SQL required");
 
         var validation = _sql.Validate(request.Sql);
-        if (!validation.IsValid) return BadRequest(validation.Message);
+        if (!validation.IsValid)
+            return BadRequest(validation.Message);
 
         if (!string.IsNullOrWhiteSpace(request.InvokeSql))
         {
@@ -39,12 +47,32 @@ public class RoutineController : ControllerBase
             request.InvokeSql = invokeValidation.NormalizedQuery!;
         }
 
+        if (!string.IsNullOrWhiteSpace(request.TestSql))
+        {
+            var testValidation = _sql.ValidateTriggerTestQuery(request.TestSql);
+            if (!testValidation.IsValid)
+                return BadRequest(testValidation.Message);
+
+            request.TestSql = testValidation.NormalizedQuery!;
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.VerifySql))
+        {
+            var verifyValidation = _sql.ValidateReadOnlyQuery(request.VerifySql);
+            if (!verifyValidation.IsValid)
+                return BadRequest(verifyValidation.Message);
+
+            request.VerifySql = verifyValidation.NormalizedQuery!;
+        }
+
         try
         {
             var result = await _schema.CloneExecuteRoutineAndDeleteAsync(
                 schema,
                 validation.NormalizedQuery!,
-                request.InvokeSql);
+                request.InvokeSql,
+                request.TestSql,
+                request.VerifySql);
 
             return Ok(new
             {

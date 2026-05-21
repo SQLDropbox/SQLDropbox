@@ -24,13 +24,16 @@ namespace SQLDropbox.Services
             var normalized = Regex.Replace(trimmed.ToUpperInvariant(), @"\s+", " ").Trim();
 
             var isRoutineDefinition =
-                normalized.StartsWith("CREATE FUNCTION") ||
-                normalized.StartsWith("CREATE PROCEDURE") ||
-                normalized.StartsWith("CREATE TRIGGER") ||
-                normalized.StartsWith("ALTER FUNCTION") ||
-                normalized.StartsWith("DROP FUNCTION") ||
-                normalized.StartsWith("DROP PROCEDURE") ||
-                normalized.StartsWith("DROP TRIGGER");
+            normalized.StartsWith("CREATE FUNCTION") ||
+            normalized.StartsWith("CREATE OR REPLACE FUNCTION") ||
+            normalized.StartsWith("CREATE PROCEDURE") ||
+            normalized.StartsWith("CREATE OR REPLACE PROCEDURE") ||
+            normalized.StartsWith("CREATE TRIGGER") ||
+            normalized.StartsWith("CREATE OR REPLACE TRIGGER") ||
+            normalized.StartsWith("ALTER FUNCTION") ||
+            normalized.StartsWith("DROP FUNCTION") ||
+            normalized.StartsWith("DROP PROCEDURE") ||
+            normalized.StartsWith("DROP TRIGGER");
 
             if (!isRoutineDefinition)
             {
@@ -189,6 +192,43 @@ namespace SQLDropbox.Services
 
                 _ => null
             };
+        }
+
+        public QueryValidationResult ValidateTriggerTestQuery(string query)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+                return QueryValidationResult.Fail("Trigger test SQL is required.");
+
+            var trimmed = query.Trim();
+
+            if (trimmed.Count(c => c == ';') > 1 ||
+                (trimmed.Contains(';') && !trimmed.TrimEnd().EndsWith(";")))
+            {
+                return QueryValidationResult.Fail("Only a single SQL statement is allowed.");
+            }
+
+            if (trimmed.EndsWith(";"))
+                trimmed = trimmed[..^1].Trim();
+
+            var normalized = Regex.Replace(trimmed.ToUpperInvariant(), @"\s+", " ").Trim();
+
+            var allowedStarts = new[] { "INSERT ", "UPDATE ", "DELETE " };
+            if (!allowedStarts.Any(x => normalized.StartsWith(x)))
+            {
+                return QueryValidationResult.Fail("Only INSERT, UPDATE or DELETE is allowed for trigger testing.");
+            }
+
+            var forbiddenSchemas = new[]
+            {
+        "util.", "public.", "pg_catalog.", "information_schema."
+    };
+
+            if (forbiddenSchemas.Any(x => trimmed.Contains(x, StringComparison.OrdinalIgnoreCase)))
+            {
+                return QueryValidationResult.Fail("Referencing protected schemas is not allowed.");
+            }
+
+            return QueryValidationResult.Success(trimmed);
         }
 
         public bool IsSafeSelectQuery(string query) {

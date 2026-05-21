@@ -191,8 +191,13 @@ namespace SQLDropbox.Services
             }
         }
 
-        public async Task<object?> CloneExecuteRoutineAndDeleteAsync(string sourceSchema, string routineSql, string? invokeSql) {
-            
+        public async Task<object?> CloneExecuteRoutineAndDeleteAsync(
+    string sourceSchema,
+    string routineSql,
+    string? invokeSql,
+    string? testSql,
+    string? verifySql)
+        {
             string? cloned = null;
 
             try
@@ -202,7 +207,9 @@ namespace SQLDropbox.Services
                 return await _routineService.ExecuteRoutineAsync(
                     cloned,
                     routineSql,
-                    invokeSql);
+                    invokeSql,
+                    testSql,
+                    verifySql);
             }
             finally
             {
@@ -231,3 +238,6 @@ namespace SQLDropbox.Services
 //GRANT USAGE, CREATE ON SCHEMA animals TO sqldropbox_admin;
 //GRANT USAGE ON LANGUAGE plpgsql TO sqldropbox_admin;
 //GRANT SELECT ON ALL TABLES IN SCHEMA animals TO sqldropbox_admin;
+
+//GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA animals TO sqldropbox_admin;
+//GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA animals TO sqldropbox_admin;
