@@ -8,7 +8,7 @@ import CourseCard from "@/components/admin/course/courseCard";
 import { useTranslations } from "next-intl";
 
 export default function Page() {
-    const t = useTranslations("CoursesPage");
+    const t = useTranslations("Course");
 
     const { data, isLoading, error } = useQuery<Course[]>({
         queryKey: ["courses"],

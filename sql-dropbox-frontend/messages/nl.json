@@ -1,8 +1,19 @@
 {
-    "CoursesPage": {
-        "title": "Vakken",
+    "Course": {
+        "title": "Cursussen",
+        "manageTitle": "Cursussen beheren",
+        "newCourse": "Nieuwe cursus",
         "loading": "Laden...",
-        "error": "Er is een fout opgetreden",
-        "empty": "Geen vakken gevonden."
+        "error": "Er is iets misgegaan",
+        "empty": "Geen cursussen gevonden.",
+        "lecturer": "Lector",
+        "active": "Actief",
+        "inactive": "Inactief",
+        "students": "{count} studenten",
+        "chapters": "{count} hoofdstukken",
+        "manage": "Beheren",
+        "startLearning": "Begin met leren",
+        "manageStudents": "Studenten beheren",
+        "editCourse": "Cursus bewerken"
     }
 }

@@ -1,8 +1,19 @@
 {
-    "CoursesPage": {
+    "Course": {
         "title": "Courses",
+        "manageTitle": "Manage Courses",
+        "newCourse": "New course",
         "loading": "Loading...",
         "error": "Something went wrong",
-        "empty": "No courses found."
+        "empty": "No courses found.",
+        "lecturer": "Lecturer",
+        "active": "Active",
+        "inactive": "Inactive",
+        "students": "{count} students",
+        "chapters": "{count} chapters",
+        "manage": "Manage",
+        "startLearning": "Start Learning",
+        "manageStudents": "Manage students",
+        "editCourse": "Edit course"
     }
 }
