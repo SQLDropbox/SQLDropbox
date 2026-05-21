@@ -26,6 +26,16 @@ export interface Chapter {
     schemaId?: number | null; 
 }
 
+export interface Exercise {
+    exerciseId: number;
+    chapterId: number;
+    questionNL: string;
+    questionEN: string;
+    hintNL: string;
+    hintEN: string;
+    queryOutput?: string;
+    solutionQueries?: string[];
+}
 export interface Student {
     userCode: string;
     firstName: string;
