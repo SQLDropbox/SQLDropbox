@@ -14,7 +14,7 @@ namespace SQLDropbox.Controllers
     public class UserController(AppDbContext db, PasswordService passwordService) : BaseController
     {
         private readonly AppDbContext _db = db;
-        private readonly PasswordService _passwordService = passwordService;
+        private readonly PasswordService _passwordService = passwordService;        
 
         [Authorize(Roles = "Admin")]
         [HttpPost("create")]

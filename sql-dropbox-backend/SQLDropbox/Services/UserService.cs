@@ -1,11 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using SQLDropbox.Data;
+﻿using SQLDropbox.Data;
 using SQLDropbox.Enums;
 using SQLDropbox.Models;
 
 namespace SQLDropbox.Services
 {
-    public class UserService(AppDbContext db) : ControllerBase
+    public class UserService(AppDbContext db)
     {
         private readonly AppDbContext _db = db;
 

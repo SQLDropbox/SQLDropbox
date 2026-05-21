@@ -23,6 +23,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<PasswordService>();
 builder.Services.AddScoped<PostgreSQLQueryValidator>();
+builder.Services.AddScoped<RandomExerciseSelectorService>();
 builder.Services.AddScoped<SchemaService>();
 builder.Services.AddScoped<UserService>();
 
