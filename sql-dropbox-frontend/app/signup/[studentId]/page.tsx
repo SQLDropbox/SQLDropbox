@@ -2,6 +2,7 @@
 
 import Header from "@/components/header";
 import { authService } from "@/services/authService";
+import { authUtils } from "@/utils/authUtils";
 import { useQuery } from "@tanstack/react-query";
 import { notFound, useParams, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -53,9 +54,7 @@ export default function Page() {
                 studentId,
                 password,
             );
-
-            document.cookie = `token=${response.token}; path=/; max-age=${60 * 60 * 24}; SameSite=Strict`;
-            router.push("/");
+            authUtils.login(router, response.token);
         } catch (err: any) {
             setErrorMessage(err.message ?? "Something went wrong.");
         }
