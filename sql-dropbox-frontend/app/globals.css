@@ -3,7 +3,7 @@
 @theme {
     /* surface */
     --color-paper: #fff9ea;
-
+    --color-paper-light: #fffdf6;
     --color-surface-1: #eee8d6;
     --color-surface-2: #e8e2d0;
     --color-surface-3: #faf3e1;

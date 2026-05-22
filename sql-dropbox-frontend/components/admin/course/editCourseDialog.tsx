@@ -38,19 +38,20 @@ export default function EditCourseDialog({
 }: Props) {
     const isEdit = mode === "edit";
     const t = useTranslations("CourseDialog");
+    const { isAdmin } = useAuth();
 
     const [form, setForm] = useState<Course>(emptyForm);
     const [errors, setErrors] = useState<FormErrors>({});
     const [submitted, setSubmitted] = useState(false);
     const [confirmDeleteDialogOpen, setConfirmDeleteDialogOpen] =
         useState(false);
-    const [urlLocked, setUrlLocked] = useState(!isEdit);
+    const [courseIdLocked, setCourseIdLocked] = useState(!isEdit);
     const [errorDialog, setErrorDialog] = useState<string | null>(null);
-    const { isAdmin } = useAuth();
 
     function validateForm(form: Course): FormErrors {
         const errors: FormErrors = {};
-        if (!form.courseId.trim()) errors.courseId = t("errors.urlRequired");
+        if (!form.courseId.trim())
+            errors.courseId = t("errors.courseIdRequired");
         if (!form.courseNameEN.trim())
             errors.courseNameEN = t("errors.nameENRequired");
         if (!form.courseNameNL.trim())
@@ -62,48 +63,34 @@ export default function EditCourseDialog({
 
     useEffect(() => {
         if (!open) return;
+
         setErrors({});
         setSubmitted(false);
 
         if (isEdit && course) {
-            setUrlLocked(true);
-            setForm({
-                courseId: course.courseId ?? "",
-                courseNameNL: course.courseNameNL ?? "",
-                courseNameEN: course.courseNameEN ?? "",
-                courseDescriptionNL: course.courseDescriptionNL ?? "",
-                courseDescriptionEN: course.courseDescriptionEN ?? "",
-                lecturer: course.lecturer ?? "",
-                isActive: course.isActive ?? true,
-            });
+            setCourseIdLocked(true);
+            setForm(course);
         } else {
-            setUrlLocked(false);
+            setCourseIdLocked(false);
             setForm(emptyForm);
         }
     }, [open, mode, course]);
 
     if (!open) return null;
 
-    function onDelete() {
-        if (!isEdit || !course) return;
-        setConfirmDeleteDialogOpen(true);
-    }
-
     function handleChange(
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
     ) {
         const { name, value } = e.target;
 
-        if (name === "courseId" && isEdit) return;
-
         const updated = { ...form, [name]: value };
 
-        if (name === "courseNameEN" && !urlLocked) {
+        if (name === "courseNameEN" && !courseIdLocked) {
             updated.courseId = generateSlug(value);
         }
 
         if (name === "courseId") {
-            setUrlLocked(true);
+            setCourseIdLocked(true);
             updated.courseId = generateSlug(value);
         }
 
@@ -120,8 +107,8 @@ export default function EditCourseDialog({
 
     async function handleSubmit() {
         setSubmitted(true);
-        const newErrors = validateForm(form);
 
+        const newErrors = validateForm(form);
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
             return;
@@ -137,7 +124,6 @@ export default function EditCourseDialog({
             onSuccess();
             onClose();
         } catch (err: any) {
-            console.error(err);
             setErrorDialog(err?.message || t("errors.saveFailed"));
         }
     }
@@ -152,221 +138,162 @@ export default function EditCourseDialog({
             .replace(/-+/g, "-");
     }
 
-    const inputClass = (name: keyof Course) =>
-        `w-full border rounded mt-1 p-2 text-sm focus:outline-none focus:ring-2 focus:ring-black/20 ${
-            errors[name] ? "border-red-400 bg-red-50" : "border-gray-300"
-        }`;
-
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-            <div className="w-full max-w-3xl rounded-lg bg-white shadow-xl flex flex-col max-h-[90vh]">
-                {/* HEADER */}
-                <div className="flex justify-between items-start px-6 pt-6 pb-4 border-b border-gray-300">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+            {/* DOCUMENT SHEET */}
+            <div className="relative w-full max-w-170 aspect-210/297 bg-paper-light text-ink border border-border shadow-2xl flex flex-col max-h-[90vh] font-mono">
+                {/* HEADER STRIP */}
+                <div className="border-b border-border bg-paper px-6 py-4 flex justify-between items-start">
                     <div>
-                        <h2 className="text-xl font-semibold text-gray-900">
+                        <p className="text-[10px] uppercase tracking-widest text-muted">
+                            COURSE DOSSIER / DATABASE ENTRY
+                        </p>
+                        <h2 className="font-display text-xl">
                             {isEdit ? t("titleEdit") : t("titleAdd")}
                         </h2>
-                        <p className="text-sm text-gray-500 mt-0.5">
+                        <p className="text-[11px] text-muted mt-1">
                             {isEdit ? t("subtitleEdit") : t("subtitleAdd")}
                         </p>
                     </div>
 
                     <button
                         onClick={onClose}
-                        className="text-gray-400 hover:text-black mt-1 cursor-pointer"
+                        className="opacity-70 hover:opacity-100 transition"
                     >
                         <FaTimes />
                     </button>
                 </div>
 
-                {/* FORM */}
-                <div className="overflow-y-auto px-6 py-4">
-                    <div className="space-y-4">
-                        <div>
-                            <label className="text-sm font-medium text-gray-700">
-                                {t("courseName")}
-                            </label>
-                            <div className="grid grid-cols-2 gap-4 mt-1">
-                                <div>
-                                    <div className="relative">
-                                        <input
-                                            name="courseNameEN"
-                                            value={form.courseNameEN}
-                                            onChange={handleChange}
-                                            className={
-                                                inputClass("courseNameEN") +
-                                                " pr-10"
-                                            }
-                                        />
-                                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-medium text-gray-400">
-                                            EN
-                                        </span>
-                                    </div>
-                                    {errors.courseNameEN && (
-                                        <p className="text-xs text-red-500 mt-1">
-                                            {errors.courseNameEN}
-                                        </p>
-                                    )}
-                                </div>
-                                <div>
-                                    <div className="relative">
-                                        <input
-                                            name="courseNameNL"
-                                            value={form.courseNameNL}
-                                            onChange={handleChange}
-                                            className={
-                                                inputClass("courseNameNL") +
-                                                " pr-10"
-                                            }
-                                        />
-                                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-medium text-gray-400">
-                                            NL
-                                        </span>
-                                    </div>
-                                    {errors.courseNameNL && (
-                                        <p className="text-xs text-red-500 mt-1">
-                                            {errors.courseNameNL}
-                                        </p>
-                                    )}
-                                </div>
+                {/* STAMP */}
+                {isEdit && (
+                    <div
+                        className={`
+                            absolute top-6 right-14 -rotate-12
+                            border-2 px-3 py-1
+                            text-[10px] uppercase tracking-widest
+                            ${form.isActive ? "border-accent text-accent" : "border-border text-muted"}
+                            opacity-80
+                        `}
+                    >
+                        {form.isActive
+                            ? t("statusActive")
+                            : t("statusArchived")}
+                    </div>
+                )}
+
+                {/* FORM BODY */}
+                <div className="flex flex-col grow overflow-y-auto gap-2 px-6">
+                    {/* COURSE NAMES */}
+                    <Field
+                        label={t("courseName")}
+                        error={errors.courseNameEN || errors.courseNameNL}
+                    >
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="relative">
+                                <input
+                                    name="courseNameEN"
+                                    value={form.courseNameEN}
+                                    onChange={handleChange}
+                                    className="w-full bg-transparent border-b border-border focus:border-accent outline-none py-1 text-sm"
+                                />
+                                <span className="absolute right-0 top-0 text-[10px] text-muted">
+                                    EN
+                                </span>
+                            </div>
+
+                            <div className="relative">
+                                <input
+                                    name="courseNameNL"
+                                    value={form.courseNameNL}
+                                    onChange={handleChange}
+                                    className="w-full bg-transparent border-b border-border focus:border-accent outline-none py-1 text-sm"
+                                />
+                                <span className="absolute right-0 top-0 text-[10px] text-muted">
+                                    NL
+                                </span>
                             </div>
                         </div>
+                    </Field>
 
-                        <div>
-                            <label className="text-sm font-medium text-gray-700">
-                                {t("url")}
-                                {!urlLocked && (
-                                    <span className="text-xs text-gray-400 ml-2">
-                                        {t("autoGenerated")}
-                                    </span>
-                                )}
-                            </label>
-                            <input
-                                name="courseId"
-                                value={form.courseId}
+                    {/* COURSE ID */}
+                    <Field label={t("courseId")} error={errors.courseId}>
+                        <input
+                            name="courseId"
+                            value={form.courseId}
+                            onChange={handleChange}
+                            disabled={isEdit}
+                            className={`
+                                w-full bg-transparent border-b border-border py-1 text-sm
+                                ${isEdit ? "opacity-50 cursor-not-allowed" : ""}
+                            `}
+                        />
+                    </Field>
+
+                    {/* DESCRIPTION */}
+                    <Field label={t("description")}>
+                        <div className="grid grid-cols-2 gap-4">
+                            <textarea
+                                name="courseDescriptionEN"
+                                value={form.courseDescriptionEN}
                                 onChange={handleChange}
-                                className={
-                                    inputClass("courseId") +
-                                    (isEdit
-                                        ? " bg-gray-200 cursor-not-allowed"
-                                        : "")
-                                }
-                                disabled={isEdit}
+                                rows={5}
+                                className="bg-transparent border border-border p-2 text-sm resize-none"
                             />
-                            {errors.courseId && (
-                                <p className="text-xs text-red-500 mt-1">
-                                    {errors.courseId}
-                                </p>
-                            )}
-                        </div>
-
-                        <div>
-                            <label className="text-sm font-medium text-gray-700">
-                                {t("description")}
-                            </label>
-                            <div className="grid grid-cols-2 gap-4 mt-1">
-                                <div>
-                                    <div className="relative">
-                                        <textarea
-                                            name="courseDescriptionEN"
-                                            value={form.courseDescriptionEN}
-                                            onChange={handleChange}
-                                            rows={6}
-                                            className={
-                                                inputClass(
-                                                    "courseDescriptionEN",
-                                                ) + " pr-10 resize-none"
-                                            }
-                                        />
-                                        <span className="absolute right-2 top-2 text-xs font-medium text-gray-400">
-                                            EN
-                                        </span>
-                                    </div>
-                                </div>
-                                <div>
-                                    <div className="relative">
-                                        <textarea
-                                            name="courseDescriptionNL"
-                                            value={form.courseDescriptionNL}
-                                            onChange={handleChange}
-                                            rows={6}
-                                            className={
-                                                inputClass(
-                                                    "courseDescriptionNL",
-                                                ) + " pr-10 resize-none"
-                                            }
-                                        />
-                                        <span className="absolute right-2 top-2 text-xs font-medium text-gray-400">
-                                            NL
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label className="text-sm font-medium text-gray-700">
-                                {t("lecturer")}
-                            </label>
-                            <input
-                                name="lecturer"
-                                value={form.lecturer}
+                            <textarea
+                                name="courseDescriptionNL"
+                                value={form.courseDescriptionNL}
                                 onChange={handleChange}
-                                className={inputClass("lecturer")}
+                                rows={5}
+                                className="bg-transparent border border-border p-2 text-sm resize-none"
                             />
-                            {errors.lecturer && (
-                                <p className="text-xs text-red-500 mt-1">
-                                    {errors.lecturer}
-                                </p>
-                            )}
                         </div>
+                    </Field>
 
-                        <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none">
-                            <input
-                                type="checkbox"
-                                checked={form.isActive}
-                                onChange={(e) =>
-                                    setForm((prev) => ({
-                                        ...prev,
-                                        isActive: e.target.checked,
-                                    }))
-                                }
-                                className="rounded"
-                            />
-                            {t("active")}
-                        </label>
+                    {/* LECTURER */}
+                    <Field label={t("lecturer")} error={errors.lecturer}>
+                        <input
+                            name="lecturer"
+                            value={form.lecturer}
+                            onChange={handleChange}
+                            className="w-full bg-transparent border-b border-border py-1 text-sm"
+                        />
+                    </Field>
+
+                    {/* ACTIVE */}
+                    <div className="py-4 flex items-center gap-2 text-sm text-muted">
+                        <input
+                            type="checkbox"
+                            checked={form.isActive}
+                            onChange={(e) =>
+                                setForm((p) => ({
+                                    ...p,
+                                    isActive: e.target.checked,
+                                }))
+                            }
+                        />
+                        {t("active")}
                     </div>
                 </div>
 
-                {/* FOOTER */}
-                <div
-                    className={`flex ${mode === "edit" ? "justify-between" : "justify-end"} gap-3 px-6 py-4 border-t border-gray-100`}
-                >
-                    {mode === "edit" && isAdmin && (
-                        <button
-                            className="border border-gray-300 px-4 py-2 rounded-lg text-sm bg-red-600 text-white hover:bg-red-400 transition-colors cursor-pointer"
-                            onClick={onDelete}
-                        >
-                            {t("delete")}
-                        </button>
-                    )}
-                    <div className="flex gap-3">
-                        <button
-                            onClick={onClose}
-                            className="border border-gray-300 px-4 py-2 rounded-lg text-sm hover:bg-gray-200 transition-colors cursor-pointer"
-                        >
-                            {t("cancel")}
-                        </button>
-                        <button
-                            onClick={handleSubmit}
-                            className="bg-black text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-700 transition-colors cursor-pointer"
-                        >
-                            {isEdit ? t("saveChanges") : t("createCourse")}
-                        </button>
-                    </div>
+                {/* FOOTER CONTROL STRIP */}
+                <div className="border-t border-border bg-surface-1 px-6 py-4 flex justify-end gap-3">
+                    <button
+                        onClick={onClose}
+                        className="px-4 py-2 border border-border text-muted hover:bg-ink hover:text-paper transition"
+                    >
+                        CANCEL
+                    </button>
+
+                    <button
+                        onClick={handleSubmit}
+                        className="px-4 py-2 border-2 border-accent text-accent hover:bg-accent hover:text-paper transition rotate-[1deg]"
+                    >
+                        {isEdit ? "SAVE RECORD" : "CREATE ENTRY"}
+                    </button>
                 </div>
             </div>
 
+            {/* dialogs unchanged */}
             <AlertDialog
                 open={!!errorDialog}
                 onClose={() => setErrorDialog(null)}
@@ -375,6 +302,7 @@ export default function EditCourseDialog({
                 type="error"
                 buttonText="OK"
             />
+
             <ConfirmDialog
                 open={confirmDeleteDialogOpen}
                 onClose={() => setConfirmDeleteDialogOpen(false)}
@@ -388,6 +316,31 @@ export default function EditCourseDialog({
                 description={t("deleteDescription")}
                 type="delete"
             />
+        </div>
+    );
+}
+
+/* ------------------------ field block ------------------------ */
+function Field({
+    label,
+    error,
+    children,
+}: {
+    label: string;
+    error?: string;
+    children: React.ReactNode;
+}) {
+    return (
+        <div className="py-4">
+            <label className="text-[11px] uppercase tracking-widest text-muted block mb-1">
+                {label}
+            </label>
+            {children}
+            {error && (
+                <p className="text-[11px] text-error mt-1 uppercase tracking-wider">
+                    {error}
+                </p>
+            )}
         </div>
     );
 }

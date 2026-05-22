@@ -61,7 +61,7 @@ export default function Header() {
     }
 
     return (
-        <header className="w-full border-b-2 border-border bg-surface-1 rotate-[-0.5deg] shadow-sm relative z-50">
+        <header className="w-full border-b-2 border-border bg-surface-1  shadow-sm relative">
             <div className="flex justify-between items-center w-full px-6 py-4 max-w-7xl mx-auto gap-6">
                 {/* Brand */}
                 <Link

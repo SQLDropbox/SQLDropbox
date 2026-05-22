@@ -6,14 +6,13 @@ export interface Course {
     courseDescriptionEN: string;
     lecturer: string;
     isActive: boolean;
-    amountOfExercises: number;
 
     students?: Student[];
     chapters?: Chapter[];
 
     studentCount?: number;
     chapterCount?: number;
-
+    amountOfExercises?: number;
     totalCourseCount?: number;
 }
 

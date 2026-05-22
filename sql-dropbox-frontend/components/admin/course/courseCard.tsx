@@ -108,7 +108,7 @@ export default function CourseCard({
                         }
                     `}
                 >
-                    {course.isActive ? "ACTIVE" : "INACTIVE"}
+                    {course.isActive ? t("statusActive") : t("statusArchived")}
                 </div>
             )}
 
