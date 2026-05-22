@@ -48,5 +48,21 @@
         "cancel": "ANNULEER",
         "save": "OPSLAAN",
         "create": "AANMAKEN"
+    },
+    "NotFound": {
+        "stamp": "SYSTEEMFOUT",
+        "title": "Record Niet Gevonden",
+        "description": "Deze pagina bestaat niet of de link is ongeldig.",
+        "goBack": "Ga Terug",
+        "goHome": "Naar Homepagina"
+    },
+    "Unauthorized": {
+        "stamp": "TOEGANG BEPERKT",
+        "title": "Toegang Geweigerd",
+        "description": "Je hebt geen toestemming om deze pagina te bekijken.",
+        "user": "Gebruiker",
+        "role": "Rol",
+        "goBack": "Ga terug",
+        "goHome": "Naar home"
     }
 }

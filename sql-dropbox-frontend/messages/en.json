@@ -48,5 +48,21 @@
         "cancel": "CANCEL",
         "save": "SAVE",
         "create": "CREATE"
+    },
+    "NotFound": {
+        "stamp": "SYSTEM ERROR",
+        "title": "Record Not Found",
+        "description": "This page doesn't exist or the link is invalid.",
+        "goBack": "Go Back",
+        "goHome": "Return Home"
+    },
+    "Unauthorized": {
+        "stamp": "ACCESS RESTRICTED",
+        "title": "Access Denied",
+        "description": "You do not have permission to access this page.",
+        "user": "User",
+        "role": "Role",
+        "goBack": "Go Back",
+        "goHome": "Go Home"
     }
 }
