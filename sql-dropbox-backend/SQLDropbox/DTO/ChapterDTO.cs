@@ -8,4 +8,5 @@ public class ChapterDTO
     public string ChapterDescriptionEN { get; set; }
     public int AmountOfExercises { get; set; }
     public int SchemaId { get; set; } = 2;
+    public string? SchemaName { get; set; }
 }

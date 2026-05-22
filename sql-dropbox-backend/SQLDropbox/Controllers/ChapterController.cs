@@ -30,6 +30,7 @@ public class ChapterController(AppDbContext db, RandomExerciseSelectorService re
                 x.ChapterDescriptionEN,
                 x.AmountOfExercises,
                 x.Schema.SchemaId,
+                x.Schema.SchemaName,
                 x.Course.CourseId,
             }).ToList();
         return Ok(chapters);
@@ -46,6 +47,7 @@ public class ChapterController(AppDbContext db, RandomExerciseSelectorService re
             x.ChapterDescriptionNL,
             x.ChapterDescriptionEN,
             x.Schema.SchemaId,
+            x.Schema.SchemaName,
             x.AmountOfExercises,
             x.CreatedAt
 
