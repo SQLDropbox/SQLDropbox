@@ -26,32 +26,49 @@ export default function Page() {
     }, [data, router]);
 
     return (
-        <div>
+        <div className="bg-paper text-ink min-h-screen flex flex-col">
             <Header />
 
-            <div className="max-w-350 mx-auto p-6">
-                <div className="flex justify-between items-center">
-                    <div>
-                        <h1>{t("title")}</h1>
-                    </div>
+            <main className="flex-grow max-w-7xl mx-auto w-full px-6 py-12 relative">
+                {/* Page header */}
+                <div className="mb-12 rotate-1">
+                    <h1 className="font-display text-5xl font-bold leading-tight tracking-tight border-b-4 border-accent inline-block pb-2">
+                        {t("title")}
+                    </h1>
                 </div>
 
+                {/* Loading state */}
                 {isLoading && (
-                    <p className="mt-6 text-gray-500">{t("loading")}</p>
+                    <p className="font-mono text-sm text-muted mt-6 italic">
+                        {t("loading")}
+                    </p>
                 )}
 
-                {error && <p className="mt-6 text-red-500">{t("error")}</p>}
+                {/* Error state */}
+                {error && (
+                    <p className="font-mono text-sm text-error mt-6">
+                        {t("error")}
+                    </p>
+                )}
 
+                {/* Empty state */}
                 {data?.length === 0 && !isLoading && (
-                    <p className="mt-6 text-gray-500">{t("empty")}</p>
+                    <p className="font-mono text-sm text-muted mt-6 italic">
+                        {t("empty")}
+                    </p>
                 )}
 
-                <div className="grid grid-cols-3 gap-6 my-6">
-                    {data?.map((course) => (
-                        <CourseCard key={course.courseId} course={course} />
+                {/* Course grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12 pb-24">
+                    {data?.map((course, index) => (
+                        <CourseCard
+                            key={course.courseId}
+                            course={course}
+                            index={index}
+                        />
                     ))}
                 </div>
-            </div>
+            </main>
         </div>
     );
 }
