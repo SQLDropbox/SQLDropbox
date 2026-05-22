@@ -8,10 +8,13 @@ import CourseCard from "@/components/admin/course/courseCard";
 import { useTranslations } from "next-intl";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Loading from "@/components/loading";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Page() {
     const t = useTranslations("Course");
     const router = useRouter();
+    const { isStudent } = useAuth();
 
     const { data, isLoading, error } = useQuery<Course[]>({
         queryKey: ["courses"],
@@ -20,10 +23,14 @@ export default function Page() {
     });
 
     useEffect(() => {
-        if (data?.length === 1) {
+        if (data?.length === 1 && isStudent) {
             router.push(`/${data[0].courseId}`);
         }
-    }, [data, router]);
+    }, [data, router, isStudent]);
+
+    if (isLoading || (data?.length === 1 && isStudent)) {
+        return <Loading />;
+    }
 
     return (
         <div className="bg-paper text-ink min-h-screen flex flex-col">
@@ -36,13 +43,6 @@ export default function Page() {
                         {t("title")}
                     </h1>
                 </div>
-
-                {/* Loading state */}
-                {isLoading && (
-                    <p className="font-mono text-sm text-muted mt-6 italic">
-                        {t("loading")}
-                    </p>
-                )}
 
                 {/* Error state */}
                 {error && (
