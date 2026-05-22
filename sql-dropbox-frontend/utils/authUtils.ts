@@ -6,18 +6,14 @@ const login = (router: AppRouterInstance, token: string) => {
     setTimeout(() => {
         router.push("/");
     }, 50);
-
-    router.push("/");
 };
 
 const logout = (router: AppRouterInstance) => {
     document.cookie = "token=; path=/; max-age=0; SameSite=Strict";
 
     setTimeout(() => {
-        router.push("/");
+        router.push("/login");
     }, 50);
-    
-    router.push("/login");
 };
 
 export const authUtils = {
