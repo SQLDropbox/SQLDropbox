@@ -27,6 +27,7 @@
 @layer base {
     body {
         background-color: #f5f3fe;
+        overflow-x: hidden;
     }
 
     button {
