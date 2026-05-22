@@ -9,6 +9,7 @@ import AlertDialog from "@/components/dialog/alertDialog";
 import { useAuth } from "@/hooks/useAuth";
 import DuplicateCourseModal from "./duplicateCourseModal";
 import { useTranslations } from "next-intl";
+import { FiCopy, FiTrash2 } from "react-icons/fi";
 
 interface Props {
     open: boolean;
@@ -90,17 +91,18 @@ export default function EditCourseDialog({
     async function handleDuplicate(customId?: string) {
         if (!course) return;
         setIsDuplicating(true);
-        
+
         try {
             await courseService.duplicateCourse(course.courseId, customId);
-            
+
             setDuplicateDialogOpen(false);
             onSuccess();
             onClose();
         } catch (err: any) {
             console.error(err);
             setErrorDialog(
-                err?.message || "Something went wrong while duplicating the course.",
+                err?.message ||
+                    "Something went wrong while duplicating the course.",
             );
         } finally {
             setIsDuplicating(false);
@@ -305,20 +307,59 @@ export default function EditCourseDialog({
                 </div>
 
                 {/* FOOTER CONTROL STRIP */}
-                <div className="border-t border-border bg-surface-1 px-6 py-4 flex justify-end gap-3">
-                    <button
-                        onClick={onClose}
-                        className="px-4 py-2 border border-border text-muted hover:bg-ink hover:text-paper transition"
-                    >
-                        CANCEL
-                    </button>
+                <div className="border-t border-border bg-surface-1 px-6 py-4 flex justify-between gap-3">
+                    <div>
+                        {isAdmin && isEdit && (
+                            <div className="flex items-center gap-3">
+                                <button
+                                    onClick={onDelete}
+                                    className="
+                                        flex items-center justify-center
+                                        w-9 h-9
+                                        border border-error
+                                        text-muted
+                                        hover:bg-error hover:text-paper
+                                        transition
+                                        -rotate-1
+                                    "
+                                    title={t("delete")}
+                                >
+                                    <FiTrash2 className="text-[14px]" />
+                                </button>
 
-                    <button
-                        onClick={handleSubmit}
-                        className="px-4 py-2 border-2 border-accent text-accent hover:bg-accent hover:text-paper transition rotate-[1deg]"
-                    >
-                        {isEdit ? "SAVE RECORD" : "CREATE ENTRY"}
-                    </button>
+                                <button
+                                    onClick={() => setDuplicateDialogOpen(true)}
+                                    className="
+                                        flex items-center justify-center
+                                        w-9 h-9
+                                        border border-accent
+                                        text-accent
+                                        hover:bg-accent hover:text-paper
+                                        transition
+                                        rotate-[1.5deg]
+                                    "
+                                    title={t("duplicate")}
+                                >
+                                    <FiCopy className="text-[14px]" />
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={onClose}
+                            className="px-4 py-2 border border-border text-muted hover:bg-ink hover:text-paper transition"
+                        >
+                            {t("cancel")}
+                        </button>
+
+                        <button
+                            onClick={handleSubmit}
+                            className="px-4 py-2 border-2 border-accent text-accent hover:bg-accent hover:text-paper transition rotate-1"
+                        >
+                            {isEdit ? t("save") : t("create")}
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -331,16 +372,6 @@ export default function EditCourseDialog({
                 isDuplicating={isDuplicating}
             />
 
-            <DuplicateCourseModal
-                open={duplicateDialogOpen}
-                onClose={() => setDuplicateDialogOpen(false)}
-                onConfirm={handleDuplicate}
-                courseName={course?.courseNameEN}
-                originalCourseId={course?.courseId}
-                isDuplicating={isDuplicating}
-            />
-
-            {/* dialogs unchanged */}
             <AlertDialog
                 open={!!errorDialog}
                 onClose={() => setErrorDialog(null)}
