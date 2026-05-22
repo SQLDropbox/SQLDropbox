@@ -171,7 +171,6 @@ export default function EditCourseDialog({
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-            {/* DOCUMENT SHEET */}
             <div className="relative w-full max-w-170 aspect-210/297 bg-paper-light text-ink border border-border shadow-2xl flex flex-col max-h-[90vh] font-mono">
                 {/* HEADER STRIP */}
                 <div className="border-b border-border bg-paper px-6 py-4 flex justify-between items-start">
@@ -317,7 +316,7 @@ export default function EditCourseDialog({
                                         flex items-center justify-center
                                         w-9 h-9
                                         border border-error
-                                        text-muted
+                                        text-ink
                                         hover:bg-error hover:text-paper
                                         transition
                                         -rotate-1

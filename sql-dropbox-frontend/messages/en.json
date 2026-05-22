@@ -29,8 +29,6 @@
         "description": "Description",
         "lecturer": "Lecturer",
         "active": "Active",
-        "delete": "Delete",
-        "cancel": "Cancel",
         "saveChanges": "Save Changes",
         "createCourse": "Create Course",
         "errorTitle": "Error",
@@ -44,6 +42,11 @@
             "saveFailed": "Something went wrong while saving the course."
         },
         "statusActive": "ACTIVE",
-        "statusArchived": "ARCHIVED"
+        "statusArchived": "ARCHIVED",
+        "delete": "Delete",
+        "duplicate": "Duplicate",
+        "cancel": "CANCEL",
+        "save": "SAVE",
+        "create": "CREATE"
     }
 }

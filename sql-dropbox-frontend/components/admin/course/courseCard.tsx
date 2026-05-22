@@ -40,7 +40,7 @@ export default function CourseCard({
 
     const rotation = rotations[(index + row) % rotations.length];
     const surface = surfaces[(index + row) % surfaces.length];
-    const stampRotation = stampRotations[(index) % stampRotations.length];
+    const stampRotation = stampRotations[index % stampRotations.length];
     const tabSide = index % 2 === 0 ? "left-0" : "right-0";
 
     const courseName =
@@ -63,25 +63,23 @@ export default function CourseCard({
         >
             {/* Tape */}
             <div
-                className="absolute pointer-events-none"
-                style={{
-                    top: "-10px",
-                    left: "50%",
-                    transform: "translateX(-50%) rotate(-2deg)",
-                    width: "80px",
-                    height: "25px",
-                    backgroundColor: "rgba(255,255,255,0.4)",
-                    border: "1px solid rgba(0,0,0,0.1)",
-                    boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
-                    zIndex: 10,
-                }}
+                className={`
+                    absolute pointer-events-none
+                    -top-2.5 left-1/2
+                    -translate-x-1/2 -rotate-2
+                    w-20 h-6
+                    bg-white/40
+                    border border-black/10
+                    shadow-[0_1px_2px_rgba(0,0,0,0.05)]
+                    z-10
+                `}
             />
 
             {/* Tab */}
             <div
                 className={`
                     absolute -top-6 ${tabSide}
-                    bg-paper
+                    ${surface}
                     px-4 py-1
                     border border-border border-b-0
                 `}

@@ -29,8 +29,6 @@
         "description": "Beschrijving",
         "lecturer": "Lector",
         "active": "Actief",
-        "delete": "Verwijderen",
-        "cancel": "Annuleren",
         "saveChanges": "Wijzigingen opslaan",
         "createCourse": "Cursus aanmaken",
         "errorTitle": "Fout",
@@ -44,6 +42,11 @@
             "saveFailed": "Er is iets misgegaan tijdens het opslaan van de cursus."
         },
         "statusActive": "ACTIEF",
-        "statusArchived": "GEARCHIVEERD"
+        "statusArchived": "GEARCHIVEERD",
+        "delete": "Verwijderen",
+        "duplicate": "Dupliceren",
+        "cancel": "ANNULEER",
+        "save": "OPSLAAN",
+        "create": "AANMAKEN"
     }
 }
