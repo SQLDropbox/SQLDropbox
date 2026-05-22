@@ -134,6 +134,7 @@ export default function Page() {
 
                                 <button
                                     type="button"
+                                    tabIndex={-1}
                                     onClick={() =>
                                         setShowPassword(!showPassword)
                                     }
@@ -169,6 +170,7 @@ export default function Page() {
 
                                 <button
                                     type="button"
+                                    tabIndex={-1}
                                     onClick={() =>
                                         setShowConfirmPassword(
                                             !showConfirmPassword,

@@ -27,7 +27,7 @@ public class CourseController(AppDbContext db) : BaseController
         switch (role)
         {
             case Role.Student:
-                query = query.Where(x => x.Students.Any(s => s.UserId == id));
+                query = query.Where(x => x.Students.Any(s => s.UserId == id) && x.IsActive);
                 break;
             case Role.Lecturer:
                 query = query.Where(x => x.Lecturers.Any(l => l.UserId == id));
@@ -61,19 +61,24 @@ public class CourseController(AppDbContext db) : BaseController
 
         var query = _db.Courses
             .Include(x => x.Chapters)
+            .ThenInclude(c => c.Exercises)
+            .ThenInclude(e => e.UserExercises)           
             .Include(x => x.Students)
             .Where(x => x.DeletedAt == null)
             .AsQueryable();
 
         if (role == Role.Student)
         {
-            query = query.Where(x => x.IsActive && x.Students.Any(s => s.UserId == id)); 
+            query = query.Where(x => x.IsActive && x.Students.Any(s => s.UserId == id));            
         }
+
+        var totalCourseCount = query.Count();
 
         var course = query.FirstOrDefault(x => x.CourseId == courseId);
 
         if (course == null)
             return NotFound();
+
 
         return Ok(new
         {
@@ -84,6 +89,7 @@ public class CourseController(AppDbContext db) : BaseController
             course.CourseDescriptionNL,
             course.Lecturer,
             course.IsActive,
+            totalCourseCount,
             chapters = course.Chapters
             .Where(x => x.DeletedAt == null)
             .Select(x => new
@@ -95,6 +101,7 @@ public class CourseController(AppDbContext db) : BaseController
                 x.ChapterDescriptionNL,
                 x.AmountOfExercises,
                 x.Course.CourseId,
+                completedAmount = (role == Role.Student) ? x.Exercises.Sum(e => e.UserExercises.Count(ue => ue.User.UserId == id && ue.IsCompleted)) : 0
             }),
             students = (role == Role.Admin || role == Role.Lecturer) ? course.Students.Select(x => new
             {
@@ -105,7 +112,7 @@ public class CourseController(AppDbContext db) : BaseController
         });
     }
 
-    [Authorize("Admin")]
+    [Authorize(Roles = "Admin")]
     [HttpPost]
     public ActionResult AddCourse([FromBody] CourseDTO course)
     {
@@ -140,8 +147,7 @@ public class CourseController(AppDbContext db) : BaseController
         return Ok(newCourse);
     }
 
-    [Authorize("Admin")]
-    [Authorize("Lecturer")]
+    [Authorize(Roles = "Admin,Lecturer")]
     [HttpPut("{courseId}")]
     public ActionResult UpdateCourse(string courseId, [FromBody] CourseDTO course)
     {
@@ -166,7 +172,7 @@ public class CourseController(AppDbContext db) : BaseController
         return Ok(existing);
     }
 
-    [Authorize("Admin")]
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{courseID}")]
     public ActionResult DeleteCourse(string courseID)
     {

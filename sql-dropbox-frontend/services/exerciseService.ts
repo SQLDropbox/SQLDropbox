@@ -2,7 +2,7 @@ import { Exercise } from "@/types/types";
 import { api } from "./apiClient";
 
 const getExercisesByChapterId = async (chapterId: string) => {
-    return api.publicFetch(`/Chapter/${chapterId}/exercises`, {
+    return api.privateFetch(`/Chapter/${chapterId}/exercises`, {
         method: "GET",
     });
 };

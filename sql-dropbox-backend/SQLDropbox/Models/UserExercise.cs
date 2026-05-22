@@ -15,8 +15,8 @@ namespace SQLDropbox.Models
         [JsonIgnore]
         public Exercise Exercise { get; set; } = null!;
         [JsonIgnore]
-        public User Student {  set; get; } = null!;
-        public ICollection<UserSolution> StudentSolutions { get; set; } = [];
+        public User User {  set; get; } = null!;
+        public ICollection<UserSolution> UserSolutions { get; set; } = [];
 
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }

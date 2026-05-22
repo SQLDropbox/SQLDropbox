@@ -29,8 +29,8 @@ public class UtilitiesController(AppDbContext db, PasswordService ps, PostgreSQL
     public async Task<IActionResult> EmptyTheDb()
     {
         await _db.Requirements.ExecuteDeleteAsync();
-        await _db.StudentSolutions.ExecuteDeleteAsync();
-        await _db.StudentExercises.ExecuteDeleteAsync();
+        await _db.UserSolutions.ExecuteDeleteAsync();
+        await _db.UserExercises.ExecuteDeleteAsync();
         await _db.Solutions.ExecuteDeleteAsync();
         await _db.Exercises.ExecuteDeleteAsync();
         await _db.Chapters.ExecuteDeleteAsync();

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SQLDropbox.Data;
@@ -11,9 +12,11 @@ using SQLDropbox.Data;
 namespace SQLDropbox.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260521095622_NameChangesToPreventConfusion")]
+    partial class NameChangesToPreventConfusion
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -331,17 +334,17 @@ namespace SQLDropbox.Migrations
                     b.Property<bool>("IsCompleted")
                         .HasColumnType("boolean");
 
+                    b.Property<Guid>("StudentUserId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp without time zone");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
 
                     b.HasKey("UserExerciseId");
 
                     b.HasIndex("ExerciseId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("StudentUserId");
 
                     b.ToTable("UserExercise");
                 });
@@ -471,15 +474,15 @@ namespace SQLDropbox.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SQLDropbox.Models.User", "User")
+                    b.HasOne("SQLDropbox.Models.User", "Student")
                         .WithMany("UserExercises")
-                        .HasForeignKey("UserId")
+                        .HasForeignKey("StudentUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Exercise");
 
-                    b.Navigation("User");
+                    b.Navigation("Student");
                 });
 
             modelBuilder.Entity("SQLDropbox.Models.UserSolution", b =>
