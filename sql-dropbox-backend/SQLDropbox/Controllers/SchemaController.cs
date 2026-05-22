@@ -85,8 +85,14 @@ public class SchemaController : ControllerBase
                 "42P01" => BadRequest("Missing table"),
                 "42703" => BadRequest("Missing column"),
                 "42501" => BadRequest("Permission denied"),
-                _ => StatusCode(500, "Database error")
+                _ => StatusCode(500, new
+                {
+                    message = ex.Message,
+                    detail = ex.Detail,
+                    code = ex.SqlState
+                })
             };
+
         }
     }
 }

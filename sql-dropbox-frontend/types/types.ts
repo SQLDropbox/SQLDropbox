@@ -27,6 +27,7 @@ export interface Chapter {
     dbSchema?: string;
     schemaId?: number | null;
     completedAmount?: number;
+    schemaName?: string;
 }
 
 export interface Exercise {
@@ -44,4 +45,17 @@ export interface Student {
     firstName: string;
     lastName: string;
     email: string;
+}
+
+export interface QueryResponse {
+    commandType: string;
+    message?: string;
+    tableName?: string;
+    csvContent?: string;
+    columns?: string[] | null;
+}
+
+export interface QueryExecutionResult {
+    type: "csv" | "json";
+    data: any;
 }
