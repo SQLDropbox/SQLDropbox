@@ -16,7 +16,10 @@
         "manageStudents": "Manage students",
         "editCourse": "Edit course",
         "statusActive": "ACTIVE",
-        "statusArchived": "ARCHIVED"
+        "statusArchived": "ARCHIVED",
+        "backToCourses": "Back to courses",
+        "chaptersLabel": "Chapters",
+        "noChapters": "No chapters yet."
     },
     "CourseDialog": {
         "titleEdit": "Edit Course",

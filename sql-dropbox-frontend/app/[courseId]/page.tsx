@@ -96,6 +96,12 @@ export default function Page() {
                             {t("chaptersLabel") ?? "Chapters"}
                         </p>
 
+                        {data?.chapters?.length === 0 && (
+                            <p className="font-mono text-sm text-muted italic">
+                                {t("noChapters")}
+                            </p>
+                        )}
+
                         <div className="relative mt-40">
                             {data?.chapters?.map((chapter, index) => {
                                 const rotation =
@@ -120,12 +126,6 @@ export default function Page() {
                                 );
                             })}
                         </div>
-
-                        {(!data?.chapters || data.chapters.length === 0) && (
-                            <p className="font-mono text-sm text-muted italic">
-                                {t("noChapters") ?? "No chapters yet."}
-                            </p>
-                        )}
                     </div>
 
                     {/* Footer */}
@@ -135,13 +135,10 @@ export default function Page() {
                             className={`
                             absolute -top-6 -right-px min-w-[30%]
                             bg-surface-2
-                            px-4 py-1
+                            px-4 h-8
                             border border-border border-b-0
                         `}
                         >
-                            <span className="font-mono text-xs uppercase tracking-wider text-muted">
-                                ID: {courseId?.toUpperCase() ?? "—"}
-                            </span>
                         </div>
                         <span className="font-mono text-[10px] uppercase tracking-widest text-muted">
                             {courseId?.toUpperCase()}
