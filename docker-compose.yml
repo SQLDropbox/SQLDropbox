@@ -27,30 +27,6 @@ services:
     networks:
       - appnet
 
-  # migrations need to be done better
-  migrations:
-    image: mcr.microsoft.com/dotnet/sdk:10.0
-    container_name: migrations
-    working_dir: /src
-    volumes:
-      - ./sql-dropbox-backend:/src
-
-    depends_on:
-      postgres:
-        condition: service_healthy
-
-    environment:
-      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=sqldropbox;Username=postgres;Password=postgres"
-
-    command: >
-      sh -c "
-      dotnet tool restore &&
-      dotnet restore SQLDropbox.slnx &&
-      dotnet ef database update --project SQLDropbox/SQLDropbox.csproj"
-
-    networks:
-      - appnet
-
   api:
     build:
       context: ./sql-dropbox-backend
@@ -58,9 +34,6 @@ services:
 
     container_name: dotnet-api
     restart: unless-stopped
-    depends_on:
-      migrations:
-        condition: service_completed_successfully
 
     ports:
       - "8080:8080"
