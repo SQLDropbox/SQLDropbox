@@ -46,3 +46,16 @@ export interface Student {
     lastName: string;
     email: string;
 }
+
+export interface QueryResponse {
+    commandType: string;
+    message?: string;
+    tableName?: string;
+    csvContent?: string;
+    columns?: string[] | null;
+}
+
+export interface QueryExecutionResult {
+    type: "csv" | "json";
+    data: any;
+}

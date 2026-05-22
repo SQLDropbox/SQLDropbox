@@ -14,6 +14,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Chapter, Course, Exercise } from "@/types/types";
 import { courseService } from "@/services/courseService";
 import { queryService } from "@/services/queryService";
+import QueryResult from "@/components/student/QueryResult";
 
 import ExerciseSidebar from "@/components/student/exerciseSidebar";
 
@@ -222,7 +223,7 @@ function ExercisePanel({
 
     const [queryValue, setQueryValue] = useState("");
 
-    const [queryResult, setQueryResult] = useState<string | null>(null);
+    const [queryResult, setQueryResult] = useState<any>(null);
 
     const [queryError, setQueryError] = useState<string | null>(null);
 
@@ -246,13 +247,8 @@ function ExercisePanel({
                 query: queryValue,
             });
 
-            if (result.type === "csv") {
-                setQueryResult(result.data);
-            } else {
-                setQueryResult(
-                    JSON.stringify(result.data, null, 2),
-                );
-            }
+            setQueryResult(result);
+
         } catch (err) {
             setQueryError(
                 err instanceof Error
@@ -407,15 +403,7 @@ function ExercisePanel({
                 )}
 
                 {queryResult && (
-                    <div className="rounded-2xl border border-gray-200 bg-[#f8f8f8] p-4">
-                        <h4 className="mb-3 text-sm font-semibold text-slate-800">
-                            Query Result
-                        </h4>
-
-                        <pre className="overflow-x-auto whitespace-pre-wrap text-sm text-slate-700">
-                            {queryResult}
-                        </pre>
-                    </div>
+                    <QueryResult result={queryResult} />
                 )}
             </div>
         </div>
