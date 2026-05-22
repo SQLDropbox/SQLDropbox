@@ -11,10 +11,15 @@ var builder = WebApplication.CreateBuilder(args);
 // CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("localhostFrontend", policy =>
+    options.AddPolicy("AllowFrontend", policy =>
     {
         policy
-            .WithOrigins("http://localhost:3000")
+
+            .WithOrigins(
+                builder.Configuration["AllowedOrigins"]
+                    ?.Split(",", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                    ?? []
+            )
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
@@ -67,7 +72,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 // JWT
-var publicKeyPem = File.ReadAllText(builder.Configuration["Jwt:PublicKeyPath"]!);
+var publicKeyPem = File.ReadAllText(builder.Configuration["Jwt:PublicKeyPath"])
+    ?? throw new Exception("Jwt:PublicKeyPath is missing");
 var rsa = RSA.Create();
 rsa.ImportFromPem(publicKeyPem);
 
@@ -95,10 +101,10 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseCors("localhostFrontend");
-    app.MapOpenApi();
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    // app.UseCors("AllowFrontend");
+    // app.MapOpenApi();
+    // app.UseSwagger();
+    // app.UseSwaggerUI();
 
     //// DB initialization on startup
     //AsyncServiceScope scope = app.Services.CreateAsyncScope();
@@ -110,6 +116,11 @@ if (app.Environment.IsDevelopment())
 
     //await DbInitializer.SeedAsync(db/*, pass*/);
 }
+
+app.UseCors("AllowFrontend");
+app.MapOpenApi();
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 
