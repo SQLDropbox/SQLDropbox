@@ -7,6 +7,7 @@ import { courseService } from "@/services/courseService";
 import ConfirmDialog from "@/components/dialog/confirmDialog";
 import AlertDialog from "@/components/dialog/alertDialog";
 import { useAuth } from "@/hooks/useAuth";
+import DuplicateCourseModal from "./duplicateCourseModal";
 import { useTranslations } from "next-intl";
 
 interface Props {
@@ -45,6 +46,9 @@ export default function EditCourseDialog({
     const [submitted, setSubmitted] = useState(false);
     const [confirmDeleteDialogOpen, setConfirmDeleteDialogOpen] =
         useState(false);
+
+    const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false);
+    const [isDuplicating, setIsDuplicating] = useState(false);
     const [courseIdLocked, setCourseIdLocked] = useState(!isEdit);
     const [errorDialog, setErrorDialog] = useState<string | null>(null);
 
@@ -77,6 +81,31 @@ export default function EditCourseDialog({
     }, [open, mode, course]);
 
     if (!open) return null;
+
+    function onDelete() {
+        if (!isEdit || !course) return;
+        setConfirmDeleteDialogOpen(true);
+    }
+
+    async function handleDuplicate(customId?: string) {
+        if (!course) return;
+        setIsDuplicating(true);
+        
+        try {
+            await courseService.duplicateCourse(course.courseId, customId);
+            
+            setDuplicateDialogOpen(false);
+            onSuccess();
+            onClose();
+        } catch (err: any) {
+            console.error(err);
+            setErrorDialog(
+                err?.message || "Something went wrong while duplicating the course.",
+            );
+        } finally {
+            setIsDuplicating(false);
+        }
+    }
 
     function handleChange(
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -292,6 +321,24 @@ export default function EditCourseDialog({
                     </button>
                 </div>
             </div>
+
+            <DuplicateCourseModal
+                open={duplicateDialogOpen}
+                onClose={() => setDuplicateDialogOpen(false)}
+                onConfirm={handleDuplicate}
+                courseName={course?.courseNameEN}
+                originalCourseId={course?.courseId}
+                isDuplicating={isDuplicating}
+            />
+
+            <DuplicateCourseModal
+                open={duplicateDialogOpen}
+                onClose={() => setDuplicateDialogOpen(false)}
+                onConfirm={handleDuplicate}
+                courseName={course?.courseNameEN}
+                originalCourseId={course?.courseId}
+                isDuplicating={isDuplicating}
+            />
 
             {/* dialogs unchanged */}
             <AlertDialog

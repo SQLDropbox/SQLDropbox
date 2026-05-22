@@ -33,10 +33,19 @@ const deleteCourse = async (courseId: string) => {
     });
 };
 
+const duplicateCourse = async (courseId: string, newCourseId?: string) => {
+    const payload = newCourseId ? { newCourseId } : {};
+    return api.privateFetch(`/Course/${courseId}/duplicate`, {
+        method: "POST",
+        body: JSON.stringify(payload),
+    });
+};
+
 export const courseService = {
     getCourses,
     getCourseByCourseId,
     addCourse,
     updateCourse,
     deleteCourse,
+    duplicateCourse,
 };
