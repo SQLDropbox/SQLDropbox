@@ -24,42 +24,67 @@ export default function Page() {
     });
 
     return (
-        <div>
+        <div className="bg-paper text-ink min-h-screen flex flex-col">
             <Header />
-            <div className="max-w-350 mx-auto p-6">
-                <div className="flex justify-between items-center">
-                    <div>
-                        <h1>{t("manageTitle")}</h1>
+
+            <main className="grow max-w-7xl mx-auto w-full px-6 py-12 relative">
+                {/* Header */}
+                <div className="mb-12 flex items-start justify-between gap-6">
+                    <div className="rotate-1">
+                        <h1 className="font-display text-5xl font-bold leading-tight tracking-tight border-b-4 border-accent inline-block pb-2">
+                            {t("manageTitle")}
+                        </h1>
                     </div>
+
                     {isAdmin && (
                         <button
-                            className="bg-gray-900 hover:bg-gray-700 transition-colors text-white py-1 px-2 rounded text-sm"
                             onClick={() => {
                                 setSelectedCourse(null);
                                 setEditDialogOpen(true);
                             }}
+                            className="
+                                flex items-center gap-2
+                                border-2 border-accent text-accent
+                                px-4 py-2
+                                font-mono text-xs uppercase tracking-widest
+                                hover:bg-accent hover:text-paper
+                                transition-colors
+                            "
                         >
-                            <FaPlus className="inline-block mr-1" />
+                            <FaPlus />
                             {t("newCourse")}
                         </button>
                     )}
                 </div>
 
+                {/* Loading */}
                 {isLoading && (
-                    <p className="mt-6 text-gray-500">{t("loading")}</p>
+                    <p className="font-mono text-sm text-muted italic mt-6">
+                        {t("loading")}
+                    </p>
                 )}
 
-                {error && <p className="mt-6 text-red-500">{t("error")}</p>}
+                {/* Error */}
+                {error && (
+                    <p className="font-mono text-sm text-error mt-6">
+                        {t("error")}
+                    </p>
+                )}
 
+                {/* Empty */}
                 {data?.length === 0 && !isLoading && (
-                    <p className="mt-6 text-gray-500">{t("empty")}</p>
+                    <p className="font-mono text-sm text-muted italic mt-6">
+                        {t("empty")}
+                    </p>
                 )}
 
-                <div className="grid grid-cols-3 gap-6 my-6">
-                    {data?.map((course) => (
+                {/* Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12 pb-24">
+                    {data?.map((course, index) => (
                         <CourseCard
                             key={course.courseId}
                             course={course}
+                            index={index}
                             onEdit={() => {
                                 setSelectedCourse(course);
                                 setEditDialogOpen(true);
@@ -68,7 +93,9 @@ export default function Page() {
                         />
                     ))}
                 </div>
-            </div>
+            </main>
+
+            {/* Dialog */}
             <EditCourseDialog
                 open={editDialogOpen}
                 onClose={() => setEditDialogOpen(false)}

@@ -2,42 +2,83 @@
 
 import Header from "@/components/header";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 export default function NotFound() {
     const router = useRouter();
+    const t = useTranslations("NotFound");
 
     return (
-        <div className="min-h-screen flex flex-col">
+        <div className="min-h-screen flex flex-col bg-paper text-ink font-mono">
             <Header />
 
-            <div className="flex-1 flex flex-col items-center justify-center text-center px-6">
-                <p className="text-6xl mb-4 font-bold">
-                    404
-                </p>
+            <main className="flex-1 flex items-center justify-center px-6">
+                {/* DOCUMENT SHEET */}
+                <div
+                    className="
+                        w-full max-w-lg
+                        bg-paper-light
+                        border border-border
+                        shadow-2xl
+                        p-10
+                        text-center
+                        rotate-[-0.5deg]
+                        relative
+                    "
+                >
+                    {/* TOP STAMP */}
+                    <div className="absolute -top-4 right-6 rotate-[-10deg] border-2 border-error text-error text-[10px] uppercase tracking-widest px-3 py-1 bg-paper-light">
+                        {t("stamp")}
+                    </div>
 
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                    Page Not Found
-                </h1>
+                    {/* BIG CODE */}
+                    <p className="text-6xl font-bold text-error mb-4 tracking-tight">
+                        404
+                    </p>
 
-                <p className="text-gray-500 mb-6">
-                    This page doesn't exist or the link is invalid.
-                </p>
+                    {/* TITLE */}
+                    <h1 className="text-xl font-semibold uppercase tracking-widest mb-2">
+                        {t("title")}
+                    </h1>
 
-                <div className="flex gap-3">
-                    <button
-                        onClick={() => router.back()}
-                        className="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-100 transition"
-                    >
-                        Go Back
-                    </button>
-                    <a
-                        href="/"
-                        className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition"
-                    >
-                        Go Home
-                    </a>
+                    {/* DESCRIPTION */}
+                    <p className="text-sm text-muted leading-relaxed mb-8">
+                        {t("description")}
+                    </p>
+
+                    {/* ACTIONS */}
+                    <div className="flex justify-center gap-3">
+                        <button
+                            onClick={() => router.back()}
+                            className="
+                                px-4 py-2
+                                border border-border
+                                text-muted
+                                text-xs uppercase tracking-widest
+                                hover:bg-ink hover:text-paper hover:border-ink
+                                transition
+                            "
+                        >
+                            {t("goBack")}
+                        </button>
+
+                        <a
+                            href="/"
+                            className="
+                                px-4 py-2
+                                border-2 border-accent
+                                text-accent
+                                text-xs uppercase tracking-widest
+                                hover:bg-accent hover:text-paper
+                                transition
+                                rotate-1
+                            "
+                        >
+                            {t("goHome")}
+                        </a>
+                    </div>
                 </div>
-            </div>
+            </main>
         </div>
     );
 }

@@ -12,7 +12,7 @@ export interface Course {
 
     studentCount?: number;
     chapterCount?: number;
-
+    amountOfExercises?: number;
     totalCourseCount?: number;
 }
 

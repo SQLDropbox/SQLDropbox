@@ -1,19 +1,35 @@
-@import "tailwindcss/preflight" layer(base);
-@import "tailwindcss/theme" layer(theme);
-@import "tailwindcss/utilities" layer(utilities);
+@import "tailwindcss";
+
+@theme {
+    /* surface */
+    --color-paper: #fff9ea;
+    --color-paper-light: #fffdf6;
+    --color-surface-1: #eee8d6;
+    --color-surface-2: #e8e2d0;
+    --color-surface-3: #faf3e1;
+
+    /* text */
+    --color-ink: #1e1c11;
+    --color-muted: #57423e;
+
+    /* accents */
+    --color-accent: #6c1208;
+    --color-border: #8a716d;
+
+    /* states */
+    --color-error: #ba1a1a;
+
+    /* --- fonts --- */
+    --font-display: var(--font-display);
+    --font-mono: var(--font-mono);
+}
 
 @layer base {
     body {
         background-color: #f5f3fe;
+        overflow-x: hidden;
     }
 
-    h1 {
-        font-size: 20px;
-        line-height: 1.4;
-        font-weight: bold;
-        color: var(--color-gray-900);
-    }
-    
     button {
         cursor: pointer;
     }
