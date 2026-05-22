@@ -6,10 +6,13 @@ import { authUtils } from "@/utils/authUtils";
 import { useQuery } from "@tanstack/react-query";
 import { notFound, useParams, useRouter } from "next/navigation";
 import { useState } from "react";
-import { FaEnvelope, FaEye, FaEyeSlash, FaLock } from "react-icons/fa6";
+import { FaEnvelope, FaLock } from "react-icons/fa";
+import { useTranslations } from "next-intl";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 
 export default function Page() {
     const router = useRouter();
+    const t = useTranslations("Activate");
 
     const params = useParams();
     const studentId = (params.studentId as string) ?? undefined;
@@ -31,21 +34,20 @@ export default function Page() {
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-
         setErrorMessage("");
 
         if (!password || !confirmPassword) {
-            setErrorMessage("Password fields cannot be empty.");
+            setErrorMessage(t("errors.empty"));
             return;
         }
 
         if (password !== confirmPassword) {
-            setErrorMessage("Passwords do not match.");
+            setErrorMessage(t("errors.mismatch"));
             return;
         }
 
         if (password.length < 6) {
-            setErrorMessage("Password must be at least 6 characters long.");
+            setErrorMessage(t("errors.tooShort"));
             return;
         }
 
@@ -56,71 +58,72 @@ export default function Page() {
             );
             authUtils.login(router, response.token);
         } catch (err: any) {
-            setErrorMessage(err.message ?? "Something went wrong.");
+            setErrorMessage(err.message ?? t("errors.generic"));
         }
     };
 
-    if (error) {
-        notFound();
-    }
+    if (error) return notFound();
 
     if (isLoading) {
         return (
-            <div className="min-h-screen flex flex-col">
+            <div className="min-h-screen flex flex-col bg-paper text-ink font-mono">
                 <Header />
-
-                <div className="flex-1 flex flex-col items-center justify-center gap-3">
-                    <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-300 border-t-blue-600" />
-                    <p className="text-sm text-gray-600">Loading...</p>
+                <div className="flex-1 flex items-center justify-center">
+                    <p className="text-sm text-muted uppercase tracking-widest">
+                        {t("loading")}
+                    </p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen">
+        <div className="min-h-screen flex flex-col bg-paper text-ink font-mono">
             <Header />
 
-            <div className="max-w-350 mx-auto p-6 flex justify-center items-center min-h-[80vh]">
-                <div className="w-full max-w-md rounded-xl border border-gray-200 bg-white px-8 py-8 shadow-sm hover:shadow-lg transition-shadow">
-                    {/* Header */}
-                    <div className="mb-8 text-center">
-                        <h1 className="text-xl font-semibold text-gray-900 mb-2">
-                            Welcome {data.firstName}!
+            <main className="flex-1 flex items-center justify-center px-6">
+                {/* DOCUMENT SHEET */}
+                <div className="w-full max-w-md bg-paper-light border border-border shadow-2xl">
+                    {/* HEADER */}
+                    <div className="border-b border-border bg-paper px-6 py-4">
+                        <h1 className="text-sm uppercase tracking-widest font-semibold">
+                            {t("title")}
                         </h1>
-                        <p className="text-gray-600">
-                            Please set a password to activate your account
+                        <p className="text-xs text-muted mt-1">
+                            {t("subtitle")}
                         </p>
                     </div>
 
-                    {/* Form */}
-                    <form className="space-y-5" onSubmit={handleSubmit}>
-                        {/* UserId (readonly) */}
+                    {/* BODY */}
+                    <form
+                        onSubmit={handleSubmit}
+                        className="px-6 py-6 space-y-5"
+                    >
+                        {/* USER ID */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                User ID
+                            <label className="text-xs uppercase tracking-widest text-muted">
+                                {t("userId")}
                             </label>
 
-                            <div className="flex items-center gap-3 border border-gray-200 rounded-lg px-4 py-3 bg-gray-50">
-                                <FaEnvelope className="text-gray-500 text-sm" />
-
+                            <div className="flex items-center gap-2 border-b border-border py-2">
+                                <FaEnvelope className="text-muted text-sm" />
                                 <input
                                     type="text"
-                                    value={data.userId}
+                                    value={data?.userId}
                                     readOnly
-                                    className="w-full outline-none text-sm text-gray-700 bg-transparent"
+                                    className="w-full bg-transparent outline-none text-sm text-ink"
                                 />
                             </div>
                         </div>
 
-                        {/* Password */}
+                        {/* PASSWORD */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Password
+                            <label className="text-xs uppercase tracking-widest text-muted">
+                                {t("password")}
                             </label>
 
-                            <div className="flex items-center gap-3 border border-gray-300 rounded-lg px-4 py-3 bg-white focus-within:border-black transition-colors">
-                                <FaLock className="text-gray-500 text-sm" />
+                            <div className="flex items-center gap-2 border-b border-border py-2">
+                                <FaLock className="text-muted text-sm" />
 
                                 <input
                                     type={showPassword ? "text" : "password"}
@@ -128,31 +131,29 @@ export default function Page() {
                                     onChange={(e) =>
                                         setPassword(e.target.value)
                                     }
-                                    placeholder="Enter a secure password"
-                                    className="w-full outline-none text-sm text-gray-900 placeholder:text-gray-400 bg-transparent"
+                                    placeholder={t("passwordPlaceholder")}
+                                    className="w-full bg-transparent outline-none text-sm caret-ink"
                                 />
 
                                 <button
                                     type="button"
                                     tabIndex={-1}
-                                    onClick={() =>
-                                        setShowPassword(!showPassword)
-                                    }
-                                    className="text-gray-500 text-sm hover:text-gray-700"
+                                    onClick={() => setShowPassword((p) => !p)}
+                                    className="text-muted hover:text-ink text-sm"
                                 >
-                                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                                    {showPassword ? <FiEyeOff /> : <FiEye />}
                                 </button>
                             </div>
                         </div>
 
-                        {/* Confirm Password */}
+                        {/* CONFIRM PASSWORD */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Confirm Password
+                            <label className="text-xs uppercase tracking-widest text-muted">
+                                {t("confirmPassword")}
                             </label>
 
-                            <div className="flex items-center gap-3 border border-gray-300 rounded-lg px-4 py-3 bg-white focus-within:border-black transition-colors">
-                                <FaLock className="text-gray-500 text-sm" />
+                            <div className="flex items-center gap-2 border-b border-border py-2">
+                                <FaLock className="text-muted text-sm" />
 
                                 <input
                                     type={
@@ -164,53 +165,59 @@ export default function Page() {
                                     onChange={(e) =>
                                         setConfirmPassword(e.target.value)
                                     }
-                                    placeholder="Re-enter your password"
-                                    className="w-full outline-none text-sm text-gray-900 placeholder:text-gray-400 bg-transparent"
+                                    placeholder={t("confirmPasswordPlaceholder")}
+                                    className="w-full bg-transparent outline-none text-sm caret-ink"
                                 />
 
                                 <button
                                     type="button"
                                     tabIndex={-1}
                                     onClick={() =>
-                                        setShowConfirmPassword(
-                                            !showConfirmPassword,
-                                        )
+                                        setShowConfirmPassword((p) => !p)
                                     }
-                                    className="text-gray-500 text-sm hover:text-gray-700"
+                                    className="text-muted hover:text-ink text-sm"
                                 >
                                     {showConfirmPassword ? (
-                                        <FaEyeSlash />
+                                        <FiEyeOff />
                                     ) : (
-                                        <FaEye />
+                                        <FiEye />
                                     )}
                                 </button>
                             </div>
                         </div>
 
+                        {/* ERROR */}
                         {errorMessage && (
-                            <div className="text-center">
-                                <p className="text-sm text-red-600">
-                                    {errorMessage}
-                                </p>
-                            </div>
+                            <p className="text-xs text-error uppercase tracking-widest">
+                                {errorMessage}
+                            </p>
                         )}
 
-                        {/* Submit */}
-                        <button
-                            type="submit"
-                            disabled={
-                                password.length == 0 ||
-                                password !== confirmPassword
-                            }
-                            className="w-full flex items-center justify-center gap-2 text-sm px-4 py-3 rounded-lg transition-colors cursor-pointer
-        bg-black text-white hover:bg-gray-800
-        disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed disabled:hover:bg-gray-300"
-                        >
-                            Create account
-                        </button>
+                        {/* ACTION */}
+                        <div className="flex justify-end pt-2">
+                            <button
+                                type="submit"
+                                disabled={
+                                    !password || password !== confirmPassword
+                                }
+                                className="
+                                    px-4 py-2
+                                    border-2 border-accent
+                                    text-accent
+                                    text-xs uppercase tracking-widest
+                                    hover:bg-accent hover:text-paper
+                                    transition
+                                    rotate-1
+                                    disabled:opacity-40
+                                    disabled:cursor-not-allowed
+                                "
+                            >
+                                {t("submit")}
+                            </button>
+                        </div>
                     </form>
                 </div>
-            </div>
+            </main>
         </div>
     );
 }
