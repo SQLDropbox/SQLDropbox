@@ -188,4 +188,94 @@ public class CourseController(AppDbContext db) : BaseController
 
         return Ok();
     }
+
+    [HttpPost("{courseId}/Duplicate")]
+    public ActionResult DuplicateCourse(string courseId, [FromBody] DuplicateCourseDTO? request = null)
+    {
+        var existingCourse = _db.Courses
+            .Include(c => c.Chapters.Where(ch => ch.DeletedAt == null))
+            .ThenInclude(ch => ch.Schema)
+            .Include(c => c.Chapters.Where(ch => ch.DeletedAt == null))
+            .ThenInclude(ch => ch.Exercises.Where(e => e.DeletedAt == null))
+            .FirstOrDefault(c => c.CourseId == courseId && c.DeletedAt == null);
+        
+        if (existingCourse == null)
+            return NotFound("Original course not found");
+
+        string finalCourseId;
+        string? newCourseId = request?.NewCourseId;
+
+        if (string.IsNullOrEmpty(newCourseId))
+        {
+            string baseId = existingCourse.CourseId + "-copy";
+            finalCourseId = baseId;
+            int counter = 1;
+            
+            while (_db.Courses.Any(x => x.CourseId == finalCourseId))
+            {
+                finalCourseId = $"{baseId}-{counter++}";
+                counter++;
+            }
+        }
+        else
+        {
+            if (_db.Courses.Any(x => x.CourseId == newCourseId))
+            {
+                return BadRequest("This course name is already in use");
+            }
+            finalCourseId = newCourseId;
+        }
+        
+        
+
+        
+
+        var duplicateCourse = new Course
+        {
+            CourseId = finalCourseId,
+            CourseNameNL = existingCourse.CourseNameNL + " (Kopie)",
+            CourseNameEN = existingCourse.CourseNameEN + " (Copy)",
+            CourseDescriptionNL = existingCourse.CourseDescriptionNL,
+            CourseDescriptionEN = existingCourse.CourseDescriptionEN,
+            Lecturer = existingCourse.Lecturer,
+            IsActive = false,
+            CreatedAt = DateTime.Now,
+            Chapters = new List<Chapter>()
+        };
+
+        foreach (var chapter in existingCourse.Chapters)
+        {
+            var newChapter = new Chapter
+            {
+                ChapterNameNL = chapter.ChapterNameNL,
+                ChapterNameEN = chapter.ChapterNameEN,
+                ChapterDescriptionNL = chapter.ChapterDescriptionNL,
+                ChapterDescriptionEN = chapter.ChapterDescriptionEN,
+                AmountOfExercises = chapter.AmountOfExercises,
+                Order = chapter.Order,
+                Deadline = chapter.Deadline,
+                Schema = chapter.Schema,
+                CreatedAt = DateTime.Now,
+                Exercises = new List<Exercise>()
+            };
+
+            foreach (var exercises in chapter.Exercises)
+            {
+                var newExercise = new Exercise
+                {
+                    QuestionNL = exercises.QuestionNL,
+                    QuestionEN = exercises.QuestionEN,
+                    HintNL = exercises.HintNL,
+                    HintEN = exercises.HintEN,
+                    QueryOutput = exercises.QueryOutput,
+                    CreatedAt = DateTime.Now,
+                };
+                newChapter.Exercises.Add(newExercise);
+            }
+            duplicateCourse.Chapters.Add(newChapter);
+        }
+        _db.Courses.Add(duplicateCourse);
+        _db.SaveChanges();
+        return Ok(duplicateCourse);
+    }
 }

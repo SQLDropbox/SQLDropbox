@@ -7,6 +7,7 @@ import { courseService } from "@/services/courseService";
 import ConfirmDialog from "@/components/dialog/confirmDialog";
 import AlertDialog from "@/components/dialog/alertDialog";
 import { useAuth } from "@/hooks/useAuth";
+import DuplicateCourseModal from "./duplicateCourseModal";
 import { useTranslations } from "next-intl";
 
 interface Props {
@@ -44,6 +45,9 @@ export default function EditCourseDialog({
     const [submitted, setSubmitted] = useState(false);
     const [confirmDeleteDialogOpen, setConfirmDeleteDialogOpen] =
         useState(false);
+
+    const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false);
+    const [isDuplicating, setIsDuplicating] = useState(false);
     const [urlLocked, setUrlLocked] = useState(!isEdit);
     const [errorDialog, setErrorDialog] = useState<string | null>(null);
     const { isAdmin } = useAuth();
@@ -87,6 +91,26 @@ export default function EditCourseDialog({
     function onDelete() {
         if (!isEdit || !course) return;
         setConfirmDeleteDialogOpen(true);
+    }
+
+    async function handleDuplicate(customId?: string) {
+        if (!course) return;
+        setIsDuplicating(true);
+        
+        try {
+            await courseService.duplicateCourse(course.courseId, customId);
+            
+            setDuplicateDialogOpen(false);
+            onSuccess();
+            onClose();
+        } catch (err: any) {
+            console.error(err);
+            setErrorDialog(
+                err?.message || "Something went wrong while duplicating the course.",
+            );
+        } finally {
+            setIsDuplicating(false);
+        }
     }
 
     function handleChange(
@@ -342,13 +366,19 @@ export default function EditCourseDialog({
                 <div
                     className={`flex ${mode === "edit" ? "justify-between" : "justify-end"} gap-3 px-6 py-4 border-t border-gray-100`}
                 >
-                    {mode === "edit" && isAdmin && (
-                        <button
-                            className="border border-gray-300 px-4 py-2 rounded-lg text-sm bg-red-600 text-white hover:bg-red-400 transition-colors cursor-pointer"
-                            onClick={onDelete}
-                        >
-                            {t("delete")}
-                        </button>
+                    {mode === "edit" && (
+                        <div className="flex gap-2">
+                            {isAdmin && (
+                                <button
+                                    className="border border-gray-300 px-4 py-2 rounded-lg text-sm bg-red-600 text-white hover:bg-red-400 transition-colors cursor-pointer"
+                                    onClick={onDelete}>
+                                    {t("delete")}
+                                </button>
+                    )}
+                            <button className="border border-gray-300 px-4 py-2 rounded-lg text-sm bg-white text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer" onClick={() => setDuplicateDialogOpen(true)}>
+                                Duplicate
+                            </button>
+                        </div>
                     )}
                     <div className="flex gap-3">
                         <button
@@ -366,6 +396,15 @@ export default function EditCourseDialog({
                     </div>
                 </div>
             </div>
+
+            <DuplicateCourseModal
+                open={duplicateDialogOpen}
+                onClose={() => setDuplicateDialogOpen(false)}
+                onConfirm={handleDuplicate}
+                courseName={course?.courseNameEN}
+                originalCourseId={course?.courseId}
+                isDuplicating={isDuplicating}
+            />
 
             <AlertDialog
                 open={!!errorDialog}
