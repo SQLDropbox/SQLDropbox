@@ -20,8 +20,8 @@ const documentRotations = [
     "rotate-[0.4deg]",
 ];
 
-const CARD_HEIGHT = "14rem";
-const CARD_OVERLAP = "-8rem";
+const CARD_HEIGHT = "10rem";
+const CARD_OVERLAP = "-2rem";
 
 export default function Page() {
     const params = useParams();
@@ -91,7 +91,7 @@ export default function Page() {
                     </div>
 
                     {/* Chapters */}
-                    <div className="px-8 pt-8 -mb-5">
+                    <div className={`px-8 pt-8 -mb-10`}>
                         <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted mb-6 border-l-2 border-accent pl-3">
                             {t("chaptersLabel") ?? "Chapters"}
                         </p>
@@ -102,7 +102,7 @@ export default function Page() {
                             </p>
                         )}
 
-                        <div className="relative mt-40">
+                        <div className="relative mt-20">
                             {data?.chapters?.map((chapter, index) => {
                                 const rotation =
                                     documentRotations[
