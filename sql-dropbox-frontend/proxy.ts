@@ -11,9 +11,20 @@ const ROLE_ROUTES: Record<string, string[]> = {
 };
 
 async function verifyToken(token: string) {
-    const publicKey = await importSPKI(process.env.JWT_PUBLIC_KEY!, "RS256");
+    const publicKey = process.env.JWT_PUBLIC_KEY;
 
-    return jwtVerify(token, publicKey);
+    if (!publicKey) {
+        console.error(
+            "JWT_PUBLIC_KEY is not defined in environment variables.",
+        );
+        throw new Error(
+            "JWT_PUBLIC_KEY is not defined in environment variables.",
+        );
+    }
+
+    const key = await importSPKI(publicKey, "RS256");
+
+    return jwtVerify(token, key);
 }
 
 export async function proxy(req: NextRequest) {
