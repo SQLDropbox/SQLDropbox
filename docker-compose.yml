@@ -1,0 +1,78 @@
+# docker compose up --build
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: postgres-db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: sqldropbox
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  migrations:
+    image: mcr.microsoft.com/dotnet/sdk:10.0
+    container_name: migrations
+    working_dir: /src
+    volumes:
+      - ./sql-dropbox-backend:/src
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=sqldropbox;Username=postgres;Password=postgres"
+    command: >
+      sh -c "
+      dotnet tool restore &&
+      dotnet restore SQLDropbox.slnx &&
+      dotnet ef database update --project SQLDropbox/SQLDropbox.csproj"
+
+  api:
+    build:
+      context: ./sql-dropbox-backend
+      dockerfile: Dockerfile
+    container_name: dotnet-api
+    depends_on:
+      migrations:
+        condition: service_completed_successfully
+    ports:
+      - "8080:8080"
+    environment:
+      ASPNETCORE_URLS: "http://+:8080"
+      AllowedHosts: "*"
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=sqldropbox;Username=postgres;Password=postgres"
+      Password__Salt: "8"
+      Password__Pepper: "9z5qZsP9u7htAC92"
+      Jwt__PrivateKeyPath: "/app/keys/private.pem"
+      Jwt__PublicKeyPath: "/app/keys/public.pem"
+      Jwt__Issuer: "SQLDropboxAPI"
+      Jwt__Audience: "SQLDropboxAPI"
+      Jwt__AccessTokenDays: 14
+      AllowedOrigins: "http://localhost:3000"
+
+  frontend:
+    build:
+      context: ./sql-dropbox-frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: "http://localhost:8080"
+    container_name: nextjs-app
+    depends_on:
+      - api
+    ports:
+      - "3000:3000"
+    environment:
+      JWT_PUBLIC_KEY: "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvKRjOFcKabwcobyeiDXP\nTkocVa6a98HXf+TLErN3z0F5QXyDgeLuzkMPDckqjIlfKlIhNCRQHkHhfiQYBf4b\neRpvG5BhdrBWtKAvYwqOGgR4oDZl8rax/8iS7l+t/WfLTRhcuAdB8MDzMQp1jiXV\ngvXQ7N7R7oFAg/Y264gMmDvxXn0cK+bc7QL8VhBvml44IYX8OjexxmTznC6gZ8/A\ngXuQBWyc9i2DkHfE2s8pN4RyrdSAPuxdsjW/KqSoDcTmY50kT6nSrN1zYH4WsMlX\nsUdwPaf4b96ugsimTNipM6p0vXDx0CXOcfEF1QITHpYIENOpynjIGV84OG4XK+Ja\nPwIDAQAB\n-----END PUBLIC KEY-----"
+
+volumes:
+  postgres_data:
