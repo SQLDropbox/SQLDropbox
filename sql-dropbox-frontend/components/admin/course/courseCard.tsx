@@ -2,73 +2,154 @@
 
 import { Course } from "@/types/types";
 import Link from "next/link";
-import { FaUsers, FaFileAlt, FaBookOpen, FaEdit, FaPlay } from "react-icons/fa";
 import { useLocale, useTranslations } from "next-intl";
+import { FiBookOpen, FiEdit, FiPlay, FiUsers } from "react-icons/fi";
+
+const rotations = [
+    "rotate-[-1deg] hover:rotate-0",
+    "rotate-[2deg] hover:rotate-0",
+    "rotate-[-1.5deg] hover:rotate-0",
+    "rotate-[1deg] hover:rotate-0",
+];
+
+const stampRotations = [
+    "rotate-[-6deg]",
+    "rotate-[10deg]",
+    "rotate-[-12deg]",
+    "rotate-[-8deg]",
+    "rotate-[6deg]",
+];
+
+const surfaces = ["bg-surface-1", "bg-surface-2", "bg-surface-3"];
 
 export default function CourseCard({
     course,
+    index = 0,
     onEdit,
     adminMode = false,
 }: {
     course: Course;
+    index?: number;
     onEdit?: () => void;
     adminMode?: boolean;
 }) {
     const t = useTranslations("Course");
     const locale = useLocale();
 
+    const row = Math.floor(index / 3);
+
+    const rotation = rotations[(index + row) % rotations.length];
+    const surface = surfaces[(index + row) % surfaces.length];
+    const stampRotation = stampRotations[(index) % stampRotations.length];
+    const tabSide = index % 2 === 0 ? "left-0" : "right-0";
+
+    const courseName =
+        locale === "en" ? course.courseNameEN : course.courseNameNL;
+
+    const courseDesc =
+        locale === "en"
+            ? course.courseDescriptionEN
+            : course.courseDescriptionNL;
+
     return (
-        <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm hover:shadow-lg transition-shadow flex flex-col gap-6">
-            <div className="flex items-start justify-between">
-                <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                        {locale === "en" ? course.courseNameEN : course.courseNameNL}
-                    </h3>
+        <article
+            className={`
+                relative ${surface}
+                p-6 border border-border
+                shadow-[inset_0_0_0_1px_var(--color-border)]
+                transition-transform duration-200 ${rotation}
+            `}
+            style={{ isolation: "isolate" }}
+        >
+            {/* Tape */}
+            <div
+                className="absolute pointer-events-none"
+                style={{
+                    top: "-10px",
+                    left: "50%",
+                    transform: "translateX(-50%) rotate(-2deg)",
+                    width: "80px",
+                    height: "25px",
+                    backgroundColor: "rgba(255,255,255,0.4)",
+                    border: "1px solid rgba(0,0,0,0.1)",
+                    boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+                    zIndex: 10,
+                }}
+            />
 
-                    <p className="text-sm text-gray-500">
-                        {t("lecturer")}: {course.lecturer}
-                    </p>
+            {/* Tab */}
+            <div
+                className={`
+                    absolute -top-6 ${tabSide}
+                    bg-paper
+                    px-4 py-1
+                    border border-border border-b-0
+                `}
+            >
+                <span className="font-mono text-xs uppercase tracking-wider text-muted">
+                    ID: {course.courseId?.toString().toUpperCase() ?? "—"}
+                </span>
+            </div>
 
-                    <p className="text-sm text-gray-600 mt-2 line-clamp-2">
-                        {locale === "en" ? course.courseDescriptionEN : course.courseDescriptionNL}
-                    </p>
-                </div>
-
-                {adminMode && (
-                    <span
-                        className={`text-xs px-3 py-1 rounded-lg border border-gray-200 font-medium ${
+            {/* Status Stamp */}
+            {adminMode && (
+                <div
+                    className={`
+                        absolute top-4 right-4
+                        border-2 px-3 py-1
+                        font-mono text-[10px] uppercase tracking-widest
+                        z-20
+                        transition-transform
+                        ${stampRotation}
+                        ${
                             course.isActive
-                                ? "bg-gray-900 text-white"
-                                : "bg-gray-200 text-gray-600"
-                        }`}
-                    >
-                        {course.isActive ? t("active") : t("inactive")}
-                    </span>
-                )}
-            </div>
-
-            <div className="flex flex-col gap-2 pt-4 border-t border-gray-200">
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <FaUsers className="text-sm" />
-                    {t("students", { count: course.studentCount ?? 0 })}
+                                ? "border-ink text-ink opacity-90"
+                                : "border-border text-border opacity-70"
+                        }
+                    `}
+                >
+                    {course.isActive ? "ACTIVE" : "INACTIVE"}
                 </div>
+            )}
 
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <FaFileAlt className="text-sm" />
-                    {t("chapters", { count: course.chapterCount ?? 0 })}
-                </div>
-            </div>
+            {/* Header */}
+            <header className="mb-6 border-b border-border pb-4 relative z-10">
+                <h2 className="font-display text-2xl font-bold text-ink mb-2">
+                    {courseName}
+                </h2>
 
-            <div className="flex gap-2 pt-4 border-t border-gray-200">
+                <p className="font-mono text-xs uppercase tracking-wider text-muted">
+                    <span className="text-accent mr-2">{t("lecturer")}:</span>
+                    {course.lecturer}
+                </p>
+            </header>
+
+            {/* Description */}
+            <p className="font-mono text-sm leading-relaxed text-muted mb-8 line-clamp-3">
+                {courseDesc}
+            </p>
+
+            {/* Stats */}
+            <ul className="font-mono text-xs text-muted space-y-3 mb-8 border-l-2 border-border pl-4">
+                <li>{t("students", { count: course.studentCount ?? 0 })}</li>
+                <li>{t("chapters", { count: course.chapterCount ?? 0 })}</li>
+            </ul>
+
+            {/* Actions */}
+            <div className="flex gap-2">
                 <Link
                     href={
                         adminMode
                             ? `/admin/${course.courseId}`
                             : `/${course.courseId}`
                     }
-                    className="flex-1 w-full flex items-center justify-center gap-2 bg-black text-white text-sm px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors cursor-pointer"
+                    className={`
+                        flex-1 flex items-center justify-center gap-2
+                        py-3 font-mono text-xs uppercase tracking-widest
+                        border-2 transition-colors border-accent text-accent hover:bg-accent hover:text-paper
+                    `}
                 >
-                    {adminMode ? <FaBookOpen /> : <FaPlay />}
+                    {adminMode ? <FiBookOpen /> : <FiPlay />}
                     {adminMode ? t("manage") : t("startLearning")}
                 </Link>
 
@@ -76,22 +157,20 @@ export default function CourseCard({
                     <>
                         <Link
                             href={`/admin/${course.courseId}/students`}
-                            className="flex items-center border border-gray-400 rounded-lg px-3 py-2 transition-colors bg-white hover:bg-gray-200 text-gray-900 text-sm cursor-pointer"
-                            title={t("manageStudents")}
+                            className="flex items-center justify-center border-2 border-border px-3 py-2 text-muted hover:bg-ink hover:text-paper transition-colors"
                         >
-                            <FaUsers />
+                            <FiUsers />
                         </Link>
 
                         <button
-                            className="border border-gray-400 rounded-lg px-3 py-2 transition-colors bg-white hover:bg-gray-200 text-gray-900 text-sm cursor-pointer"
                             onClick={onEdit}
-                            title={t("editCourse")}
+                            className="flex items-center justify-center border-2 border-border px-3 py-2 text-muted hover:bg-ink hover:text-paper transition-colors"
                         >
-                            <FaEdit />
+                            <FiEdit />
                         </button>
                     </>
                 )}
             </div>
-        </div>
+        </article>
     );
 }

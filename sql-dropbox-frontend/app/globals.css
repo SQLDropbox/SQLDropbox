@@ -4,6 +4,10 @@
     /* surface */
     --color-paper: #fff9ea;
 
+    --color-surface-1: #eee8d6;
+    --color-surface-2: #e8e2d0;
+    --color-surface-3: #faf3e1;
+
     /* text */
     --color-ink: #1e1c11;
     --color-muted: #57423e;
@@ -23,13 +27,6 @@
 @layer base {
     body {
         background-color: #f5f3fe;
-    }
-
-    h1 {
-        font-size: 20px;
-        line-height: 1.4;
-        font-weight: bold;
-        color: var(--color-gray-900);
     }
 
     button {

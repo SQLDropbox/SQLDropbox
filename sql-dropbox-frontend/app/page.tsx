@@ -29,7 +29,7 @@ export default function Page() {
         <div className="bg-paper text-ink min-h-screen flex flex-col">
             <Header />
 
-            <main className="flex-grow max-w-7xl mx-auto w-full px-6 py-12 relative">
+            <main className="grow max-w-7xl mx-auto w-full px-6 py-12 relative">
                 {/* Page header */}
                 <div className="mb-12 rotate-1">
                     <h1 className="font-display text-5xl font-bold leading-tight tracking-tight border-b-4 border-accent inline-block pb-2">
