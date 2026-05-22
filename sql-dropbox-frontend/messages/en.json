@@ -64,5 +64,35 @@
         "role": "Role",
         "goBack": "Go Back",
         "goHome": "Go Home"
+    },
+    "Login": {
+        "title": "Login",
+        "subtitle": "Access Databasement",
+        "userLabel": "User ID or Email",
+        "userPlaceholder": "Enter user ID or email",
+        "passwordLabel": "Password",
+        "passwordPlaceholder": "Enter password",
+        "login": "Login",
+        "errors": {
+            "passwordEmpty": "Password cannot be empty.",
+            "generic": "Something went wrong."
+        }
+    },
+    "Activate": {
+        "title": "Account Activation",
+        "subtitle": "Set your password to continue",
+        "userId": "User ID",
+        "password": "Password",
+        "confirmPassword": "Confirm Password",
+        "passwordPlaceholder": "Enter password",
+        "confirmPasswordPlaceholder": "Re-enter password",
+        "submit": "Create account",
+        "loading": "Loading...",
+        "errors": {
+            "empty": "Password fields cannot be empty.",
+            "mismatch": "Passwords do not match.",
+            "tooShort": "Password must be at least 6 characters long.",
+            "generic": "Something went wrong."
+        }
     }
 }

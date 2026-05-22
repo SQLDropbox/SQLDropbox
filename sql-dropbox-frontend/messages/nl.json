@@ -64,5 +64,35 @@
         "role": "Rol",
         "goBack": "Ga terug",
         "goHome": "Naar home"
+    },
+    "Login": {
+        "title": "Inloggen",
+        "subtitle": "Access Databasement system",
+        "userLabel": "Gebruikers-ID of E-mail",
+        "userPlaceholder": "Voer gebruikers-ID of e-mail in",
+        "passwordLabel": "Wachtwoord",
+        "passwordPlaceholder": "Voer wachtwoord in",
+        "login": "Inloggen",
+        "errors": {
+            "passwordEmpty": "Wachtwoord kan niet leeg zijn.",
+            "generic": "Er is iets misgegaan."
+        }
+    },
+    "Activate": {
+        "title": "Account activeren",
+        "subtitle": "Stel je wachtwoord in om verder te gaan",
+        "userId": "Gebruikers-ID",
+        "password": "Wachtwoord",
+        "confirmPassword": "Bevestig wachtwoord",
+        "passwordPlaceholder": "Voer wachtwoord in",
+        "confirmPasswordPlaceholder": "Voer wachtwoord opnieuw in",
+        "submit": "Account aanmaken",
+        "loading": "Laden...",
+        "errors": {
+            "empty": "Wachtwoordvelden mogen niet leeg zijn.",
+            "mismatch": "Wachtwoorden komen niet overeen.",
+            "tooShort": "Wachtwoord moet minimaal 6 tekens bevatten.",
+            "generic": "Er is iets fout gegaan."
+        }
     }
 }
