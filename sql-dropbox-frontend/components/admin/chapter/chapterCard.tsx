@@ -1,126 +1,119 @@
 "use client";
 
 import Link from "next/link";
-import { FaClock, FaMedal, FaRegCircle } from "react-icons/fa6";
 import { useLocale } from "next-intl";
+import { Chapter } from "@/types/types";
+import ProgressIcon from "./progressIcon";
 
-function ProgressIcon({
-    completed,
-    total,
-}: {
-    completed: number;
-    total: number;
-}) {
-    if (completed === 0) return <FaRegCircle className="text-xl text-muted" />;
-    if (completed < total / 2)
-        return <FaClock className="text-xl text-accent" />;
-    if (completed < total) return <FaMedal className="text-xl text-muted" />;
-    return <FaMedal className="text-xl text-yellow-500" />;
+// --- Card visual config --- //
+
+const CARD_HEIGHT = "10rem";
+const CARD_OVERLAP = "-2rem";
+
+const ROTATIONS = [
+    "-rotate-[0.5deg]",
+    "rotate-[0.4deg]",
+    "-rotate-[0.3deg]",
+    "rotate-[0.6deg]",
+    "-rotate-[0.5deg]",
+    "rotate-[0.4deg]",
+];
+
+export function getCardRotation(index: number): string {
+    return ROTATIONS[index % ROTATIONS.length];
 }
 
+export { CARD_HEIGHT, CARD_OVERLAP };
+
+// --- Ruled-line background --- //
+
+function RuledLines() {
+    return (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-[1]">
+            {Array.from({ length: 20 }).map((_, i) => (
+                <div
+                    key={i}
+                    className="border-b border-ink"
+                    style={{ height: "1.75rem" }}
+                />
+            ))}
+        </div>
+    );
+}
+
+// --- ChapterCard --- //
+
 type Props = {
-    chapter: any;
+    chapter: Chapter;
     index: number;
     courseId: string;
-    rotation: string;
-    isLast: boolean;
-    height: string;
-    overlap: string;
 };
 
-export default function ChapterCard({
-    chapter,
-    index,
-    courseId,
-    rotation,
-    isLast,
-    height,
-    overlap,
-}: Props) {
+export default function ChapterCard({ chapter, index, courseId }: Props) {
     const locale = useLocale();
 
     const name =
         locale === "en" ? chapter.chapterNameEN : chapter.chapterNameNL;
-
     const desc =
         locale === "en"
             ? chapter.chapterDescriptionEN
             : chapter.chapterDescriptionNL;
 
-    const isComplete =
+    const hasProgress =
         chapter.completedAmount !== undefined &&
-        chapter.amountOfExercises !== undefined &&
-        chapter.completedAmount === chapter.amountOfExercises;
+        chapter.amountOfExercises !== undefined;
+    const isComplete =
+        hasProgress && chapter.completedAmount === chapter.amountOfExercises;
 
-    const isFirst = index === 0;
+    const rotation = getCardRotation(index);
 
     return (
         <Link
             href={`/${courseId}/chapter/${chapter.chapterId}`}
             style={{
                 zIndex: index + 1,
-                marginTop: overlap,
-                height,
+                marginTop: index === 0 ? 0 : CARD_OVERLAP,
+                height: CARD_HEIGHT,
             }}
             className={`
-                ${isFirst ? "mt-0" : "mt-[${overlap}]"}
-                relative block
+                relative block bg-ruled
                 bg-paper border border-border
                 px-6 pt-5
-
                 shadow-[0px_-3px_0px_0px_var(--color-border)]
                 hover:shadow-[0px_-3px_0px_0px_var(--color-accent)]
-                hover:border-accent
-
+                hover:border-accent hover:rotate-0 hover:-translate-y-3
                 transition-all duration-150
                 ${rotation}
-                hover:rotate-0
-                hover:-translate-y-3
             `}
         >
-            {/* ruled lines */}
-            <div
-                className="absolute inset-0 pointer-events-none overflow-hidden"
-                style={{ opacity: 0.04 }}
-            >
-                {Array.from({ length: 20 }).map((_, i) => (
-                    <div
-                        key={i}
-                        className="border-b border-ink"
-                        style={{ height: "1.75rem" }}
-                    />
-                ))}
-            </div>
-
-            {/* content */}
             <div className="relative z-10 flex items-start gap-5">
+                {/* Chapter number */}
                 <span className="font-mono text-xs text-muted w-6">
                     {String(index + 1).padStart(2, "0")}
                 </span>
 
-                {chapter.amountOfExercises !== undefined && (
+                {/* Progress icon */}
+                {hasProgress && (
                     <ProgressIcon
-                        completed={chapter.completedAmount}
-                        total={chapter.amountOfExercises}
+                        completed={chapter.completedAmount!}
+                        total={chapter.amountOfExercises!}
                     />
                 )}
 
+                {/* Title & description */}
                 <div className="flex-1 min-w-0">
                     <h2
-                        className={`
-                            font-display text-lg font-bold mb-1
-                            ${isComplete ? "line-through text-muted" : "text-ink"}
-                        `}
+                        className={`font-display text-lg font-bold mb-1 ${isComplete ? "line-through text-muted" : "text-ink"}`}
                     >
                         {name}
                     </h2>
-
                     <p className="font-mono text-xs text-muted line-clamp-2">
                         {desc}
                     </p>
                 </div>
 
-                {chapter.amountOfExercises !== undefined && (
+                {/* Progress counter */}
+                {hasProgress && (
                     <div className="font-mono text-[10px] border px-2 py-1 text-muted">
                         {chapter.completedAmount}/{chapter.amountOfExercises}
                     </div>
