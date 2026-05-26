@@ -3,14 +3,16 @@ using Microsoft.EntityFrameworkCore;
 using SQLDropbox.Data;
 using SQLDropbox.DTO;
 using SQLDropbox.Models;
+using SQLDropbox.Services;
 
 namespace SQLDropbox.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class ExerciseController(AppDbContext db) : BaseController
+public class ExerciseController(AppDbContext db, SolutionService soS) : BaseController
 {
     private readonly AppDbContext _db = db;
+    private readonly SolutionService _soS = soS;
 
     [HttpGet]
     public async Task<IActionResult> GetAllExercises()
@@ -22,33 +24,46 @@ public class ExerciseController(AppDbContext db) : BaseController
     [HttpPost]
     public async Task<IActionResult> CreateExercise([FromBody] ExerciseDTO dto)
     {
-        var chapter = await _db.Chapters.FirstOrDefaultAsync(c => c.ChapterId == dto.ChapterId && c.DeletedAt == null);
-        
-        if (chapter == null)
+        try
         {
-            return BadRequest(new { message = $"Chapter with ID {dto.ChapterId} could not be found." });
-        }
+            Chapter? chapter = await _db.Chapters
+                .Include(c => c.Schema)
+                .FirstOrDefaultAsync(c => c.DeletedAt == null && c.ChapterId == dto.ChapterId);
 
-        var newExercise = new Exercise
-        {
-            QuestionNL = dto.QuestionNL,
-            QuestionEN = dto.QuestionEN,
-            HintNL = dto.HintNL,
-            HintEN = dto.HintEN,
-            QueryOutput = dto.QueryOutput,
-            Chapter = chapter,
-            CreatedAt = DateTime.Now,
+            if (chapter == null)
+                return BadRequest(new { message = $"Chapter with ID {dto.ChapterId} could not be found." });
 
-            Solutions = dto.SolutionQueries.Select(query => new Solution
+            var (FormattedQuery, Base64QueryOutput, QueryHash) = await _soS.CleanData(dto.SolutionQuery, chapter.Schema.SchemaName);
+
+            var newExercise = new Exercise
             {
-                Query = query,
-                CreatedAt = DateTime.Now
-            }).ToList()
-        };
-        await _db.Exercises.AddAsync(newExercise);
-        await _db.SaveChangesAsync();
-        
-        return CreatedAtAction(nameof(CreateExercise), new {id = newExercise.ExerciseId},  newExercise);
+                QuestionNL = dto.QuestionNL,
+                QuestionEN = dto.QuestionEN,
+                HintNL = dto.HintNL,
+                HintEN = dto.HintEN,
+                QueryOutput = Base64QueryOutput,
+                Chapter = chapter,
+                CreatedAt = DateTime.UtcNow,
+
+                Solutions = [
+                    new Solution
+                    {
+                        Query = FormattedQuery,
+                        QueryHash = QueryHash,
+                        CreatedAt = DateTime.UtcNow
+                    }
+                ]
+            };
+
+            await _db.Exercises.AddAsync(newExercise);
+            await _db.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(CreateExercise), new { id = newExercise.ExerciseId }, newExercise);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex);
+        }
     }
 
     [HttpGet("{id}")]
@@ -70,50 +85,62 @@ public class ExerciseController(AppDbContext db) : BaseController
 
         if (exercise == null)
         {
-            return BadRequest("Exercise not found.");
+            return BadRequest(new { message = "Exercise not found." });
         }
-        exercise.DeletedAt = DateTime.Now;
+        exercise.DeletedAt = DateTime.UtcNow;
         _db.SaveChanges();
         return Ok();
     }
 
     [HttpPut("{id}")]
-    public ActionResult UpdateExercise(int id, [FromBody] ExerciseDTO dto)
+    public async Task<IActionResult> UpdateExercise(int id, [FromBody] ExerciseDTO dto)
     {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-
-        var existing = _db.Exercises.Include(e => e.Solutions).FirstOrDefault(e => e.ExerciseId == id);
-        
-        if (existing == null)
-            return NotFound();
-        
-        var chapter = _db.Chapters.Find(dto.ChapterId);
-
-        if (chapter == null)
-            return BadRequest("Chapter not found.");
-        
-        existing.Chapter = chapter;
-        
-        existing.QuestionNL = dto.QuestionNL;
-        existing.QuestionEN = dto.QuestionEN;
-        existing.HintNL = dto.HintNL;
-        existing.HintEN = dto.HintEN;
-        existing.QueryOutput = dto.QueryOutput;
-        
-        existing.UpdatedAt = DateTime.Now;
-        
-        _db.Solutions.RemoveRange(existing.Solutions);
-        
-        existing.Solutions = dto.SolutionQueries.Select(queryStr => new Solution
+        try
         {
-            Query = queryStr,
-            CreatedAt = DateTime.Now
-        }).ToList();
-        
-        _db.SaveChanges();
-        return Ok();
-        
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            Exercise? exercise = await _db.Exercises
+                .Include(e => e.Chapter)
+                .Include(e => e.Solutions)
+                .FirstOrDefaultAsync(e => e.DeletedAt == null && e.ExerciseId == id);
+
+            if (exercise == null)
+                return BadRequest(new { message = "Exercise not found." });
+            if (exercise.Chapter == null)
+                return BadRequest(new { message = "This exercise is not part of a chapter." });
+
+            if (dto.QuestionNL != null) exercise.QuestionNL = dto.QuestionNL;
+            if (dto.QuestionEN != null) exercise.QuestionEN = dto.QuestionEN;
+            if (dto.HintNL != null) exercise.HintNL = dto.HintNL;
+            if (dto.HintEN != null) exercise.HintEN = dto.HintEN;
+
+            if (dto.SolutionQuery != null)
+            {
+                _db.Solutions.RemoveRange(exercise.Solutions);
+
+                var (FormattedQuery, QueryOutput, QueryHash) = await _soS.CleanData(dto.SolutionQuery, exercise.Chapter.Schema.SchemaName);
+                exercise.QueryOutput = QueryOutput;
+
+                exercise.Solutions = [
+                new Solution
+                    {
+                        Query = FormattedQuery,
+                        QueryHash = QueryHash,
+                        CreatedAt = DateTime.UtcNow
+                    }
+                ];
+            }
+
+            exercise.UpdatedAt = DateTime.UtcNow;
+
+            await _db.SaveChangesAsync();
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
 }

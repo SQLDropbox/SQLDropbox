@@ -1,5 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-
 namespace SQLDropbox.DTO;
 
 public class ExerciseDTO
@@ -8,10 +6,8 @@ public class ExerciseDTO
     public string QuestionEN { get; set; }
     public string HintNL { get; set; }
     public string HintEN { get; set; }
-    public string QueryOutput { get; set; }
+    public string SolutionQuery { get; set; }
+
+    public required int ChapterId { get; set; }
     
-    [Required]
-    public int ChapterId { get; set; }
-    
-    public List<string> SolutionQueries { get; set; } = new List<string>();
 }

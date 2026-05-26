@@ -111,9 +111,9 @@ export default function ChapterExercisesPage() {
                     <div className="flex flex-col gap-4">
                         {exercises.map((exercise) => (
                             <AdminExerciseCard 
-                                key={exercise.exerciseId} 
-                                exercise={exercise} 
-                                onEdit={() => handleEditExercise(exercise)} 
+                                key={exercise.exerciseId}
+                                exercise={exercise}
+                                onEdit={() => handleEditExercise(exercise)}
                             />
                         ))}
                     </div>

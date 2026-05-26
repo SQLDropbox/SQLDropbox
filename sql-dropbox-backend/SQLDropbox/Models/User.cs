@@ -18,6 +18,7 @@ namespace SQLDropbox.Models
 
         public ICollection<Course> LecturerCourses { get; set; } = [];
         public ICollection<Course> StudentCourses { get; set; } = [];
+        public ICollection<RefreshToken> RefreshTokens { get; set; } = [];
         public ICollection<UserExercise> UserExercises { get; set; } = [];
 
         public DateTime CreatedAt { get; set; }
