@@ -62,7 +62,7 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
                 {
                     HttpOnly = true,
                     Secure = false, //true,
-                    SameSite = SameSiteMode.Strict,
+                    SameSite = SameSiteMode.None,
                     Expires = validRefreshToken.ExpiresAt,
                     Path = "/auth"
                 });
@@ -106,7 +106,7 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
                 {
                     HttpOnly = true,
                     Secure = false, //true,
-                    SameSite = SameSiteMode.Strict,
+                    SameSite = SameSiteMode.None,
                     Expires = validRefreshToken.ExpiresAt,
                     Path = "/auth"
                 });
@@ -143,7 +143,7 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
         {
             HttpOnly = true,
             Secure = false, //true,
-            SameSite = SameSiteMode.Strict,
+            SameSite = SameSiteMode.None,
             Expires = newValidRefreshToken.ExpiresAt,
             Path = "/auth"
         });
