@@ -1,19 +1,27 @@
+import { authService } from "@/services/authService";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 
-const login = (router: AppRouterInstance, token: string) => {
-    document.cookie = `token=${token}; path=/; max-age=${60 * 60 * 24 * 14}; SameSite=Strict`;
+const login = async (router: AppRouterInstance, emailOrCode: string, password: string) => {
+    const response = await authService.login(emailOrCode, password);
+
+    document.cookie = `token=${response.token}; path=/; max-age=${10}; SameSite=Strict`;
 
     setTimeout(() => {
         router.push("/");
     }, 50);
 };
 
-const logout = (router: AppRouterInstance) => {
-    document.cookie = "token=; path=/; max-age=0; SameSite=Strict";
+const logout = async (router: AppRouterInstance) => {
+    try {
+        await authService.refresh();
+        document.cookie = "token=; path=/; max-age=0; SameSite=Strict";
 
-    setTimeout(() => {
-        router.push("/login");
-    }, 50);
+        setTimeout(() => {
+            router.push("/login");
+        }, 50);
+    } catch (err) {
+        console.error("Error refreshing token during logout:", err);
+    }
 };
 
 export const authUtils = {
