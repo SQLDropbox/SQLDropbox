@@ -146,4 +146,9 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+if (app.Environment.IsProduction())
+{
+    app.UsePathBase("/api");
+}
+
 app.Run();
