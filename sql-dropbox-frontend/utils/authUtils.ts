@@ -13,14 +13,14 @@ const login = async (router: AppRouterInstance, emailOrCode: string, password: s
 
 const logout = async (router: AppRouterInstance) => {
     try {
-        await authService.refresh();
+        await authService.logout();
         document.cookie = "token=; path=/; max-age=0; SameSite=Strict";
 
         setTimeout(() => {
             router.push("/login");
         }, 50);
     } catch (err) {
-        console.error("Error refreshing token during logout:", err);
+        console.error("Error logging out:", err);
     }
 };
 
