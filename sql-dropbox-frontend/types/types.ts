@@ -25,6 +25,7 @@ export interface Chapter {
     chapterDescriptionEN: string;
     courseId: string;
     amountOfExercises?: number;
+    order?: number | null;
     dbSchema?: string;
     schemaId?: number | null;
     completedAmount?: number;
