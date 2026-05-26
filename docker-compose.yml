@@ -1,6 +1,4 @@
 # docker compose up --build
-version: "3.9"
-
 services:
     postgres:
         image: postgres:16
@@ -35,8 +33,8 @@ services:
         container_name: dotnet-api
         restart: unless-stopped
 
-        expose:
-            - "8080"
+        ports:
+            - "8080:8080"
 
         environment:
             ASPNETCORE_ENVIRONMENT: Production
@@ -50,7 +48,7 @@ services:
             Jwt__Issuer: "SQLDropboxAPI"
             Jwt__Audience: "SQLDropboxAPI"
             Jwt__AccessTokenDays: 14
-            AllowedOrigins: "http://89.167.41.160,http://89.167.41.160:3000,https://89.167.41.160"
+            AllowedOrigins: "http://databasement.dev,,https://databasement.dev"
 
         volumes:
             - ./sql-dropbox-backend/SQLDropbox/Keys:/app/keys:ro
@@ -63,15 +61,15 @@ services:
             context: ./sql-dropbox-frontend
             dockerfile: Dockerfile
             args:
-                NEXT_PUBLIC_API_URL: "/api"
+                NEXT_PUBLIC_API_URL: "http://databasement.dev/api"
 
         container_name: nextjs-app
         restart: unless-stopped
         depends_on:
             - api
 
-        expose:
-            - "3000"
+        ports:
+            - "3000:3000"
 
         environment:
             JWT_PUBLIC_KEY: "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvKRjOFcKabwcobyeiDXP\nTkocVa6a98HXf+TLErN3z0F5QXyDgeLuzkMPDckqjIlfKlIhNCRQHkHhfiQYBf4b\neRpvG5BhdrBWtKAvYwqOGgR4oDZl8rax/8iS7l+t/WfLTRhcuAdB8MDzMQp1jiXV\ngvXQ7N7R7oFAg/Y264gMmDvxXn0cK+bc7QL8VhBvml44IYX8OjexxmTznC6gZ8/A\ngXuQBWyc9i2DkHfE2s8pN4RyrdSAPuxdsjW/KqSoDcTmY50kT6nSrN1zYH4WsMlX\nsUdwPaf4b96ugsimTNipM6p0vXDx0CXOcfEF1QITHpYIENOpynjIGV84OG4XK+Ja\nPwIDAQAB\n-----END PUBLIC KEY-----"
