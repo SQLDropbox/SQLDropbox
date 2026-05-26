@@ -122,6 +122,11 @@ app.MapOpenApi();
 app.UseSwagger();
 app.UseSwaggerUI();
 
+// Migrate
+AsyncServiceScope scope = app.Services.CreateAsyncScope();
+AppDbContext db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+await db.Database.MigrateAsync();
+
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
