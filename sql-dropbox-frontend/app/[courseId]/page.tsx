@@ -7,21 +7,17 @@ import { Course } from "@/types/types";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { notFound, useParams } from "next/navigation";
-//import { FaExclamationCircle } from "react-icons/fa";
-import {
-    FaBookOpen,
-    //FaCircleXmark,
-    FaClock,
-    FaMedal,
-    FaRegCircle,
-    FaArrowLeft,
-} from "react-icons/fa6";
+import { useLocale, useTranslations } from "next-intl";
+import Loading from "@/components/loading";
+import ChapterCard from "@/components/admin/chapter/chapterCard";
 
 export default function Page() {
     const params = useParams();
+    const locale = useLocale();
+    const t = useTranslations("Course");
     const { isStudent } = useAuth();
 
-    const courseId = (params.courseId as string) ?? undefined;
+    const courseId = params.courseId as string | undefined;
 
     const { data, isLoading, error } = useQuery<Course>({
         queryKey: ["course", courseId],
@@ -30,127 +26,86 @@ export default function Page() {
         retry: false,
     });
 
-    if (error) {
-        notFound();
-    }
+    if (error) notFound();
+    if (isLoading) return <Loading />;
 
-    if (isLoading) {
-        return (
-            <div className="min-h-screen flex flex-col">
-                <Header />
+    const courseName =
+        locale === "en" ? data?.courseNameEN : data?.courseNameNL;
+    const courseDesc =
+        locale === "en" ? data?.courseDescriptionEN : data?.courseDescriptionNL;
 
-                <div className="flex-1 flex flex-col items-center justify-center gap-3">
-                    <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-300 border-t-blue-600" />
-                    <p className="text-sm text-gray-600">Loading...</p>
-                </div>
-            </div>
-        );
-    }
+    const showBackLink = !(isStudent && data?.totalCourseCount === 1);
 
     return (
-        <div>
+        <div className="bg-paper text-ink min-h-screen flex flex-col">
             <Header />
-            <div className="max-w-350 mx-auto p-6">
-                <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-lg flex flex-col gap-6">
-                    {!(isStudent && data?.totalCourseCount == 1) && (
-                        <Link
-                            href="/"
-                            className="flex items-center text-blue-500 hover:text-blue-700 gap-1"
-                        >
-                            <FaArrowLeft />
-                            Back to courses
-                        </Link>
-                    )}
 
-                    <div className="flex items-center gap-4">
-                        <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-blue-100 text-blue-600 text-2xl shrink-0">
-                            <FaBookOpen />
-                        </div>
+            <main className="grow max-w-7xl mx-auto w-full px-6 py-12">
+                {showBackLink && (
+                    <Link
+                        href="/"
+                        className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-muted hover:text-ink mb-10"
+                    >
+                        ← {t("backToCourses")}
+                    </Link>
+                )}
 
-                        <div className="flex-1 min-w-0">
-                            <h1 className="text-2xl font-semibold text-gray-900">
-                                {data?.courseNameEN}
-                            </h1>
+                <div className="relative z-10 bg-surface-2 border-2 border-border shadow-[6px_6px_0px_0px_var(--color-border)]">
+                    {/* Top tab */}
+                    <div className="absolute -top-6 -left-px min-w-[30%] bg-surface-2 px-4 py-1 border border-border border-b-0">
+                        <span className="font-mono text-xs uppercase tracking-wider text-muted">
+                            ID: {courseId?.toUpperCase() ?? "—"}
+                        </span>
+                    </div>
 
-                            <p className="mt-1 text-sm text-gray-500">
-                                Lecturer:{" "}
-                                <span className="font-medium text-gray-700">
-                                    {data?.lecturer}
-                                </span>
+                    {/* Course header */}
+                    <div className="border-b-2 border-border px-8 pt-8 pb-6">
+                        <h1 className="font-display text-4xl font-bold mb-3">
+                            {courseName}
+                        </h1>
+                        <p className="font-mono text-sm text-muted max-w-2xl">
+                            {courseDesc}
+                        </p>
+                    </div>
+
+                    {/* Chapters */}
+                    <div className="px-8 pt-8 -mb-10">
+                        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted mb-6 border-l-2 border-accent pl-3">
+                            {t("chaptersLabel") ?? "Chapters"}
+                        </p>
+
+                        {data?.chapters?.length === 0 && (
+                            <p className="font-mono text-sm text-muted italic">
+                                {t("noChapters")}
                             </p>
+                        )}
+
+                        <div className="relative">
+                            {data?.chapters?.map((chapter, index) => (
+                                <ChapterCard
+                                    key={chapter.chapterId}
+                                    chapter={chapter}
+                                    index={index}
+                                    courseId={courseId!}
+                                />
+                            ))}
                         </div>
                     </div>
 
-                    <p className="mt-4 text-sm leading-6 text-gray-600 line-clamp-3">
-                        {data?.courseDescriptionEN}
-                    </p>
+                    {/* Footer */}
+                    <div className="relative z-20 border-t border-border bg-surface-2 px-8 py-6 flex justify-between items-center">
+                        {/* Bottom-right tab */}
+                        <div className="absolute -top-6 -right-px min-w-[30%] bg-surface-2 px-4 h-8 border border-border border-b-0" />
 
-                    {data?.chapters?.map((chapter) => (
-                        <Link
-                            key={chapter.chapterId}
-                            href={`/${courseId}/chapter/${chapter.chapterId}`}
-                            className="flex items-center gap-6 rounded-xl border border-gray-300 bg-gray-100 bg-gray px-6 py-4 cursor-pointer"
-                        >
-                            {chapter.amountOfExercises !== undefined &&
-                                chapter.completedAmount !== undefined && (
-                                    <div className="flex gap-1">
-                                        {chapter.completedAmount === 0 && (
-                                            <FaRegCircle
-                                                className="text-2xl text-gray-400"
-                                                title="Not Started"
-                                            />
-                                        )}
-                                        {chapter.completedAmount > 0 &&
-                                            chapter.completedAmount <
-                                                chapter.amountOfExercises /
-                                                    2 && (
-                                                <FaClock
-                                                    className="text-2xl text-blue-500"
-                                                    title="Started"
-                                                />
-                                            )}
-                                        {chapter.completedAmount >=
-                                            chapter.amountOfExercises / 2 &&
-                                            chapter.completedAmount <
-                                                chapter.amountOfExercises && (
-                                                <FaMedal
-                                                    className="text-2xl text-gray-400"
-                                                    title="Halfway"
-                                                />
-                                            )}
-                                        {chapter.completedAmount ===
-                                            chapter.amountOfExercises && (
-                                            <FaMedal
-                                                className="text-2xl text-yellow-500"
-                                                title="Completed"
-                                            />
-                                        )}
-                                        {/* <FaExclamationCircle
-                                    className="text-2xl text-orange-400"
-                                    title="Deadline almost passed"
-                                />
-                                <FaCircleXmark
-                                    className="text-2xl text-red-500"
-                                    title="Deadline passed"
-                                /> */}
-                                    </div>
-                                )}
-                            <div className="flex-1">
-                                <h2 className="text-xl font-semibold text-gray-900">
-                                    {chapter.chapterNameEN}
-                                </h2>
-                                <p className="mt-2 text-sm text-gray-500">
-                                    {chapter.chapterDescriptionEN}
-                                </p>
-                            </div>
-                            <div className="bg-black text-white text-sm rounded-lg px-2 py-1">
-                                {chapter.completedAmount} /{" "}
-                                {chapter.amountOfExercises}
-                            </div>
-                        </Link>
-                    ))}
+                        <span className="font-mono text-[10px] uppercase tracking-widest text-muted">
+                            {courseId?.toUpperCase()}
+                        </span>
+                        <span className="font-mono text-[10px] uppercase tracking-widest text-muted">
+                            {data?.lecturer}
+                        </span>
+                    </div>
                 </div>
-            </div>
+            </main>
         </div>
     );
 }

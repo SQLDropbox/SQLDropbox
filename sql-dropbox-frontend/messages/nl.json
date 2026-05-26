@@ -16,7 +16,10 @@
         "manageStudents": "Studenten beheren",
         "editCourse": "Cursus bewerken",
         "statusActive": "ACTIEF",
-        "statusArchived": "GEARCHIVEERD"
+        "statusArchived": "GEARCHIVEERD",
+        "backToCourses": "Terug naar cursussen",
+        "chaptersLabel": "Hoofdstukken",
+        "noChapters": "Nog geen hoofdstukken."
     },
     "CourseDialog": {
         "titleEdit": "Cursus bewerken",

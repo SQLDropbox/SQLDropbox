@@ -33,4 +33,11 @@
     button {
         cursor: pointer;
     }
+
+    .bg-ruled {
+        background-image: url("/ruledLines.svg");
+        background-repeat: repeat;
+        background-size: 100% 1.75rem;
+        color: var(--color-ink);
+    }
 }
