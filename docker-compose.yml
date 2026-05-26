@@ -39,6 +39,7 @@ services:
             - "8080:8080"
 
         environment:
+            ASPNETCORE_ENVIRONMENT: Production
             ASPNETCORE_URLS: "http://+:8080"
             AllowedHosts: "*"
             ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=sqldropbox;Username=postgres;Password=postgres"
@@ -49,7 +50,7 @@ services:
             Jwt__Issuer: "SQLDropboxAPI"
             Jwt__Audience: "SQLDropboxAPI"
             Jwt__AccessTokenDays: 14
-            AllowedOrigins: "http://localhost:3000"
+            AllowedOrigins: "http://localhost"
 
         volumes:
             - ./sql-dropbox-backend/SQLDropbox/Keys:/app/keys:ro
