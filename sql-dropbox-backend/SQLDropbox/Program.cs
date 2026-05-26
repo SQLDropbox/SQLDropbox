@@ -134,6 +134,7 @@ app.UseCors("AllowFrontend");
 app.MapOpenApi();
 app.UseSwagger();
 app.UseSwaggerUI();
+app.UseStaticFiles();
 
 app.UseHttpsRedirection();
 
