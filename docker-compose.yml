@@ -35,8 +35,8 @@ services:
         container_name: dotnet-api
         restart: unless-stopped
 
-        ports:
-            - "8080:8080"
+        expose:
+            - "8080"
 
         environment:
             ASPNETCORE_ENVIRONMENT: Production
@@ -50,7 +50,7 @@ services:
             Jwt__Issuer: "SQLDropboxAPI"
             Jwt__Audience: "SQLDropboxAPI"
             Jwt__AccessTokenDays: 14
-            AllowedOrigins: "http://localhost"
+            AllowedOrigins: "http://89.167.41.160"
 
         volumes:
             - ./sql-dropbox-backend/SQLDropbox/Keys:/app/keys:ro
@@ -64,15 +64,15 @@ services:
             dockerfile: Dockerfile
             args:
                 # use http://SERVER_IP:8080 or domain name (better)
-                NEXT_PUBLIC_API_URL: "http://localhost:8080"
+                NEXT_PUBLIC_API_URL: "http://89.167.41.160:8080"
 
         container_name: nextjs-app
         restart: unless-stopped
         depends_on:
             - api
 
-        ports:
-            - "80:3000"
+        expose:
+            - "3000"
 
         environment:
             JWT_PUBLIC_KEY: "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvKRjOFcKabwcobyeiDXP\nTkocVa6a98HXf+TLErN3z0F5QXyDgeLuzkMPDckqjIlfKlIhNCRQHkHhfiQYBf4b\neRpvG5BhdrBWtKAvYwqOGgR4oDZl8rax/8iS7l+t/WfLTRhcuAdB8MDzMQp1jiXV\ngvXQ7N7R7oFAg/Y264gMmDvxXn0cK+bc7QL8VhBvml44IYX8OjexxmTznC6gZ8/A\ngXuQBWyc9i2DkHfE2s8pN4RyrdSAPuxdsjW/KqSoDcTmY50kT6nSrN1zYH4WsMlX\nsUdwPaf4b96ugsimTNipM6p0vXDx0CXOcfEF1QITHpYIENOpynjIGV84OG4XK+Ja\nPwIDAQAB\n-----END PUBLIC KEY-----"
