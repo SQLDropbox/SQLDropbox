@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SQLDropbox.Data;
 using SQLDropbox.DTO;
@@ -63,9 +62,9 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
                 {
                     HttpOnly = true,
                     Secure = false, //true,
-                    SameSite = SameSiteMode.None, //SameSiteMode.Strict,
+                    SameSite = SameSiteMode.Strict,
                     Expires = validRefreshToken.ExpiresAt,
-                    Path = "/auth/refresh"
+                    Path = "/auth"
                 });
 
                 return Ok(new { token = accessToken });
@@ -107,9 +106,9 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
                 {
                     HttpOnly = true,
                     Secure = false, //true,
-                    SameSite = SameSiteMode.None, //SameSiteMode.Strict,
+                    SameSite = SameSiteMode.Strict,
                     Expires = validRefreshToken.ExpiresAt,
-                    Path = "/auth/refresh"
+                    Path = "/auth"
                 });
 
                 return Ok(new { token = accessToken });
@@ -144,9 +143,9 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
         {
             HttpOnly = true,
             Secure = false, //true,
-            SameSite = SameSiteMode.None, //SameSiteMode.Strict,
+            SameSite = SameSiteMode.Strict,
             Expires = newValidRefreshToken.ExpiresAt,
-            Path = "/auth/refresh"
+            Path = "/auth"
         });
 
         return Ok(new { token = newAccessToken });
