@@ -8,6 +8,7 @@ import AdminCourseDetailsHeader from "@/components/admin/course/adminCourseDetai
 import { useQuery } from "@tanstack/react-query";
 import { courseService } from "@/services/courseService";
 import { FaSearch, FaUserPlus, FaUpload } from "react-icons/fa";
+import AddStudentModal from "@/components/student/addStudentModal";
 
 interface StudentImport {
     userCode: string;

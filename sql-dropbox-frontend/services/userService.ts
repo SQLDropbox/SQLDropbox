@@ -14,6 +14,21 @@ const addStudent = async (courseId: string, dto: StudentDTO) => {
     });
 };
 
+const importStudents = async (courseId: string, file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    return api.privateFetch(
+        `/User/studentCourse/${courseId}/import`,
+        {
+            method: "POST",
+            body: formData,
+        },
+        "file",
+    );
+};
+
 export const userService = {
     addStudent,
+    importStudents,
 };

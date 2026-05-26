@@ -1,8 +1,11 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
+type FetchType = "json" | "file";
+
 async function publicFetch(
     url: string,
     options: RequestInit = {},
+    type: FetchType = "json",
 ): Promise<any> {
     if (!API_URL) {
         const errorMessage =
@@ -12,6 +15,10 @@ async function publicFetch(
     }
 
     const headers = new Headers(options.headers);
+
+    if (type === "json") {
+        headers.set("Content-Type", "application/json");
+    }
     headers.set("Content-Type", "application/json");
 
     const response = await fetch(API_URL + url, { ...options, headers });
@@ -28,6 +35,7 @@ async function publicFetch(
 async function privateFetch(
     url: string,
     options: RequestInit = {},
+    type: FetchType = "json",
 ): Promise<any> {
     if (!API_URL) {
         const errorMessage =
@@ -41,8 +49,11 @@ async function privateFetch(
     if (!token) throw new Error("No token found, please log in.");
 
     const headers = new Headers(options.headers);
-    headers.set("Content-Type", "application/json");
-    headers.set("Authorization", `Bearer ${token}`);
+
+    if (type === "json") {
+        headers.set("Content-Type", "application/json");
+    }
+    headers.set("Authorization", `Bearer ${decodeURIComponent(token)}`);
 
     const response = await fetch(API_URL + url, { ...options, headers });
 
@@ -57,5 +68,5 @@ async function privateFetch(
 
 export const api = {
     publicFetch,
-    privateFetch
+    privateFetch,
 };
