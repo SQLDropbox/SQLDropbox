@@ -5,8 +5,6 @@ import { useLocale } from "next-intl";
 import { Chapter } from "@/types/types";
 import ProgressIcon from "./progressIcon";
 
-// --- Card visual config --- //
-
 const CARD_HEIGHT = "10rem";
 const CARD_OVERLAP = "-2rem";
 
@@ -18,30 +16,6 @@ const ROTATIONS = [
     "-rotate-[0.5deg]",
     "rotate-[0.4deg]",
 ];
-
-export function getCardRotation(index: number): string {
-    return ROTATIONS[index % ROTATIONS.length];
-}
-
-export { CARD_HEIGHT, CARD_OVERLAP };
-
-// --- Ruled-line background --- //
-
-function RuledLines() {
-    return (
-        <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-[1]">
-            {Array.from({ length: 20 }).map((_, i) => (
-                <div
-                    key={i}
-                    className="border-b border-ink"
-                    style={{ height: "1.75rem" }}
-                />
-            ))}
-        </div>
-    );
-}
-
-// --- ChapterCard --- //
 
 type Props = {
     chapter: Chapter;
@@ -65,7 +39,7 @@ export default function ChapterCard({ chapter, index, courseId }: Props) {
     const isComplete =
         hasProgress && chapter.completedAmount === chapter.amountOfExercises;
 
-    const rotation = getCardRotation(index);
+    const rotation = ROTATIONS[index % ROTATIONS.length];
 
     return (
         <Link
