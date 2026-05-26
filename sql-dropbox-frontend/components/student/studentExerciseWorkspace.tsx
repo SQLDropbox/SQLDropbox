@@ -10,7 +10,7 @@ import {
     FaPlay,
 } from "react-icons/fa6";
 import { useQuery } from "@tanstack/react-query";
-
+import { useRef } from "react";
 import { Chapter, Course, Exercise } from "@/types/types";
 import { courseService } from "@/services/courseService";
 import { queryService } from "@/services/queryService";
@@ -219,17 +219,41 @@ function ExercisePanel({
     schemaName: string;
     schemaImage?: string | null;
 }) {
-    const [activeTab, setActiveTab] =
-        useState<PanelTab>("question");
-
+    const [activeTab, setActiveTab] = useState<PanelTab>("question");
     const [showHint, setShowHint] = useState(false);
-
     const [queryValue, setQueryValue] = useState("");
-
     const [queryResult, setQueryResult] = useState<any>(null);
-
+    const imageContainerRef = useRef<HTMLDivElement | null>(null);
     const [scale, setScale] = useState(1);
+    const [isHoveringImage, setIsHoveringImage] = useState(false);
     const [position, setPosition] = useState({ x: 0, y: 0 });
+
+    useEffect(() => {
+        const el = imageContainerRef.current;
+        if (!el) return;
+        
+        const handleWheelEvent = (e: WheelEvent) => {
+            if (!isHoveringImage) return;
+        
+            e.preventDefault();
+        
+            const delta = -e.deltaY * 0.0015;
+        
+            setScale((prev) => {
+                const next = prev + delta;
+                return Math.min(Math.max(next, 0.5), 4);
+            });
+        };
+    
+        el.addEventListener("wheel", handleWheelEvent, {
+            passive: false,
+        });
+    
+        return () => {
+            el.removeEventListener("wheel", handleWheelEvent);
+        };
+    }, [isHoveringImage]);
+
     const [isDragging, setIsDragging] = useState(false);
     const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
@@ -409,12 +433,13 @@ function ExercisePanel({
                                     </div>
 
                                     <div
-                                        className="relative h-[600px] overflow-hidden rounded-2xl border border-slate-300 bg-slate-100 touch-none" style={{ overscrollBehavior: "contain", }}
-                                            
-                                        onWheel={handleWheel}
+                                        ref={imageContainerRef}
+                                        className="relative h-[600px] overflow-hidden rounded-2xl border border-slate-300 bg-slate-100 touch-none"
+                                        style={{ overscrollBehavior: "contain" }}
+                                        onMouseEnter={() => setIsHoveringImage(true)}
+                                        onMouseLeave={() => setIsHoveringImage(false)}
                                         onMouseMove={handleMouseMove}
                                         onMouseUp={handleMouseUp}
-                                        onMouseLeave={handleMouseUp}
                                     >
                                         <div
                                             onMouseDown={handleMouseDown}

@@ -121,6 +121,7 @@ app.UseCors("AllowFrontend");
 app.MapOpenApi();
 app.UseSwagger();
 app.UseSwaggerUI();
+app.UseStaticFiles();
 
 // Migrate
 AsyncServiceScope scope = app.Services.CreateAsyncScope();
