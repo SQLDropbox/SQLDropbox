@@ -11,11 +11,11 @@ namespace SQLDropbox.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class UtilitiesController(AppDbContext db, PasswordService ps, PostgreSQLQueryValidator f, RandomExerciseSelectorService ress) : BaseController
+public class UtilitiesController(AppDbContext db, PasswordService ps, SolutionService soS, RandomExerciseSelectorService ress) : BaseController
 {
     private readonly AppDbContext _db = db;
     private readonly PasswordService _ps = ps;
-    private readonly PostgreSQLQueryValidator _f = f;
+    private readonly SolutionService _soS = soS;
     private readonly RandomExerciseSelectorService _ress = ress;
 
     [HttpGet("seed-db")]
@@ -33,6 +33,7 @@ public class UtilitiesController(AppDbContext db, PasswordService ps, PostgreSQL
         await _db.UserExercises.ExecuteDeleteAsync();
         await _db.Solutions.ExecuteDeleteAsync();
         await _db.Exercises.ExecuteDeleteAsync();
+        await _db.Schemas.ExecuteDeleteAsync();
         await _db.Chapters.ExecuteDeleteAsync();
         await _db.Courses.ExecuteDeleteAsync();
         await _db.Users.ExecuteDeleteAsync();
@@ -48,7 +49,7 @@ public class UtilitiesController(AppDbContext db, PasswordService ps, PostgreSQL
         if (format.Query == null)
             return BadRequest("Query is required.");
 
-        var formatted = _f.ParseQuery(format.Query);
+        var formatted = _soS.FormatQuery(format.Query);
         return Ok(formatted);
     }
 
@@ -74,8 +75,8 @@ public class UtilitiesController(AppDbContext db, PasswordService ps, PostgreSQL
         };
         requirements.Add(r2);
 
-        var checkedQuery = _f.CheckQueryRequirements(requirements, format.Query);
-        return Ok($"{checkedQuery.Valid}: {checkedQuery.Message}");
+        var (Valid, Message) = _soS.CheckQueryRequirements(requirements, format.Query);
+        return Ok($"{Valid}: {Message}");
     }
 
     [HttpGet("me")]

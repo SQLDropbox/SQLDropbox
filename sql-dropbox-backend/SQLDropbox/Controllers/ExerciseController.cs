@@ -3,14 +3,16 @@ using Microsoft.EntityFrameworkCore;
 using SQLDropbox.Data;
 using SQLDropbox.DTO;
 using SQLDropbox.Models;
+using SQLDropbox.Services;
 
 namespace SQLDropbox.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class ExerciseController(AppDbContext db) : BaseController
+public class ExerciseController(AppDbContext db, SolutionService soS) : BaseController
 {
     private readonly AppDbContext _db = db;
+    private readonly SolutionService _soS = soS;
 
     [HttpGet]
     public async Task<IActionResult> GetAllExercises()
@@ -22,33 +24,47 @@ public class ExerciseController(AppDbContext db) : BaseController
     [HttpPost]
     public async Task<IActionResult> CreateExercise([FromBody] ExerciseDTO dto)
     {
-        var chapter = await _db.Chapters.FirstOrDefaultAsync(c => c.ChapterId == dto.ChapterId && c.DeletedAt == null);
-        
-        if (chapter == null)
+        try
         {
-            return BadRequest(new { message = $"Chapter with ID {dto.ChapterId} could not be found." });
-        }
+            var chapter = await _db.Chapters
+                .Include(c => c.Schema)
+                .FirstOrDefaultAsync(c => c.DeletedAt == null && c.ChapterId == dto.ChapterId);
 
-        var newExercise = new Exercise
-        {
-            QuestionNL = dto.QuestionNL,
-            QuestionEN = dto.QuestionEN,
-            HintNL = dto.HintNL,
-            HintEN = dto.HintEN,
-            QueryOutput = dto.QueryOutput,
-            Chapter = chapter,
-            CreatedAt = DateTime.Now,
-
-            Solutions = dto.SolutionQueries.Select(query => new Solution
+            if (chapter == null)
             {
-                Query = query,
-                CreatedAt = DateTime.Now
-            }).ToList()
-        };
-        await _db.Exercises.AddAsync(newExercise);
-        await _db.SaveChangesAsync();
-        
-        return CreatedAtAction(nameof(CreateExercise), new {id = newExercise.ExerciseId},  newExercise);
+                return BadRequest(new { message = $"Chapter with ID {dto.ChapterId} could not be found." });
+            }
+
+            var (FormattedQuery, Base64QueryOutput, QueryHash) = await _soS.CleanData(dto.SolutionQuery, chapter.Schema.SchemaName);
+
+            var newExercise = new Exercise
+            {
+                QuestionNL = dto.QuestionNL,
+                QuestionEN = dto.QuestionEN,
+                HintNL = dto.HintNL,
+                HintEN = dto.HintEN,     
+                QueryOutput = Base64QueryOutput,
+                Chapter = chapter,
+                CreatedAt = DateTime.Now,
+
+                Solutions = [
+                    new Solution
+                    {
+                        Query = FormattedQuery,
+                        QueryHash = QueryHash,
+                        CreatedAt = DateTime.Now
+                    }
+                ]
+            };
+
+            await _db.Exercises.AddAsync(newExercise);
+            await _db.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(CreateExercise), new { id = newExercise.ExerciseId }, newExercise);
+        }
+        catch(Exception ex){
+            return BadRequest(ex);
+        }
     }
 
     [HttpGet("{id}")]
@@ -78,42 +94,56 @@ public class ExerciseController(AppDbContext db) : BaseController
     }
 
     [HttpPut("{id}")]
-    public ActionResult UpdateExercise(int id, [FromBody] ExerciseDTO dto)
+    public async Task<IActionResult> UpdateExercise(int id, [FromBody] ExerciseDTO dto)
     {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-
-        var existing = _db.Exercises.Include(e => e.Solutions).FirstOrDefault(e => e.ExerciseId == id);
-        
-        if (existing == null)
-            return NotFound();
-        
-        var chapter = _db.Chapters.Find(dto.ChapterId);
-
-        if (chapter == null)
-            return BadRequest("Chapter not found.");
-        
-        existing.Chapter = chapter;
-        
-        existing.QuestionNL = dto.QuestionNL;
-        existing.QuestionEN = dto.QuestionEN;
-        existing.HintNL = dto.HintNL;
-        existing.HintEN = dto.HintEN;
-        existing.QueryOutput = dto.QueryOutput;
-        
-        existing.UpdatedAt = DateTime.Now;
-        
-        _db.Solutions.RemoveRange(existing.Solutions);
-        
-        existing.Solutions = dto.SolutionQueries.Select(queryStr => new Solution
+        try
         {
-            Query = queryStr,
-            CreatedAt = DateTime.Now
-        }).ToList();
-        
-        _db.SaveChanges();
-        return Ok();
-        
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var existing = await _db.Exercises
+                .Include(e => e.Solutions)
+                .FirstOrDefaultAsync(e => e.DeletedAt == null && e.ExerciseId == id);
+
+            if (existing == null)
+                return BadRequest("Exercise not found.");
+
+            var chapter = await _db.Chapters
+                .FirstOrDefaultAsync(c => c.DeletedAt == null && c.ChapterId == dto.ChapterId);
+
+            if (chapter == null)
+                return BadRequest("Chapter not found.");   
+
+            //validate
+            existing.Chapter = chapter;
+            existing.QuestionNL = dto.QuestionNL;
+            existing.QuestionEN = dto.QuestionEN;
+            existing.HintNL = dto.HintNL;
+            existing.HintEN = dto.HintEN;
+
+            var (FormattedQuery, Base64QueryOutput, QueryHash) = await _soS.CleanData(dto.SolutionQuery, chapter.Schema.SchemaName);
+            existing.QueryOutput = Base64QueryOutput;
+
+            existing.UpdatedAt = DateTime.Now;
+
+            _db.Solutions.RemoveRange(existing.Solutions);
+
+            existing.Solutions = [
+                new Solution
+                    {
+                        Query = FormattedQuery,
+                        QueryHash = QueryHash,
+                        CreatedAt = DateTime.Now
+                    }
+            ];
+
+            _db.SaveChanges();
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex);
+        }
     }
 
 }

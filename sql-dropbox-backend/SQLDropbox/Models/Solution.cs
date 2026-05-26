@@ -12,6 +12,7 @@ namespace SQLDropbox.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int SolutionId { get; set; }
         public required string Query { get; set; }
+        public required uint QueryHash { get; set; }
 
         [JsonIgnore]
         public Exercise Exercise { get; set; } = null!;

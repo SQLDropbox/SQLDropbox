@@ -1,13 +1,26 @@
-﻿using SQLDropbox.Services;
+﻿using Microsoft.EntityFrameworkCore;
 using SQLDropbox.Data;
-using SQLDropbox.Models;
 using SQLDropbox.Enums;
-using Microsoft.EntityFrameworkCore;
+using SQLDropbox.Models;
+using SQLDropbox.Services;
 
 namespace SQLDropbox.Repositories
 {
     public static class DbInitializer
     {
+        public static async Task EmptyAsync(AppDbContext context)
+        {
+            await context.Requirements.ExecuteDeleteAsync();
+            await context.UserSolutions.ExecuteDeleteAsync();
+            await context.UserExercises.ExecuteDeleteAsync();
+            await context.Solutions.ExecuteDeleteAsync();
+            await context.Exercises.ExecuteDeleteAsync();
+            await context.Schemas.ExecuteDeleteAsync();
+            await context.Chapters.ExecuteDeleteAsync();
+            await context.Courses.ExecuteDeleteAsync();
+            await context.Users.ExecuteDeleteAsync();
+        }
+
         public static async Task SeedAsync(AppDbContext context, PasswordService ps)
         {
             // /* UTIL SCHEMA + PROCEDURES + PRIVILEGES */
@@ -251,12 +264,12 @@ namespace SQLDropbox.Repositories
 
             /* SOLUTIONS */
             const string joinQuery = "SELECT * FROM animal INNER JOIN animal_specs ON animal.id = animel_specs.animal_id";
-            var solution1 = new Solution { Query = joinQuery, Exercise = exercise1, CreatedAt = DateTime.UtcNow };
-            var solution2 = new Solution { Query = joinQuery, Exercise = exercise2, CreatedAt = DateTime.UtcNow };
-            var solution3 = new Solution { Query = joinQuery, Exercise = exercise3, CreatedAt = DateTime.UtcNow };
-            var solution4 = new Solution { Query = joinQuery, Exercise = exercise4, CreatedAt = DateTime.UtcNow };
-            var solution5 = new Solution { Query = joinQuery, Exercise = exercise5, CreatedAt = DateTime.UtcNow };
-            var solution6 = new Solution { Query = joinQuery, Exercise = exercise6, CreatedAt = DateTime.UtcNow };
+            var solution1 = new Solution { Query = joinQuery, QueryHash = 3129876543, Exercise = exercise1, CreatedAt = DateTime.UtcNow };
+            var solution2 = new Solution { Query = joinQuery, QueryHash = 3129876543, Exercise = exercise2, CreatedAt = DateTime.UtcNow };
+            var solution3 = new Solution { Query = joinQuery, QueryHash = 3129876543, Exercise = exercise3, CreatedAt = DateTime.UtcNow };
+            var solution4 = new Solution { Query = joinQuery, QueryHash = 3129876543, Exercise = exercise4, CreatedAt = DateTime.UtcNow };
+            var solution5 = new Solution { Query = joinQuery, QueryHash = 3129876543, Exercise = exercise5, CreatedAt = DateTime.UtcNow };
+            var solution6 = new Solution { Query = joinQuery, QueryHash = 3129876543, Exercise = exercise6, CreatedAt = DateTime.UtcNow };
 
             /* LECTURERS */
             var lecturer1 = new User
