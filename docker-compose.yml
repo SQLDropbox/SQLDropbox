@@ -50,7 +50,7 @@ services:
             Jwt__Issuer: "SQLDropboxAPI"
             Jwt__Audience: "SQLDropboxAPI"
             Jwt__AccessTokenDays: 14
-            AllowedOrigins: "http://89.167.41.160"
+            AllowedOrigins: "http://89.167.41.160,http://89.167.41.160:3000,https://89.167.41.160"
 
         volumes:
             - ./sql-dropbox-backend/SQLDropbox/Keys:/app/keys:ro
@@ -63,8 +63,7 @@ services:
             context: ./sql-dropbox-frontend
             dockerfile: Dockerfile
             args:
-                # use http://SERVER_IP:8080 or domain name (better)
-                NEXT_PUBLIC_API_URL: "http://89.167.41.160:8080"
+                NEXT_PUBLIC_API_URL: "/api"
 
         container_name: nextjs-app
         restart: unless-stopped
