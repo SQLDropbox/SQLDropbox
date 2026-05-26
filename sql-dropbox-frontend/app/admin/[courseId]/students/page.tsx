@@ -7,22 +7,26 @@ import { Course } from "@/types/types";
 import AdminCourseDetailsHeader from "@/components/admin/course/adminCourseDetailsHeader";
 import { useQuery } from "@tanstack/react-query";
 import { courseService } from "@/services/courseService";
-import { FaPlus, FaSearch } from "react-icons/fa";
+import { FaSearch, FaUserPlus, FaUpload } from "react-icons/fa";
+
+interface StudentImport {
+    userCode: string;
+    firstName: string;
+    lastName: string;
+}
 
 export default function Page() {
     const params = useParams();
     const [search, setSearch] = useState("");
+    const [modalTab, setModalTab] = useState<"upload" | "manual" | null>(null);
 
     const courseId = (params.courseId as string) ?? undefined;
 
-    const {
-        data: course,
-        isLoading,
-        error,
-    } = useQuery<Course>({
+    const { data: course, isLoading, refetch } = useQuery<Course>({
         queryKey: ["course", courseId],
         queryFn: () => courseService.getCourseByCourseId(courseId),
         enabled: !!courseId,
+        retry: false,
     });
 
     const filteredStudents = course?.students?.filter(
@@ -32,6 +36,12 @@ export default function Page() {
                 .includes(search.toLowerCase()) ||
             student.userCode.toLowerCase().includes(search.toLowerCase()),
     );
+
+    function handleImport(students: StudentImport[]) {
+        // TODO: call your API / mutation here, e.g.:
+        // await courseService.addStudents(courseId, students);
+        console.log("Importing students:", students);
+    }
 
     if (isLoading) {
         return (
@@ -63,13 +73,23 @@ export default function Page() {
                             />
                             <FaSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
                         </div>
-                        <button
-                            className="bg-black text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-800 transition-colors flex items-center gap-2"
-                            onClick={() => {}}
-                        >
-                            <FaPlus />
-                            Add student
-                        </button>
+
+                        <div className="flex items-center gap-2">
+                            <button
+                                className="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-50 transition-colors flex items-center gap-2"
+                                onClick={() => setModalTab("manual")}
+                            >
+                                <FaUserPlus />
+                                Manual input
+                            </button>
+                            <button
+                                className="bg-black text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-800 transition-colors flex items-center gap-2"
+                                onClick={() => setModalTab("upload")}
+                            >
+                                <FaUpload />
+                                Upload file
+                            </button>
+                        </div>
                     </div>
 
                     <div className="bg-white rounded-lg border border-gray-200 shadow-lg">
@@ -108,6 +128,17 @@ export default function Page() {
                     </div>
                 </div>
             </div>
+
+            {modalTab !== null && (
+                <AddStudentModal
+                    courseId={courseId!}
+                    onClose={() => setModalTab(null)}
+                    onSuccess={() => {
+                        setModalTab(null);
+                        refetch();
+                    }}
+                />
+            )}
         </div>
     );
 }
