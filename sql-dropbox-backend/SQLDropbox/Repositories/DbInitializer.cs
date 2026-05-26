@@ -10,6 +10,7 @@ namespace SQLDropbox.Repositories
     {
         public static async Task EmptyAsync(AppDbContext context)
         {
+            await context.RefreshTokens.ExecuteDeleteAsync();
             await context.Requirements.ExecuteDeleteAsync();
             await context.UserSolutions.ExecuteDeleteAsync();
             await context.UserExercises.ExecuteDeleteAsync();

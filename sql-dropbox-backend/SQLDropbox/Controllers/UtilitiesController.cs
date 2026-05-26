@@ -21,6 +21,7 @@ public class UtilitiesController(AppDbContext db, PasswordService ps, SolutionSe
     [HttpGet("seed-db")]
     public async Task<IActionResult> SeedTheDb()
     {
+        await DbInitializer.EmptyAsync(_db);
         await DbInitializer.SeedAsync(_db, _ps);
         return Ok("The DB should have been seeded.");
     }
@@ -28,15 +29,7 @@ public class UtilitiesController(AppDbContext db, PasswordService ps, SolutionSe
     [HttpGet("empty-db")]
     public async Task<IActionResult> EmptyTheDb()
     {
-        await _db.Requirements.ExecuteDeleteAsync();
-        await _db.UserSolutions.ExecuteDeleteAsync();
-        await _db.UserExercises.ExecuteDeleteAsync();
-        await _db.Solutions.ExecuteDeleteAsync();
-        await _db.Exercises.ExecuteDeleteAsync();
-        await _db.Schemas.ExecuteDeleteAsync();
-        await _db.Chapters.ExecuteDeleteAsync();
-        await _db.Courses.ExecuteDeleteAsync();
-        await _db.Users.ExecuteDeleteAsync();
+        await DbInitializer.EmptyAsync(_db);
         return Ok("The DB should have been emptied.");
     }
 

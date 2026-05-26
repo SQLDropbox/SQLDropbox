@@ -47,8 +47,9 @@ services:
             Jwt__PublicKeyPath: "/app/keys/public.pem"
             Jwt__Issuer: "SQLDropboxAPI"
             Jwt__Audience: "SQLDropboxAPI"
-            Jwt__AccessTokenDays: 14
-            AllowedOrigins: "http://databasement.dev,,https://databasement.dev"
+            Jwt__AccessTokenMinutes: 10
+            Jwt__RefreshTokenDays: 10
+            AllowedOrigins: "http://databasement.dev,https://databasement.dev"
 
         volumes:
             - ./sql-dropbox-backend/SQLDropbox/Keys:/app/keys:ro

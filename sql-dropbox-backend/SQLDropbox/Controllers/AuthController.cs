@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SQLDropbox.Data;
 using SQLDropbox.DTO;
@@ -10,11 +11,12 @@ namespace SQLDropbox.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class AuthController(AppDbContext db, PasswordService passwordService, JwtService jwtService) : ControllerBase
+public class AuthController(AppDbContext db, PasswordService passwordService, JwtService jwtService, RefreshTokenService refreshTokenService) : ControllerBase
 {
     private readonly AppDbContext _db = db;
     private readonly PasswordService _passwordService = passwordService;
     private readonly JwtService _jwtService = jwtService;
+    private readonly RefreshTokenService _refreshTokenService = refreshTokenService;
 
 
     [HttpGet("setup/{userId}")]
@@ -52,7 +54,21 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
                 _db.Users.Update(user);
 
                 await _db.SaveChangesAsync();
-                return Ok(new { token = _jwtService.GenerateAccessToken(user.UserId, user.UserCode!, user.FirstName!, user.LastName!, user.Role) });
+
+                string accessToken = _jwtService.GenerateAccessToken(user);
+                string refreshToken = _refreshTokenService.GenerateRefreshToken();
+                RefreshToken validRefreshToken = await _refreshTokenService.CreateRefreshToken(user, HttpContext.Connection.RemoteIpAddress!.ToString(), refreshToken);
+
+                Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = false, //true,
+                    SameSite = SameSiteMode.None, //SameSiteMode.Strict,
+                    Expires = validRefreshToken.ExpiresAt,
+                    Path = "/auth/refresh"
+                });
+
+                return Ok(new { token = accessToken });
             }
 
             return NotFound("This account does not exist.");
@@ -83,7 +99,20 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
                 if (!_passwordService.ValidatePassword(user.Password, dto.Password))
                     return BadRequest("Incorrect credentials.");
 
-                return Ok(new { token = _jwtService.GenerateAccessToken(user.UserId, user.UserCode, user.FirstName, user.LastName, user.Role) });
+                string accessToken = _jwtService.GenerateAccessToken(user);
+                string refreshToken = _refreshTokenService.GenerateRefreshToken();
+                RefreshToken validRefreshToken = await _refreshTokenService.CreateRefreshToken(user, HttpContext.Connection.RemoteIpAddress!.ToString(), refreshToken);
+
+                Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = false, //true,
+                    SameSite = SameSiteMode.None, //SameSiteMode.Strict,
+                    Expires = validRefreshToken.ExpiresAt,
+                    Path = "/auth/refresh"
+                });
+
+                return Ok(new { token = accessToken });
             }
 
             return BadRequest("Incorrect credentials.");
@@ -92,5 +121,50 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
         {
             return BadRequest("Incorrect credentials.");
         }
+    }
+
+    [HttpGet("refresh")]
+    public async Task<ActionResult> Refresh()
+    {
+        string? refreshToken = Request.Cookies["refreshToken"];
+        if (refreshToken == null)
+            return Unauthorized();
+
+        RefreshToken? oldRefreshToken = await _refreshTokenService.ValidateRefreshToken(refreshToken);
+        if (oldRefreshToken == null)
+            return Unauthorized();
+
+        await _refreshTokenService.RevokeRefreshToken(oldRefreshToken);
+
+        string newAccessToken = _jwtService.GenerateAccessToken(oldRefreshToken.User);
+        string newRefreshToken = _refreshTokenService.GenerateRefreshToken();
+        RefreshToken newValidRefreshToken = await _refreshTokenService.CreateRefreshToken(oldRefreshToken.User, HttpContext.Connection.RemoteIpAddress!.ToString(), newRefreshToken);
+
+        Response.Cookies.Append("refreshToken", newRefreshToken, new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = false, //true,
+            SameSite = SameSiteMode.None, //SameSiteMode.Strict,
+            Expires = newValidRefreshToken.ExpiresAt,
+            Path = "/auth/refresh"
+        });
+
+        return Ok(new { token = newAccessToken });
+    }
+
+    [HttpGet("logout")]
+    public async Task<ActionResult> Logout()
+    {
+        string? refreshToken = Request.Cookies["refreshToken"];
+        if (refreshToken == null)
+            return Unauthorized();
+
+        RefreshToken? oldRefreshToken = await _refreshTokenService.ValidateRefreshToken(refreshToken);
+        if (oldRefreshToken == null)
+            return Unauthorized();
+
+        await _refreshTokenService.RevokeRefreshToken(oldRefreshToken);
+
+        return Ok(new { Message = "Successfully logged out" });
     }
 }
