@@ -3,10 +3,22 @@
 import { Chapter } from "@/types/types";
 import Link from "next/link";
 import { FaBookOpen, FaEdit, FaBars, FaFileAlt } from "react-icons/fa";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 export default function AdminChapterCard({chapter, onEdit}: {chapter: Chapter; onEdit: () => void;}) {
+    const {attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging} = useSortable({
+        id: String(chapter.chapterId),
+    });
+
+    const style = {
+        transform: CSS.Translate.toString(transform),
+        transition,
+        opacity: isDragging ? 0.5 : 1,
+    } as React.CSSProperties;
+
     return (
-        <div className="flex justify-between items-center rounded-xl border border-gray-200 bg-white px-6 py-4 shadow-sm hover:shadow-lg transition-shadow">
+        <div ref={setNodeRef} style={style} className="flex justify-between items-center rounded-xl border border-gray-200 bg-white px-6 py-4 shadow-sm hover:shadow-lg transition-shadow">
             <div className="flex-1">
                 <h3 className="text-lg font-semibold text-gray-900 mb-1">
                     {chapter.chapterNameNL}
@@ -38,7 +50,12 @@ export default function AdminChapterCard({chapter, onEdit}: {chapter: Chapter; o
                     <FaEdit />
                 </button>
 
-                <div className="flex justify-center items-center ml-2 pl-4 border-l border-gray-300 text-gray-500">
+                <div
+                    ref={setActivatorNodeRef}
+                    {...attributes}
+                    {...listeners}
+                    className={`flex justify-center items-center ml-2 pl-4 border-l border-gray-300 text-gray-500 ${isDragging ? "cursor-grabbing" : "cursor-grab"}`}
+                >
                     <FaBars />
                 </div>
             </div>

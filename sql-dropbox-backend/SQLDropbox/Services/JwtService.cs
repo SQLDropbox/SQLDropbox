@@ -1,9 +1,10 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 using SQLDropbox.Enums;
+using SQLDropbox.Models;
+using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
-using System.Text;
 
 namespace SQLDropbox.Services
 {
@@ -13,7 +14,7 @@ namespace SQLDropbox.Services
         private readonly RsaSecurityKey _privateKey;
         private readonly string _issuer;
         private readonly string _audience;
-        private readonly int _accessTokenDays;
+        private readonly int _accessTokenMinutes;
 
         public JwtService(IConfiguration configuration)
         {
@@ -23,8 +24,8 @@ namespace SQLDropbox.Services
                 ?? throw new InvalidOperationException("Jwt Issuer is not configured");
             _audience = _configuration["Jwt:Audience"]
                 ?? throw new InvalidOperationException("Jwt Audience is not configured");
-            _accessTokenDays = int.Parse(_configuration["Jwt:AccessTokenDays"]
-                ?? throw new InvalidOperationException("Jwt AccessTokenDays is not configured"));
+            _accessTokenMinutes = int.Parse(_configuration["Jwt:AccessTokenMinutes"]
+                ?? throw new InvalidOperationException("Jwt AccessTokenMinutes is not configured"));
 
             var privateKeyPem = File.ReadAllText(configuration["Jwt:PrivateKeyPath"]
                 ?? throw new InvalidOperationException("Jwt PrivateKeyPath is not configured"));
@@ -34,24 +35,24 @@ namespace SQLDropbox.Services
             _privateKey = new RsaSecurityKey(rsa);
         }
 
-        public string GenerateAccessToken(Guid userId, string? userCode, string? firstName, string? lastName, Role role)
+        public string GenerateAccessToken(User user)
         {
             SigningCredentials creds = new(_privateKey, SecurityAlgorithms.RsaSha256);
 
             Claim[] claims =
             [
-                new Claim("id", userId.ToString()),
-                new Claim("code", userCode ?? ""),
-                new Claim("firstName", firstName ?? ""),
-                new Claim("lastName", lastName ?? ""),
-                new Claim(ClaimTypes.Role, role.ToString())
+                new Claim("id", user.UserId.ToString()),
+                new Claim("code", user.UserCode ?? ""),
+                new Claim("firstName", user.FirstName ?? ""),
+                new Claim("lastName", user.LastName ?? ""),
+                new Claim(ClaimTypes.Role, user.Role.ToString())
             ];
 
             JwtSecurityToken token = new(
                 issuer: _issuer,
                 audience: _audience,
                 claims: claims,
-                expires: DateTime.UtcNow.AddDays(_accessTokenDays),
+                expires: DateTime.UtcNow.AddMinutes(_accessTokenMinutes),
                 signingCredentials: creds
             );
 

@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using SQLDropbox.Data;
+using SQLDropbox.Repositories;
 using SQLDropbox.Services;
 using System.Security.Cryptography;
 using System.Text;
@@ -29,7 +30,7 @@ builder.Services.AddCors(options =>
 // Add services to the container
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<PasswordService>();
-builder.Services.AddScoped<PostgreSQLQueryValidator>();
+builder.Services.AddScoped<SolutionService>();
 builder.Services.AddScoped<RandomExerciseSelectorService>();
 builder.Services.AddScoped<SchemaService>();
 builder.Services.AddScoped<UserService>();
@@ -38,7 +39,7 @@ builder.Services.AddScoped<SqlQueryService>();
 builder.Services.AddScoped<CsvExportService>();
 builder.Services.AddScoped<RoutineService>();
 builder.Services.AddScoped<CsvService>();
-
+builder.Services.AddScoped<RefreshTokenService>();
 
 // Add controllers to the container
 builder.Services.AddControllers();
@@ -119,15 +120,21 @@ if (app.Environment.IsDevelopment())
     //await DbInitializer.SeedAsync(db/*, pass*/);
 }
 
+if (app.Environment.IsProduction())
+{
+    // DB initialization on startup
+    AsyncServiceScope scope = app.Services.CreateAsyncScope();
+    AppDbContext db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    PasswordService pass = scope.ServiceProvider.GetRequiredService<PasswordService>();
+    await db.Database.EnsureDeletedAsync();
+    await db.Database.MigrateAsync();
+    await DbInitializer.SeedAsync(db, pass);
+}
+
 app.UseCors("AllowFrontend");
 app.MapOpenApi();
 app.UseSwagger();
 app.UseSwaggerUI();
-
-// Migrate
-AsyncServiceScope scope = app.Services.CreateAsyncScope();
-AppDbContext db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-await db.Database.MigrateAsync();
 
 app.UseHttpsRedirection();
 

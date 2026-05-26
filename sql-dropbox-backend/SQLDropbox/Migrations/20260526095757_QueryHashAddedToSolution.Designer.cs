@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SQLDropbox.Data;
@@ -11,9 +12,11 @@ using SQLDropbox.Data;
 namespace SQLDropbox.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260526095757_QueryHashAddedToSolution")]
+    partial class QueryHashAddedToSolution
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -182,35 +185,6 @@ namespace SQLDropbox.Migrations
                     b.HasIndex("ChapterId");
 
                     b.ToTable("Exercise");
-                });
-
-            modelBuilder.Entity("SQLDropbox.Models.RefreshToken", b =>
-                {
-                    b.Property<Guid>("RefreshTokenId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<DateTime>("ExpiresAt")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<bool>("IsRevoked")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("TokenHash")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("RefreshTokenId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("RefreshToken");
                 });
 
             modelBuilder.Entity("SQLDropbox.Models.Requirement", b =>
@@ -473,17 +447,6 @@ namespace SQLDropbox.Migrations
                     b.Navigation("Chapter");
                 });
 
-            modelBuilder.Entity("SQLDropbox.Models.RefreshToken", b =>
-                {
-                    b.HasOne("SQLDropbox.Models.User", "User")
-                        .WithMany("RefreshTokens")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("SQLDropbox.Models.Requirement", b =>
                 {
                     b.HasOne("SQLDropbox.Models.Exercise", "Exercise")
@@ -562,8 +525,6 @@ namespace SQLDropbox.Migrations
 
             modelBuilder.Entity("SQLDropbox.Models.User", b =>
                 {
-                    b.Navigation("RefreshTokens");
-
                     b.Navigation("UserExercises");
                 });
 

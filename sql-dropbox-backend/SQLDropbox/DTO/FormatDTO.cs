@@ -2,6 +2,6 @@
 {
     public class FormatDTO
     {
-        public string? Query { get; set; }
+        public required string Query { get; set; }
     }
 }

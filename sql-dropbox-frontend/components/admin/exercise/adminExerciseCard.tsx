@@ -1,7 +1,7 @@
 "use client";
 
 import { Exercise } from "@/types/types";
-import { FaEdit, FaBars, FaLightbulb } from "react-icons/fa";
+import { FaEdit, FaLightbulb } from "react-icons/fa";
 
 interface AdminExerciseCardProps {
     exercise: Exercise;
@@ -37,9 +37,6 @@ export default function AdminExerciseCard({ exercise, onEdit }: AdminExerciseCar
                 >
                     <FaEdit className="text-gray-600" />
                 </button>
-                <div className="flex justify-center items-center ml-2 pl-4 border-l border-gray-300 text-gray-400 hover:text-gray-600 cursor-grab">
-                    <FaBars />
-                </div>
             </div>
             
         </div>

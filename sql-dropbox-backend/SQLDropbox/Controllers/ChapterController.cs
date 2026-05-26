@@ -20,7 +20,7 @@ public class ChapterController(AppDbContext db, RandomExerciseSelectorService re
     public ActionResult GetChapters()
     {
         var chapters = _db.Chapters.Where(x => x.DeletedAt == null)
-            .Where(x => x.DeletedAt == null)
+            .OrderBy(x => x.Order)
             .Select(x => new
             {
                 x.ChapterId,
@@ -29,6 +29,7 @@ public class ChapterController(AppDbContext db, RandomExerciseSelectorService re
                 x.ChapterDescriptionNL,
                 x.ChapterDescriptionEN,
                 x.AmountOfExercises,
+                x.Order,
                 x.Schema.SchemaId,
                 x.Schema.SchemaName,
                 x.Course.CourseId,
@@ -73,6 +74,10 @@ public class ChapterController(AppDbContext db, RandomExerciseSelectorService re
         if (schema == null)
             return BadRequest("Schema does not exist");
 
+        var maxOrder = await  _db.Chapters.Where(c => c.Course.CourseId == courseId && c.DeletedAt == null).MaxAsync(c => c.Order);
+        
+        int nextOrder = (maxOrder ?? -1) + 1;
+        
         var newChapter = new Chapter
         {
             ChapterNameNL = dto.ChapterNameNL,
@@ -80,6 +85,7 @@ public class ChapterController(AppDbContext db, RandomExerciseSelectorService re
             ChapterDescriptionNL = dto.ChapterDescriptionNL,
             ChapterDescriptionEN = dto.ChapterDescriptionEN,
             AmountOfExercises = dto.AmountOfExercises,
+            Order = nextOrder,
             Course = course,
             Schema = schema,
             CreatedAt = DateTime.UtcNow
@@ -195,5 +201,33 @@ public class ChapterController(AppDbContext db, RandomExerciseSelectorService re
         {
             return BadRequest(ex);
         }        
+    }
+
+    [HttpPost("course/{courseId}/reorder")]
+    public async Task<ActionResult> ReorderChapter(string courseId, [FromBody] ReorderChaptersDTO dto)
+    {
+        var chapters = await _db.Chapters.Where(c => c.Course.CourseId == courseId && c.DeletedAt == null).ToListAsync();
+
+        if (!chapters.Any())
+        {
+            return NotFound(new { message = $"Chapter with ID {courseId} not found." });
+        }
+        
+        for (int i = 0;  i < dto.OrderedIds.Count; i++)
+        {
+            if (int.TryParse(dto.OrderedIds[i], out int chapterId))
+            {
+                var chapterToUpdate = chapters.FirstOrDefault(c => c.ChapterId == chapterId);
+
+                if (chapterToUpdate != null)
+                {
+                    chapterToUpdate.Order = i;
+                    chapterToUpdate.UpdatedAt = DateTime.UtcNow;
+                }
+            }
+        }
+        await _db.SaveChangesAsync();
+        
+        return Ok(chapters);
     }
 }

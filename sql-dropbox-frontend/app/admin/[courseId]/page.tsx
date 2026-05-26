@@ -2,27 +2,36 @@
 
 import { useState } from "react";
 import { useParams } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { FaPlus } from "react-icons/fa6";
 
 import Header from "@/components/header";
 import AdminCourseDetailsHeader from "@/components/admin/course/adminCourseDetailsHeader";
-import AdminChapterCard from "@/components/admin/chapter/adminChapterCard";
+import SortableChapterList from "@/components/admin/chapter/sortableChapterList";
 import EditChapterDialog from "@/components/admin/chapter/editChapterDialog";
 
 import { Course, Chapter } from "@/types/types";
 import { courseService } from "@/services/courseService";
-
-import { FaPlus } from "react-icons/fa6";
+import { chapterService } from "@/services/chapterService";
 
 export default function Page() {
     const params = useParams();
     const courseId = params.courseId as string;
+    const queryClient = useQueryClient();
 
     const [editDialogOpen, setEditDialogOpen] = useState(false);
+    const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
 
-    const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(
-        null,
-    );
+    const reorderMutation = useMutation({
+        mutationFn: (orderedIds: string[]) =>
+            chapterService.reorderChapters(courseId, orderedIds),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["course", courseId] });
+        },
+        onError: (error) => {
+            console.error("Reorder mislukt:", error);
+        },
+    });
 
     const {
         data: course,
@@ -59,6 +68,8 @@ export default function Page() {
         );
     }
 
+    const chapters = course.chapters ?? [];
+
     return (
         <div>
             <Header />
@@ -66,7 +77,6 @@ export default function Page() {
             <div className="max-w-350 mx-auto p-6">
                 <AdminCourseDetailsHeader course={course} />
 
-                {/* ADD CHAPTER BUTTON */}
                 <div className="flex justify-end mb-4">
                     <button
                         className="bg-black text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-800 transition-colors flex items-center gap-2"
@@ -80,26 +90,29 @@ export default function Page() {
                     </button>
                 </div>
 
-                {/* CHAPTER LIST (SAFE) */}
-                <div className="flex flex-col gap-4">
-                    {course.chapters?.map((chapter) => {
-                        if (!chapter) return null;
-
-                        return (
-                            <AdminChapterCard
-                                key={chapter.chapterId}
-                                chapter={chapter}
-                                onEdit={() => {
-                                    setSelectedChapter(chapter);
-                                    setEditDialogOpen(true);
-                                }}
-                            />
-                        );
-                    })}
-                </div>
+                {chapters.length ? (
+                    <SortableChapterList
+                        chapters={chapters}
+                        onEditChapter={(chapter) => {
+                            setSelectedChapter(chapter);
+                            setEditDialogOpen(true);
+                        }}
+                        onReorder={async (orderedIds) => {
+                            try {
+                                await reorderMutation.mutateAsync(orderedIds);
+                            } catch (error) {
+                                alert("Kon hoofdstukvolgorde niet opslaan.");
+                                throw error;
+                            }
+                        }}
+                    />
+                ) : (
+                    <p className="text-gray-500 bg-gray-50 border border-gray-200 rounded-lg p-4">
+                        Er zijn nog geen hoofdstukken gekoppeld aan dit vak.
+                    </p>
+                )}
             </div>
 
-            {/* DIALOG */}
             <EditChapterDialog
                 open={editDialogOpen}
                 onClose={() => setEditDialogOpen(false)}

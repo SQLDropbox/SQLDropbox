@@ -36,9 +36,17 @@ const getChapterByChapterId = async (chapterId: string) => {
     });
 };
 
+const reorderChapters = async (courseId: string, orderedIds: string[]) => {
+    return api.privateFetch(`/Chapter/course/${courseId}/reorder`, {
+        method: "POST",
+        body: JSON.stringify({ orderedIds }),
+    });
+};
+
 export const chapterService = {
     addChapter,
     updateChapter,
     deleteChapter,
     getChapterByChapterId,
+    reorderChapters,
 };
