@@ -62,7 +62,7 @@ export default function Header() {
 
     return (
         <header className="w-full border-b-2 border-border bg-surface-1  shadow-sm relative">
-            <div className="flex justify-between items-center w-full px-6 py-4 max-w-7xl mx-auto gap-6">
+            <div className="flex justify-between items-center w-full px-6 py-4 max-w-7xl mx-auto gap-3">
                 {/* Brand */}
                 <Link
                     href="/"
@@ -77,16 +77,16 @@ export default function Header() {
                             key={crumb.href}
                             className="flex items-center gap-2"
                         >
+                            {i < breadcrumbs.length && (
+                                <span className="text-border">›</span>
+                            )}
+
                             <Link
                                 href={crumb.href}
                                 className="hover:text-accent transition-colors"
                             >
                                 {crumb.label}
                             </Link>
-
-                            {i < breadcrumbs.length - 1 && (
-                                <span className="text-border">›</span>
-                            )}
                         </div>
                     ))}
                 </nav>
