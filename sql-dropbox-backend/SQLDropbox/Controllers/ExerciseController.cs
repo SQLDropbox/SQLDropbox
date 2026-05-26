@@ -26,14 +26,12 @@ public class ExerciseController(AppDbContext db, SolutionService soS) : BaseCont
     {
         try
         {
-            var chapter = await _db.Chapters
+            Chapter? chapter = await _db.Chapters
                 .Include(c => c.Schema)
                 .FirstOrDefaultAsync(c => c.DeletedAt == null && c.ChapterId == dto.ChapterId);
 
             if (chapter == null)
-            {
                 return BadRequest(new { message = $"Chapter with ID {dto.ChapterId} could not be found." });
-            }
 
             var (FormattedQuery, Base64QueryOutput, QueryHash) = await _soS.CleanData(dto.SolutionQuery, chapter.Schema.SchemaName);
 
@@ -42,17 +40,17 @@ public class ExerciseController(AppDbContext db, SolutionService soS) : BaseCont
                 QuestionNL = dto.QuestionNL,
                 QuestionEN = dto.QuestionEN,
                 HintNL = dto.HintNL,
-                HintEN = dto.HintEN,     
+                HintEN = dto.HintEN,
                 QueryOutput = Base64QueryOutput,
                 Chapter = chapter,
-                CreatedAt = DateTime.Now,
+                CreatedAt = DateTime.UtcNow,
 
                 Solutions = [
                     new Solution
                     {
                         Query = FormattedQuery,
                         QueryHash = QueryHash,
-                        CreatedAt = DateTime.Now
+                        CreatedAt = DateTime.UtcNow
                     }
                 ]
             };
@@ -62,7 +60,8 @@ public class ExerciseController(AppDbContext db, SolutionService soS) : BaseCont
 
             return CreatedAtAction(nameof(CreateExercise), new { id = newExercise.ExerciseId }, newExercise);
         }
-        catch(Exception ex){
+        catch (Exception ex)
+        {
             return BadRequest(ex);
         }
     }
@@ -86,9 +85,9 @@ public class ExerciseController(AppDbContext db, SolutionService soS) : BaseCont
 
         if (exercise == null)
         {
-            return BadRequest("Exercise not found.");
+            return BadRequest(new { message = "Exercise not found." });
         }
-        exercise.DeletedAt = DateTime.Now;
+        exercise.DeletedAt = DateTime.UtcNow;
         _db.SaveChanges();
         return Ok();
     }
@@ -101,48 +100,46 @@ public class ExerciseController(AppDbContext db, SolutionService soS) : BaseCont
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var existing = await _db.Exercises
+            Exercise? exercise = await _db.Exercises
+                .Include(e => e.Chapter)
                 .Include(e => e.Solutions)
                 .FirstOrDefaultAsync(e => e.DeletedAt == null && e.ExerciseId == id);
 
-            if (existing == null)
-                return BadRequest("Exercise not found.");
+            if (exercise == null)
+                return BadRequest(new { message = "Exercise not found." });
+            if (exercise.Chapter == null)
+                return BadRequest(new { message = "This exercise is not part of a chapter." });
 
-            var chapter = await _db.Chapters
-                .FirstOrDefaultAsync(c => c.DeletedAt == null && c.ChapterId == dto.ChapterId);
+            if (dto.QuestionNL != null) exercise.QuestionNL = dto.QuestionNL;
+            if (dto.QuestionEN != null) exercise.QuestionEN = dto.QuestionEN;
+            if (dto.HintNL != null) exercise.HintNL = dto.HintNL;
+            if (dto.HintEN != null) exercise.HintEN = dto.HintEN;
 
-            if (chapter == null)
-                return BadRequest("Chapter not found.");   
+            if (dto.SolutionQuery != null)
+            {
+                _db.Solutions.RemoveRange(exercise.Solutions);
 
-            //validate
-            existing.Chapter = chapter;
-            existing.QuestionNL = dto.QuestionNL;
-            existing.QuestionEN = dto.QuestionEN;
-            existing.HintNL = dto.HintNL;
-            existing.HintEN = dto.HintEN;
+                var (FormattedQuery, QueryOutput, QueryHash) = await _soS.CleanData(dto.SolutionQuery, exercise.Chapter.Schema.SchemaName);
+                exercise.QueryOutput = QueryOutput;
 
-            var (FormattedQuery, Base64QueryOutput, QueryHash) = await _soS.CleanData(dto.SolutionQuery, chapter.Schema.SchemaName);
-            existing.QueryOutput = Base64QueryOutput;
-
-            existing.UpdatedAt = DateTime.Now;
-
-            _db.Solutions.RemoveRange(existing.Solutions);
-
-            existing.Solutions = [
+                exercise.Solutions = [
                 new Solution
                     {
                         Query = FormattedQuery,
                         QueryHash = QueryHash,
-                        CreatedAt = DateTime.Now
+                        CreatedAt = DateTime.UtcNow
                     }
-            ];
+                ];
+            }
 
-            _db.SaveChanges();
+            exercise.UpdatedAt = DateTime.UtcNow;
+
+            await _db.SaveChangesAsync();
             return Ok();
         }
         catch (Exception ex)
         {
-            return BadRequest(ex);
+            return BadRequest(new { message = ex.Message });
         }
     }
 

@@ -4,7 +4,6 @@ using SQLDropbox.Data;
 using SQLDropbox.DTO;
 using SQLDropbox.Models;
 using SQLDropbox.Services;
-using Watchlist_Backend.DTOs;
 
 namespace SQLDropbox.Controllers;
 
@@ -15,7 +14,7 @@ public class SolutionController(AppDbContext db, SolutionService soS) : Controll
     private readonly AppDbContext _db = db;
     private readonly SolutionService _soS = soS;
 
-    [HttpPost("setup")]
+    [HttpPost("submit")]
     public async Task<ActionResult> SubmitSolution(SolutionDTO dto)
     {
         try
@@ -29,17 +28,17 @@ public class SolutionController(AppDbContext db, SolutionService soS) : Controll
                 .FirstOrDefaultAsync(e => e.DeletedAt == null && e.ExerciseId == dto.ExerciseId);
             
             if (exercise == null)
-                return BadRequest("This exercise doesn't exist.");
+                return BadRequest(new { message = "This exercise doesn't exist." });
             if (exercise.Chapter == null)
-                return BadRequest("This exercise is not part of a chapter.");
+                return BadRequest(new { message = "This exercise is not part of a chapter." });
             if (exercise.Chapter.Schema == null)
-                return BadRequest("This exercise has no set schema.");
+                return BadRequest(new { message = "This exercise has no set schema." });
 
-            var (FormattedQuery, Base64QueryOutput, QueryHash) = await _soS.CleanData(dto.Query, exercise.Chapter.Schema.SchemaName);
+            var (FormattedQuery, QueryOutput, QueryHash) = await _soS.CleanData(dto.Query, exercise.Chapter.Schema.SchemaName);
 
             Solution solution = new()
             {
-                Query = Base64QueryOutput,
+                Query = QueryOutput,
                 QueryHash = QueryHash,
                 CreatedAt = DateTime.UtcNow,
                 Exercise = exercise,
@@ -48,11 +47,11 @@ public class SolutionController(AppDbContext db, SolutionService soS) : Controll
             _db.Solutions.Add(solution);
             await _db.SaveChangesAsync();
 
-            return Ok("Well done, this query was correct!");
+            return Ok(new { message = "Well done, this query was correct!" });
         }
         catch (Exception ex)
         {
-            return BadRequest(ex.Message);
+            return BadRequest(new { message = ex.Message });
         }
     }
 }

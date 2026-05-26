@@ -16,25 +16,15 @@ namespace SQLDropbox.Services
             return hash;
         }
 
-        public async Task<string> EncodeQueryOutput(string queryOutput)
-        {
-            string base64 = Convert.ToBase64String(
-                Encoding.UTF8.GetBytes(queryOutput)
-            );
-            return base64;
-        }
-
-        public async Task<(string FormattedQuery, string Base64QueryOutput, uint QueryHash)> CleanData(string query, string schemaName)
+        public async Task<(string FormattedQuery, string QueryOutput, uint QueryHash)> CleanData(string query, string schemaName)
         {
             string formattedQuery = FormatQuery(query);
 
-            string base64QueryOutput = await EncodeQueryOutput(
-                await _scS.ExecuteSelectOnSchemaAsync(schemaName, formattedQuery)
-            );
+            string queryOutput = await _scS.ExecuteSelectOnSchemaAsync(schemaName, formattedQuery);           
 
             uint queryHash = await HashSolution(formattedQuery);
 
-            return (formattedQuery, base64QueryOutput, queryHash);
+            return (formattedQuery, queryOutput, queryHash);
         }
 
         public string FormatQuery(string query)
