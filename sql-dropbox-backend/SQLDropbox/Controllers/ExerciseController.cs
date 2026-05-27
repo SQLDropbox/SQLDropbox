@@ -9,10 +9,11 @@ namespace SQLDropbox.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class ExerciseController(AppDbContext db, SolutionService soS) : BaseController
+public class ExerciseController(AppDbContext db, SolutionService solutionService, SchemaService schemaService) : BaseController
 {
     private readonly AppDbContext _db = db;
-    private readonly SolutionService _soS = soS;
+    private readonly SolutionService _soS = solutionService;
+    private readonly SchemaService _scS = schemaService;
 
     [HttpGet]
     public async Task<IActionResult> GetAllExercises()
@@ -33,7 +34,11 @@ public class ExerciseController(AppDbContext db, SolutionService soS) : BaseCont
             if (chapter == null)
                 return BadRequest(new { message = $"Chapter with ID {dto.ChapterId} could not be found." });
 
-            var (FormattedQuery, Base64QueryOutput, QueryHash) = await _soS.CleanData(dto.SolutionQuery, chapter.Schema.SchemaName);
+            string formattedQuery = _soS.FormatQuery(dto.SolutionQuery);
+            uint queryHash = await _soS.HashSolution(formattedQuery);
+
+            //If this returns an error, that error should be shown
+            string queryOutput = await _scS.ExecuteSelectOnSchemaAsync(chapter.Schema.SchemaName, formattedQuery);
 
             var newExercise = new Exercise
             {
@@ -41,15 +46,15 @@ public class ExerciseController(AppDbContext db, SolutionService soS) : BaseCont
                 QuestionEN = dto.QuestionEN,
                 HintNL = dto.HintNL,
                 HintEN = dto.HintEN,
-                QueryOutput = Base64QueryOutput,
+                QueryOutput = queryOutput,
                 Chapter = chapter,
                 CreatedAt = DateTime.UtcNow,
 
                 Solutions = [
                     new Solution
                     {
-                        Query = FormattedQuery,
-                        QueryHash = QueryHash,
+                        Query = formattedQuery,
+                        QueryHash = queryHash,
                         CreatedAt = DateTime.UtcNow
                     }
                 ]
@@ -113,17 +118,20 @@ public class ExerciseController(AppDbContext db, SolutionService soS) : BaseCont
             {
                 _db.Solutions.RemoveRange(exercise.Solutions);
 
-                var (FormattedQuery, QueryOutput, QueryHash) =
-                    await _soS.CleanData(dto.SolutionQuery, exercise.Chapter.Schema.SchemaName);
+                string formattedQuery = _soS.FormatQuery(dto.SolutionQuery);
+                uint queryHash = await _soS.HashSolution(formattedQuery);
 
-                exercise.QueryOutput = QueryOutput;
+                //If this returns an error, that error should be shown
+                string queryOutput = await _scS.ExecuteSelectOnSchemaAsync(exercise.Chapter.Schema.SchemaName, formattedQuery);
+
+                exercise.QueryOutput = queryOutput;
 
                 exercise.Solutions =
                 [
                     new Solution
                 {
-                    Query = FormattedQuery,
-                    QueryHash = QueryHash,
+                    Query = formattedQuery,
+                    QueryHash = queryHash,
                     CreatedAt = DateTime.UtcNow
                 }
                 ];

@@ -16,26 +16,14 @@ namespace SQLDropbox.Services
             return hash;
         }
 
-        public async Task<(string FormattedQuery, string QueryOutput, uint QueryHash)> CleanData(string query, string schemaName)
-        {
-            string formattedQuery = FormatQuery(query);
-
-            string queryOutput = await _scS.ExecuteSelectOnSchemaAsync(schemaName, formattedQuery);           
-
-            uint queryHash = await HashSolution(formattedQuery);
-
-            return (formattedQuery, queryOutput, queryHash);
-        }
-
         public string FormatQuery(string query)
         {
             var ast = new SqlQueryParser().Parse(query);
             return ast.ToSql();
         }
 
-        public (bool Valid, string Message) CheckQueryRequirements(List<Requirement> requirements, string query)
+        public (bool Valid, string Message) CheckQueryRequirements(List<Requirement> requirements, string formattedQuery)
         {
-            string formattedQuery = FormatQuery(query);
             foreach (Requirement requirement in requirements)
             {
                 if (!requirement.Use ?
@@ -46,6 +34,29 @@ namespace SQLDropbox.Services
                 }
             }
             return (true, "The query is correct.");
+        }
+
+        public async Task<string> CreateUserExerciseAndSolutionBasedIfWrongOrRight(string formattedQuery, Exercise exercise, User user)
+        {
+            //create a user exercise and usersolution based on if the solution given was correct and the errormessage
+            UserSolution userSolution = new()
+            {
+                Query = formattedQuery,
+                IsCorrect = false, //true
+                ErrorMessage = "",
+                CreatedAt = DateTime.UtcNow,
+            };
+
+            UserExercise userExercise = new()
+            {
+                IsCompleted = false, //true
+                Exercise = exercise,
+                User = user,                
+            };
+
+            userExercise.UserSolutions.Add(userSolution);
+            //save userexercise and solution          
+            return "";
         }
     }
 }
