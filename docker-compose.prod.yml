@@ -15,7 +15,6 @@ services:
             interval: 5s
             timeout: 5s
             retries: 10
-
         networks:
             - appnet
 
@@ -34,14 +33,6 @@ services:
         environment:
             ASPNETCORE_ENVIRONMENT: Production
             ASPNETCORE_URLS: "http://+:8080"
-            ConnectionStrings__DefaultConnection: ${DB_CONNECTION}
-            Password__Salt: ${PASSWORD_SALT}
-            Password__Pepper: ${PASSWORD_PEPPER}
-            Jwt__Issuer: ${JWT_ISSUER}
-            Jwt__Audience: ${JWT_AUDIENCE}
-            Jwt__AccessTokenMinutes: ${JWT_ACCESS_TOKEN_MINUTES}
-            Jwt__RefreshTokenDays: ${JWT_REFRESH_TOKEN_DAYS}
-            AllowedOrigins: ${ALLOWED_ORIGINS}
         networks:
             - appnet
 
@@ -59,9 +50,6 @@ services:
             - api
         ports:
             - "3000:3000"
-        environment:
-            NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
-            JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY}
         networks:
             - appnet
 
