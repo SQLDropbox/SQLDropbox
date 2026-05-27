@@ -7,6 +7,7 @@ import { FaTimes, FaPlus, FaTrash } from "react-icons/fa";
 import { Exercise } from "@/types/types";
 import { exerciseService } from "@/services/exerciseService";
 import ConfirmDialog from "@/components/dialog/confirmDialog";
+import { useTranslations } from "next-intl";
 
 interface Props {
     open: boolean;
@@ -36,6 +37,7 @@ export default function EditExerciseDialog({
 }: Props) {
     const queryClient = useQueryClient();
     const isEdit = mode === "edit";
+    const t = useTranslations("EditExerciseDialog");
 
     const [form, setForm] = useState<Partial<Exercise>>(emptyForm);
     const [errors, setErrors] = useState<FormErrors>({});
@@ -60,14 +62,14 @@ export default function EditExerciseDialog({
     function validate() {
         const newErrors: FormErrors = {};
 
-        if (!form.questionNL?.trim()) newErrors.questionNL = "Nederlandse vraag is verplicht";
-        if (!form.questionEN?.trim()) newErrors.questionEN = "Engelse vraag is verplicht";
+        if (!form.questionNL?.trim()) newErrors.questionNL = t("errors.questionNLRequired");
+        if (!form.questionEN?.trim()) newErrors.questionEN = t("errors.questionENRequired");
         
         // Filter lege solutions eruit voordat we valideren/opslaan
         const validSolutions = form.solutionQueries?.filter(q => q.trim() !== "") || [];
         if (validSolutions.length === 0) {
             // We mappen dit error bericht op solutionQueries
-            newErrors.solutionQueries = ["Minstens één oplossing is verplicht"] as any;
+            newErrors.solutionQueries = [t("errors.atLeastOneSolution")] as any;
         }
 
         return newErrors;
@@ -88,7 +90,7 @@ export default function EditExerciseDialog({
         },
         onSuccess: () => {
             queryClient.invalidateQueries({
-                queryKey: ["exercises", chapterId], // Pas dit aan naar jouw query key voor oefeningen
+                queryKey: ["exercises", chapterId],
             });
             onClose();
         },
@@ -134,10 +136,10 @@ export default function EditExerciseDialog({
                 <div className="flex justify-between items-start px-6 py-5 border-b shrink-0">
                     <div>
                         <h2 className="text-xl font-semibold">
-                            {isEdit ? "Bewerk Oefening" : "Nieuwe Oefening"}
+                            {isEdit ? t("titleEdit") : t("titleAdd")}
                         </h2>
                         <p className="text-sm text-gray-500 mt-1">
-                            {isEdit ? "Pas de gegevens van de oefening aan." : "Voeg een nieuwe oefening toe aan dit hoofdstuk."}
+                            {isEdit ? t("subtitleEdit") : t("subtitleAdd")}
                         </p>
                     </div>
                     <button onClick={onClose} className="text-gray-400 hover:text-black">
@@ -150,11 +152,11 @@ export default function EditExerciseDialog({
                     
                     {/* QUESTIONS */}
                     <div className="space-y-4">
-                        <h3 className="font-medium text-gray-900 border-b pb-2">Vragen</h3>
+                        <h3 className="font-medium text-gray-900 border-b pb-2">{t("questionsHeader")}</h3>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <textarea
-                                    placeholder="Vraag (Nederlands)"
+                                    placeholder={t("placeholders.questionNL")}
                                     rows={3}
                                     value={form.questionNL ?? ""}
                                     onChange={(e) => setForm({ ...form, questionNL: e.target.value })}
@@ -164,7 +166,7 @@ export default function EditExerciseDialog({
                             </div>
                             <div>
                                 <textarea
-                                    placeholder="Question (English)"
+                                    placeholder={t("placeholders.questionEN")}
                                     rows={3}
                                     value={form.questionEN ?? ""}
                                     onChange={(e) => setForm({ ...form, questionEN: e.target.value })}
@@ -177,17 +179,17 @@ export default function EditExerciseDialog({
 
                     {/* HINTS */}
                     <div className="space-y-4">
-                        <h3 className="font-medium text-gray-900 border-b pb-2">Hints</h3>
+                        <h3 className="font-medium text-gray-900 border-b pb-2">{t("hintsHeader")}</h3>
                         <div className="grid grid-cols-2 gap-4">
                             <textarea
-                                placeholder="Hint (Nederlands) - optioneel"
+                                placeholder={t("placeholders.hintNL")}
                                 rows={2}
                                 value={form.hintNL ?? ""}
                                 onChange={(e) => setForm({ ...form, hintNL: e.target.value })}
                                 className={inputClass("hintNL")}
                             />
                             <textarea
-                                placeholder="Hint (English) - optional"
+                                placeholder={t("placeholders.hintEN")}
                                 rows={2}
                                 value={form.hintEN ?? ""}
                                 onChange={(e) => setForm({ ...form, hintEN: e.target.value })}
@@ -198,9 +200,9 @@ export default function EditExerciseDialog({
 
                     {/* QUERY OUTPUT */}
                     <div className="space-y-4">
-                        <h3 className="font-medium text-gray-900 border-b pb-2">Verwachte Query Output</h3>
+                        <h3 className="font-medium text-gray-900 border-b pb-2">{t("queryOutputHeader")}</h3>
                         <textarea
-                            placeholder="JSON / CSV weergave van de verwachte output"
+                            placeholder={t("placeholders.queryOutput")}
                             rows={3}
                             value={form.queryOutput ?? ""}
                             onChange={(e) => setForm({ ...form, queryOutput: e.target.value })}
@@ -210,7 +212,7 @@ export default function EditExerciseDialog({
 
                     {/* SOLUTIONS */}
                     <div className="space-y-4">
-                        <h3 className="font-medium text-gray-900 border-b pb-2">Oplossingen (SQL Queries)</h3>
+                        <h3 className="font-medium text-gray-900 border-b pb-2">{t("solutionsHeader")}</h3>
                         {errors.solutionQueries && (
                             <p className="text-xs text-red-500">{errors.solutionQueries as unknown as string}</p>
                         )}
@@ -218,7 +220,7 @@ export default function EditExerciseDialog({
                             {form.solutionQueries?.map((sol, index) => (
                                 <div key={index} className="flex gap-2 items-start">
                                     <textarea
-                                        placeholder={`SELECT * FROM table...`}
+                                        placeholder={t("placeholders.solution")}
                                         rows={2}
                                         value={sol}
                                         onChange={(e) => updateSolution(index, e.target.value)}
@@ -227,7 +229,7 @@ export default function EditExerciseDialog({
                                     <button
                                         onClick={() => removeSolution(index)}
                                         className="mt-1 p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                        title="Verwijder oplossing"
+                                        title={t("removeSolution")}
                                     >
                                         <FaTrash />
                                     </button>
@@ -238,7 +240,7 @@ export default function EditExerciseDialog({
                             onClick={addSolution}
                             className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 font-medium"
                         >
-                            <FaPlus className="text-xs" /> Extra oplossing toevoegen
+                            <FaPlus className="text-xs" /> {t("addSolution")}
                         </button>
                     </div>
 
@@ -251,7 +253,7 @@ export default function EditExerciseDialog({
                             onClick={() => setConfirmDeleteDialogOpen(true)}
                             className="border border-gray-300 px-4 py-2 rounded-lg text-sm bg-red-600 text-white hover:bg-red-400 transition-colors"
                         >
-                            Verwijderen
+                            {t("delete")}
                         </button>
                     )}
 
@@ -260,14 +262,14 @@ export default function EditExerciseDialog({
                             onClick={onClose}
                             className="border border-gray-300 bg-white px-4 py-2 rounded-lg text-sm hover:bg-gray-100 transition-colors"
                         >
-                            Annuleren
+                            {t("cancel")}
                         </button>
                         <button
                             onClick={handleSubmit}
                             disabled={mutation.isPending}
                             className="bg-black text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-700 transition-colors disabled:opacity-50"
                         >
-                            {mutation.isPending ? "Bezig..." : isEdit ? "Opslaan" : "Aanmaken"}
+                            {mutation.isPending ? t("saving") : isEdit ? t("save") : t("create")}
                         </button>
                     </div>
                 </div>
@@ -285,8 +287,8 @@ export default function EditExerciseDialog({
                         setConfirmDeleteDialogOpen(false);
                         onClose();
                     }}
-                    title="Oefening Verwijderen"
-                    description="Weet je zeker dat je deze oefening wil verwijderen? Alle gerelateerde oplossingen worden ook gewist."
+                    title={t("confirm.title")}
+                    description={t("confirm.description")}
                     type="delete"
                 />
             </div>

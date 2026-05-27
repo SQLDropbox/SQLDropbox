@@ -5,9 +5,10 @@ import { authUtils } from "@/utils/authUtils";
 import LocaleSwitcher from "@/components/localeSwitcher";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 // Feather / FA6 icons
-import { FiSearch, FiLogOut, FiLogIn, FiMonitor } from "react-icons/fi";
+import { FiLogOut, FiLogIn, FiMonitor } from "react-icons/fi";
 import { FaGear } from "react-icons/fa6";
 
 const toggleableRoutes: (string | RegExp)[] = [
@@ -21,6 +22,7 @@ export default function Header() {
     const { user, isAdmin, isLecturer } = useAuth();
     const router = useRouter();
     const pathname = usePathname();
+    const t = useTranslations("Header");
 
     const isAdminRoute = pathname.startsWith("/admin");
 
@@ -44,12 +46,14 @@ export default function Header() {
         return segments.map((segment, index) => {
             const href = "/" + segments.slice(0, index + 1).join("/");
 
-            // format label
             let label = segment;
 
-            // make it readable
             if (!isNaN(Number(segment))) {
                 label = `#${segment}`;
+            } else if (segment === "admin") {
+                label = t("breadcrumbs.admin");
+            } else if (segment === "login") {
+                label = t("breadcrumbs.login");
             } else {
                 label = segment
                     .replace(/-/g, " ")
@@ -68,7 +72,7 @@ export default function Header() {
                     href="/"
                     className="font-display text-3xl font-bold text-accent uppercase tracking-tighter hover:opacity-80 transition-opacity"
                 >
-                    Databasement
+                    {t("brand")}
                 </Link>
 
                 <nav className="flex grow items-center gap-2 font-mono text-sm text-muted">
@@ -114,7 +118,7 @@ export default function Header() {
                             ) : (
                                 <FaGear className="text-[16px]" />
                             )}
-                            Admin
+                            {t("admin")}
                         </button>
                     )}
 
@@ -125,7 +129,7 @@ export default function Header() {
                             className="flex items-center gap-2 font-mono text-sm border-2 border-accent text-accent px-4 py-2 hover:bg-accent hover:text-paper uppercase tracking-widest transition-colors rotate-1"
                         >
                             <FiLogOut className="text-[16px]" />
-                            Log out
+                            {t("logout")}
                         </button>
                     ) : (
                         <Link
@@ -133,7 +137,7 @@ export default function Header() {
                             className="flex items-center gap-2 font-mono text-sm border-2 border-accent text-accent px-4 py-2 hover:bg-accent hover:text-paper uppercase tracking-widest transition-colors rotate-1"
                         >
                             <FiLogIn className="text-[16px]" />
-                            Log in
+                            {t("login")}
                         </Link>
                     )}
                 </div>

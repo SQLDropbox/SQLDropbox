@@ -2,6 +2,7 @@
 
 import { Course } from "@/types/types";
 import Link from "next/link";
+import { useLocale, useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
 import { FaFileAlt } from "react-icons/fa";
 import { FaArrowLeft, FaUsers } from "react-icons/fa6";
@@ -12,6 +13,16 @@ export default function AdminCourseDetailsHeader({
     course: Course;
 }) {
     const pathname = usePathname();
+    const locale = useLocale();
+    const t = useTranslations("AdminCourseDetailsHeader");
+
+    const courseName =
+        locale === "en" ? course.courseNameEN : course.courseNameNL;
+
+    const courseDescription =
+        locale === "en"
+            ? course.courseDescriptionEN
+            : course.courseDescriptionNL;
 
     return (
         <div className="mb-6">
@@ -20,12 +31,14 @@ export default function AdminCourseDetailsHeader({
                 className="flex items-center text-blue-500 hover:text-blue-700 gap-1"
             >
                 <FaArrowLeft />
-                Back to courses
+                {t("backToCourses")}
             </Link>
 
-            <h1 className="mt-6">{course.courseNameNL}</h1>
-            <p>{course.courseDescriptionNL}</p>
-            <p> Lecturer: {course.lecturer}</p>
+            <h1 className="mt-6">{courseName}</h1>
+            <p>{courseDescription}</p>
+            <p>
+                {t("lecturer")}: {course.lecturer}
+            </p>
 
             <ul className="flex px-2 py-1.5 gap-1 mt-4 w-fit rounded-lg bg-gray-200">
                 <li>
@@ -38,7 +51,7 @@ export default function AdminCourseDetailsHeader({
                         }`}
                     >
                         <FaFileAlt className="text-sm" />
-                        Chapters
+                        {t("chapters")}
                     </Link>
                 </li>
                 <li>
@@ -52,7 +65,7 @@ export default function AdminCourseDetailsHeader({
                         }`}
                     >
                         <FaUsers className="text-sm" />
-                        Students
+                        {t("students")}
                     </Link>
                 </li>
             </ul>

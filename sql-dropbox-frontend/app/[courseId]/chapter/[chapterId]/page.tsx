@@ -2,6 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 
 import Header from "@/components/header";
 import { chapterService } from "@/services/chapterService";
@@ -9,6 +10,7 @@ import { exerciseService } from "@/services/exerciseService";
 import StudentExerciseWorkspace from "@/components/student/studentExerciseWorkspace";
 
 export default function Page() {
+    const t = useTranslations("ChapterExercisePage");
     const params = useParams<{ chapterId: string; courseId: string }>();
     const chapterId = params?.chapterId;
     const courseId = params?.courseId;
@@ -37,7 +39,7 @@ export default function Page() {
             <div>
                 <Header />
                 <div className="max-w-350 mx-auto p-6">
-                    <p className="mt-6 text-center text-red-500">Geen geldige URL parameters gevonden.</p>
+                    <p className="mt-6 text-center text-red-500">{t("invalidParams")}</p>
                 </div>
             </div>
         );

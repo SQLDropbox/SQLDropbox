@@ -8,6 +8,7 @@ import {
 } from "@tanstack/react-query";
 
 import { FaTimes } from "react-icons/fa";
+import { useTranslations } from "next-intl";
 
 import { Chapter } from "@/types/types";
 import { chapterService } from "@/services/chapterService";
@@ -44,6 +45,7 @@ export default function EditChapterDialog({
     chapter,
 }: Props) {
     const queryClient = useQueryClient();
+    const t = useTranslations("ChapterDialog");
 
     const isEdit = mode === "edit";
 
@@ -72,13 +74,11 @@ export default function EditChapterDialog({
         const newErrors: FormErrors = {};
 
         if (!form.chapterNameNL?.trim()) {
-            newErrors.chapterNameNL =
-                "Dutch name is required";
+            newErrors.chapterNameNL = t("errors.chapterNameNLRequired");
         }
 
         if (!form.chapterNameEN?.trim()) {
-            newErrors.chapterNameEN =
-                "English name is required";
+            newErrors.chapterNameEN = t("errors.chapterNameENRequired");
         }
 
         return newErrors;
@@ -140,15 +140,11 @@ export default function EditChapterDialog({
                 <div className="flex justify-between items-start px-6 py-5 border-b">
                     <div>
                         <h2 className="text-xl font-semibold">
-                            {isEdit
-                                ? "Edit Chapter"
-                                : "Add Chapter"}
+                            {isEdit ? t("titleEdit") : t("titleAdd")}
                         </h2>
 
                         <p className="text-sm text-gray-500 mt-1">
-                            {isEdit
-                                ? "Update chapter information."
-                                : "Create a new chapter."}
+                            {isEdit ? t("subtitleEdit") : t("subtitleAdd")}
                         </p>
                     </div>
 
@@ -164,8 +160,11 @@ export default function EditChapterDialog({
                 <div className="p-6 space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                         <div>
+                            <label className="block text-xs uppercase tracking-widest text-gray-500 mb-2">
+                                {t("chapterNameEN")}
+                            </label>
                             <input
-                                placeholder="Chapter Name EN"
+                                placeholder={t("chapterNameENPlaceholder")}
                                 value={
                                     form.chapterNameEN ?? ""
                                 }
@@ -191,8 +190,11 @@ export default function EditChapterDialog({
                         </div>
 
                         <div>
+                            <label className="block text-xs uppercase tracking-widest text-gray-500 mb-2">
+                                {t("chapterNameNL")}
+                            </label>
                             <input
-                                placeholder="Chapter Name NL"
+                                placeholder={t("chapterNameNLPlaceholder")}
                                 value={
                                     form.chapterNameNL ?? ""
                                 }
@@ -219,7 +221,7 @@ export default function EditChapterDialog({
                     </div>
 
                     <textarea
-                        placeholder="Description EN"
+                        placeholder={t("chapterDescriptionEN")}
                         rows={4}
                         value={
                             form.chapterDescriptionEN ??
@@ -238,7 +240,7 @@ export default function EditChapterDialog({
                     />
 
                     <textarea
-                        placeholder="Description NL"
+                        placeholder={t("chapterDescriptionNL")}
                         rows={4}
                         value={
                             form.chapterDescriptionNL ??
@@ -258,7 +260,7 @@ export default function EditChapterDialog({
 
                     <input
                         type="number"
-                        placeholder="Exercise count"
+                        placeholder={t("amountOfExercises")}
                         value={
                             form.amountOfExercises ?? 0
                         }
@@ -284,7 +286,7 @@ export default function EditChapterDialog({
                             onClick={onDelete}
                             className="border border-gray-300 px-4 py-2 rounded-lg text-sm bg-red-600 text-white hover:bg-red-400 transition-colors cursor-pointer"
                         >
-                            Delete
+                            {t("delete")}
                         </button>
                     )}
 
@@ -293,7 +295,7 @@ export default function EditChapterDialog({
                             onClick={onClose}
                             className="border border-gray-300 px-4 py-2 rounded-lg text-sm hover:bg-gray-200 transition-colors cursor-pointer"
                         >
-                            Cancel
+                            {t("cancel")}
                         </button>
                 
                         <button
@@ -302,10 +304,10 @@ export default function EditChapterDialog({
                             className="bg-black text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-700 transition-colors cursor-pointer"
                         >
                             {mutation.isPending
-                                ? "Saving..."
+                                ? t("saving")
                                 : isEdit
-                                ? "Save Changes"
-                                : "Create Chapter"}
+                                ? t("saveChanges")
+                                : t("createChapter")}
                         </button>
                     </div>
                 </div>
@@ -324,8 +326,8 @@ export default function EditChapterDialog({
                         setConfirmDeleteDialogOpen(false);
                         onClose();
                     }}
-                    title="Delete Chapter"
-                    description="Are you sure you want to delete this chapter? This action cannot be undone."
+                        title={t("deleteTitle")}
+                        description={t("deleteDescription")}
                     type="delete"
                 />
             </div>
