@@ -134,6 +134,16 @@
         "confirm": "Bevestigen",
         "duplicating": "Dupliceren..."
     },
+    "Header": {
+        "brand": "Databasement",
+        "admin": "Admin",
+        "login": "Inloggen",
+        "logout": "Uitloggen",
+        "breadcrumbs": {
+            "admin": "Admin",
+            "login": "Inloggen"
+        }
+    },
     "NotFound": {
         "stamp": "SYSTEEMFOUT",
         "title": "Record Niet Gevonden",

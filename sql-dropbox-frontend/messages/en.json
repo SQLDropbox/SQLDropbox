@@ -134,6 +134,16 @@
         "confirm": "Confirm",
         "duplicating": "Duplicating..."
     },
+    "Header": {
+        "brand": "Databasement",
+        "admin": "Admin",
+        "login": "Log in",
+        "logout": "Log out",
+        "breadcrumbs": {
+            "admin": "Admin",
+            "login": "Login"
+        }
+    },
     "NotFound": {
         "stamp": "SYSTEM ERROR",
         "title": "Record Not Found",
