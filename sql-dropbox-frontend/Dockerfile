@@ -1,6 +1,5 @@
 #docker build -t nextjs-app .
 #docker run -p 3000:3000 nextjs-app
-
 # =========================
 # Builder stage
 # =========================
@@ -16,7 +15,6 @@ ARG NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 
 RUN npm run build
-
 
 # =========================
 # Runner stage
