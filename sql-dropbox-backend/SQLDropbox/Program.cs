@@ -138,9 +138,10 @@ if (app.Environment.IsProduction())
 if (app.Environment.IsProduction())
 {
     app.UseHttpsRedirection();
-} 
+}
 
-app.UseHttpsRedirection();
+// IMAGES
+app.UseStaticFiles();
 
 app.UseAuthentication();
 app.UseAuthorization();
