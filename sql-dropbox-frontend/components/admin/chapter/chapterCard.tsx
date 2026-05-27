@@ -67,7 +67,7 @@ export default function ChapterCard({
         disabled: !adminMode,
     });
 
-    const dndStyle = adminMode
+    const dndStyle: React.CSSProperties = adminMode
         ? {
               transform: CSS.Transform.toString(transform),
               transition: isDragging ? "none" : transition,
@@ -136,7 +136,7 @@ export default function ChapterCard({
                 <div className="flex items-center gap-1 mt-0.5">
                     {/* Questions button */}
                     <Link
-                        href={`/${courseId}/chapter/${chapter.chapterId}`}
+                        href={`/admin/${courseId}/chapter/${chapter.chapterId}/exercises`}
                         className="
                             inline-flex items-center gap-1.5
                             font-mono text-[10px] uppercase tracking-widest
