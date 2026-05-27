@@ -76,6 +76,12 @@
             "chapterNameNLRequired": "Hoofdstuknaam (NL) is verplicht."
         }
     },
+    "AdminCourseDetailsHeader": {
+        "backToCourses": "Terug naar cursussen",
+        "lecturer": "Lector",
+        "chapters": "Hoofdstukken",
+        "students": "Studenten"
+    },
     "NotFound": {
         "stamp": "SYSTEEMFOUT",
         "title": "Record Niet Gevonden",

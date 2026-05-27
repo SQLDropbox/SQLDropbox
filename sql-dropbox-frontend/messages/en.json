@@ -76,6 +76,12 @@
             "chapterNameNLRequired": "Chapter name (NL) is required."
         }
     },
+    "AdminCourseDetailsHeader": {
+        "backToCourses": "Back to courses",
+        "lecturer": "Lecturer",
+        "chapters": "Chapters",
+        "students": "Students"
+    },
     "NotFound": {
         "stamp": "SYSTEM ERROR",
         "title": "Record Not Found",
