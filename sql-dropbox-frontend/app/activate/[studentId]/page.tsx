@@ -52,11 +52,7 @@ export default function Page() {
         }
 
         try {
-            const response = await authService.setupAccount(
-                studentId,
-                password,
-            );
-            authUtils.login(router, response.token);
+            authUtils.setup(router, studentId, password);
         } catch (err: any) {
             setErrorMessage(err.message ?? t("errors.generic"));
         }

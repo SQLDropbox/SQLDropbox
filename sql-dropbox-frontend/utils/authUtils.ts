@@ -1,6 +1,20 @@
 import { authService } from "@/services/authService";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 
+const setup = async (
+    router: AppRouterInstance,
+    studentId: string,
+    password: string,
+) => {
+    const response = await authService.setupAccount(studentId, password);
+
+    setJWTCookie(response.token);
+
+    setTimeout(() => {
+        router.push("/");
+    }, 50);
+};
+
 const login = async (
     router: AppRouterInstance,
     emailOrCode: string,
@@ -53,6 +67,7 @@ export const setJWTCookie = (token: string | null = null) => {
 };
 
 export const authUtils = {
+    setup,
     login,
     logout,
     setJWTCookie,
