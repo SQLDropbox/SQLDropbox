@@ -19,7 +19,8 @@
         "statusArchived": "GEARCHIVEERD",
         "backToCourses": "Terug naar cursussen",
         "chaptersLabel": "Hoofdstukken",
-        "noChapters": "Er zijn nog geen hoofdstukken beschikbaar voor deze cursus, neem contact op met uw lector."        
+        "noChapters": "Er zijn nog geen hoofdstukken beschikbaar voor deze cursus, neem contact op met uw lector.",
+        "newChapter": "Nieuw hoofdstuk"  
     },
     "CourseDialog": {
         "titleEdit": "Cursus bewerken",
