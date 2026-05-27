@@ -25,13 +25,13 @@ services:
         volumes:
             - ./keys:/run/keys:ro
         env_file:
-            - backend.dev.env
+            - backend.prod.env
         container_name: dotnet-api
         restart: unless-stopped
         ports:
             - "8080:8080"
         environment:
-            ASPNETCORE_ENVIRONMENT: Development
+            ASPNETCORE_ENVIRONMENT: Production
             ASPNETCORE_URLS: "http://+:8080"
         networks:
             - appnet
@@ -43,7 +43,7 @@ services:
             args:
                 NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
         env_file:
-            - frontend.dev.env
+            - frontend.prod.env
         container_name: nextjs-app
         restart: unless-stopped
         depends_on:

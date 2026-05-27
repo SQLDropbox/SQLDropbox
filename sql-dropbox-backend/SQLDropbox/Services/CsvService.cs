@@ -2,6 +2,7 @@
 using CsvHelper.Configuration;
 using SQLDropbox.DTO;
 using System.Globalization;
+using System.Text;
 
 public class CsvService
 {
@@ -18,10 +19,11 @@ public class CsvService
 
         var config = new CsvConfiguration(CultureInfo.InvariantCulture)
         {
-            DetectDelimiter = true
+            DetectDelimiter = true,
+            Encoding = Encoding.UTF8
         };
 
-        using var reader = new StreamReader(file.OpenReadStream());
+        using var reader = new StreamReader(file.OpenReadStream()); 
         using var csv = new CsvReader(reader, config);
 
         var rows = new List<string[]>();

@@ -18,6 +18,7 @@
 
     /* states */
     --color-error: #ba1a1a;
+    --color-warning: #fdfd96;
 
     /* --- fonts --- */
     --font-display: var(--font-display);

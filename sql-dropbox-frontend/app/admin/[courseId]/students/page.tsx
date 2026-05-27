@@ -9,6 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { courseService } from "@/services/courseService";
 import { FaSearch, FaUserPlus, FaUpload } from "react-icons/fa";
 import AddStudentModal from "@/components/student/addStudentModal";
+import ImportStudentsModal from "@/components/student/importStudentsModal";
 
 interface StudentImport {
     userCode: string;
@@ -23,7 +24,11 @@ export default function Page() {
 
     const courseId = (params.courseId as string) ?? undefined;
 
-    const { data: course, isLoading, refetch } = useQuery<Course>({
+    const {
+        data: course,
+        isLoading,
+        refetch,
+    } = useQuery<Course>({
         queryKey: ["course", courseId],
         queryFn: () => courseService.getCourseByCourseId(courseId),
         enabled: !!courseId,
@@ -130,8 +135,19 @@ export default function Page() {
                 </div>
             </div>
 
-            {modalTab !== null && (
+            {modalTab === "manual" && (
                 <AddStudentModal
+                    courseId={courseId!}
+                    onClose={() => setModalTab(null)}
+                    onSuccess={() => {
+                        setModalTab(null);
+                        refetch();
+                    }}
+                />
+            )}
+
+            {modalTab === "upload" && (
+                <ImportStudentsModal
                     courseId={courseId!}
                     onClose={() => setModalTab(null)}
                     onSuccess={() => {
