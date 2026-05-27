@@ -76,6 +76,11 @@
             "chapterNameNLRequired": "Chapter name (NL) is required."
         }
     },
+    "ChapterCard": {
+        "exercises": "exercises",
+        "questions": "Questions",
+        "edit": "Edit"
+    },
     "AdminCourseDetailsHeader": {
         "backToCourses": "Back to courses",
         "lecturer": "Lecturer",

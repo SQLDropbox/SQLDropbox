@@ -76,6 +76,11 @@
             "chapterNameNLRequired": "Hoofdstuknaam (NL) is verplicht."
         }
     },
+    "ChapterCard": {
+        "exercises": "oefeningen",
+        "questions": "Vragen",
+        "edit": "Bewerken"
+    },
     "AdminCourseDetailsHeader": {
         "backToCourses": "Terug naar cursussen",
         "lecturer": "Lector",
