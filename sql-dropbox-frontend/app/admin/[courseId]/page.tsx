@@ -102,34 +102,13 @@ export default function Page() {
             <Header />
 
             <main className="grow max-w-7xl mx-auto w-full px-6 py-12">
-                <div className="flex items-center justify-between mb-10">
+                <div className="mb-10">
                     <Link
                         href="/admin"
                         className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-muted hover:text-ink"
                     >
                         ← {t("backToCourses")}
                     </Link>
-
-                    <button
-                        onClick={() => {
-                            setSelectedChapter(null);
-                            setEditDialogOpen(true);
-                        }}
-                        className="
-                            inline-flex items-center gap-2
-                            bg-ink text-paper
-                            font-mono text-[10px] uppercase tracking-widest
-                            px-4 py-2.5
-                            border-2 border-border
-                            shadow-[3px_3px_0px_0px_var(--color-border)]
-                            hover:shadow-[1px_1px_0px_0px_var(--color-border)]
-                            hover:translate-x-[2px] hover:translate-y-[2px]
-                            transition-all duration-100
-                        "
-                    >
-                        <FaPlus className="w-2.5 h-2.5" />
-                        {t("newChapter") ?? "New Chapter"}
-                    </button>
                 </div>
 
                 <div className="relative z-10 bg-surface-2 border-2 border-border shadow-[6px_6px_0px_0px_var(--color-border)]">
@@ -141,13 +120,30 @@ export default function Page() {
                     </div>
 
                     {/* Course header */}
-                    <div className="border-b-2 border-border px-8 pt-8 pb-6">
-                        <h1 className="font-display text-4xl font-bold mb-3">
-                            {courseName}
-                        </h1>
-                        <p className="font-mono text-sm text-muted max-w-2xl">
-                            {courseDesc}
-                        </p>
+                    <div className="border-b-2 flex items-center justify-between border-border px-8 pt-8 pb-6">
+                        <div>
+                            <h1 className="font-display text-4xl font-bold mb-3">
+                                {courseName}
+                            </h1>
+                            <p className="font-mono text-sm text-muted max-w-2xl">
+                                {courseDesc}
+                            </p>
+                        </div>
+                        <button
+                            onClick={() => {
+                                setSelectedChapter(null);
+                                setEditDialogOpen(true);
+                            }}
+                            
+                        className={`
+                                flex items-center gap-2
+                                font-mono text-sm border-2 px-4 py-2 uppercase tracking-widest transition-colors -rotate-1
+                                border-accent text-accent hover:bg-accent hover:text-paper
+                            `}
+                        >
+                            <FaPlus className="w-2.5 h-2.5" />
+                            {t("newChapter")}
+                        </button>
                     </div>
 
                     {/* Chapters */}
