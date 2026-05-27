@@ -81,13 +81,13 @@ namespace SQLDropbox.Repositories
                  $$;
              ");
 
-            //await context.Database.ExecuteSqlRawAsync(@"
-            //     GRANT USAGE, CREATE ON SCHEMA util TO sqldropbox_admin;
-            //     GRANT USAGE ON LANGUAGE plpgsql TO sqldropbox_admin;
-            //     GRANT SELECT ON ALL TABLES IN SCHEMA util TO sqldropbox_admin;
-            //     GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA util TO sqldropbox_admin;
-            //     GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA util TO sqldropbox_admin;
-            // ");
+            await context.Database.ExecuteSqlRawAsync(@"
+                 GRANT USAGE, CREATE ON SCHEMA util TO sqldropbox_admin;
+                 GRANT USAGE ON LANGUAGE plpgsql TO sqldropbox_admin;
+                 GRANT SELECT ON ALL TABLES IN SCHEMA util TO sqldropbox_admin;
+                 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA util TO sqldropbox_admin;
+                 GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA util TO sqldropbox_admin;
+            ");
 
             /* ANIMALS SCHEMA + TABLE */
             await context.Database.ExecuteSqlRawAsync(@"

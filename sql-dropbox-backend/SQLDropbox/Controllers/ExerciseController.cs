@@ -93,23 +93,17 @@ public class ExerciseController(AppDbContext db, SolutionService soS) : BaseCont
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateExercise(int id, [FromBody] ExerciseDTO dto)
+    public async Task<IActionResult> UpdateExercise(int id, [FromBody] ExerciseUpdateDTO dto)
     {
         try
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
             Exercise? exercise = await _db.Exercises
                 .Include(e => e.Chapter)
+                .ThenInclude(c => c.Schema)
                 .Include(e => e.Solutions)
                 .FirstOrDefaultAsync(e => e.DeletedAt == null && e.ExerciseId == id);
 
-            if (exercise == null)
-                return BadRequest(new { message = "Exercise not found." });
-            if (exercise.Chapter == null)
-                return BadRequest(new { message = "This exercise is not part of a chapter." });
-
+            if (exercise == null) return BadRequest(new { message = "Exercise not found." });
             if (dto.QuestionNL != null) exercise.QuestionNL = dto.QuestionNL;
             if (dto.QuestionEN != null) exercise.QuestionEN = dto.QuestionEN;
             if (dto.HintNL != null) exercise.HintNL = dto.HintNL;
@@ -119,23 +113,27 @@ public class ExerciseController(AppDbContext db, SolutionService soS) : BaseCont
             {
                 _db.Solutions.RemoveRange(exercise.Solutions);
 
-                var (FormattedQuery, QueryOutput, QueryHash) = await _soS.CleanData(dto.SolutionQuery, exercise.Chapter.Schema.SchemaName);
+                var (FormattedQuery, QueryOutput, QueryHash) =
+                    await _soS.CleanData(dto.SolutionQuery, exercise.Chapter.Schema.SchemaName);
+
                 exercise.QueryOutput = QueryOutput;
 
-                exercise.Solutions = [
-                new Solution
-                    {
-                        Query = FormattedQuery,
-                        QueryHash = QueryHash,
-                        CreatedAt = DateTime.UtcNow
-                    }
+                exercise.Solutions =
+                [
+                    new Solution
+                {
+                    Query = FormattedQuery,
+                    QueryHash = QueryHash,
+                    CreatedAt = DateTime.UtcNow
+                }
                 ];
             }
 
             exercise.UpdatedAt = DateTime.UtcNow;
 
             await _db.SaveChangesAsync();
-            return Ok();
+
+            return Ok(exercise);
         }
         catch (Exception ex)
         {
