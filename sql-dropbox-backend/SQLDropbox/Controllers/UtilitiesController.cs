@@ -22,7 +22,7 @@ public class UtilitiesController(AppDbContext db, PasswordService ps, SolutionSe
     public async Task<IActionResult> SeedTheDb()
     {
         await DbInitializer.EmptyAsync(_db);
-        await DbInitializer.SeedAsync(_db, _ps);
+        await DbInitializer.SeedAsyncDev(_db, _ps);
         return Ok("The DB should have been seeded.");
     }
 
