@@ -33,24 +33,7 @@ public class ExerciseController(AppDbContext db, SolutionService soS) : BaseCont
             if (chapter == null)
                 return BadRequest(new { message = $"Chapter with ID {dto.ChapterId} could not be found." });
 
-            var solutions = new List<Solution>();
-
-            string? queryOutput = null;
-
-            foreach (var query in dto.SolutionQueries)
-            {
-                var (formattedQuery, base64QueryOutput, queryHash)
-                    = await _soS.CleanData(query, chapter.Schema.SchemaName);
-
-                queryOutput ??= base64QueryOutput;
-
-                solutions.Add(new Solution
-                {
-                    Query = formattedQuery,
-                    QueryHash = queryHash,
-                    CreatedAt = DateTime.UtcNow
-                });
-            }
+            var (FormattedQuery, Base64QueryOutput, QueryHash) = await _soS.CleanData(dto.SolutionQuery, chapter.Schema.SchemaName);
 
             var newExercise = new Exercise
             {
@@ -58,13 +41,18 @@ public class ExerciseController(AppDbContext db, SolutionService soS) : BaseCont
                 QuestionEN = dto.QuestionEN,
                 HintNL = dto.HintNL,
                 HintEN = dto.HintEN,
-
-                QueryOutput = queryOutput,
-
+                QueryOutput = Base64QueryOutput,
                 Chapter = chapter,
                 CreatedAt = DateTime.UtcNow,
 
-                Solutions = solutions
+                Solutions = [
+                    new Solution
+                    {
+                        Query = FormattedQuery,
+                        QueryHash = QueryHash,
+                        CreatedAt = DateTime.UtcNow
+                    }
+                ]
             };
 
             await _db.Exercises.AddAsync(newExercise);
@@ -121,31 +109,24 @@ public class ExerciseController(AppDbContext db, SolutionService soS) : BaseCont
             if (dto.HintNL != null) exercise.HintNL = dto.HintNL;
             if (dto.HintEN != null) exercise.HintEN = dto.HintEN;
 
-            if (dto.SolutionQueries != null)
+            if (dto.SolutionQuery != null)
             {
                 _db.Solutions.RemoveRange(exercise.Solutions);
 
-                var newSolutions = new List<Solution>();
+                var (FormattedQuery, QueryOutput, QueryHash) =
+                    await _soS.CleanData(dto.SolutionQuery, exercise.Chapter.Schema.SchemaName);
 
-                string? queryOutput = null;
+                exercise.QueryOutput = QueryOutput;
 
-                foreach (var query in dto.SolutionQueries)
+                exercise.Solutions =
+                [
+                    new Solution
                 {
-                    var (formattedQuery, base64QueryOutput, queryHash)
-                        = await _soS.CleanData(query, exercise.Chapter.Schema.SchemaName);
-
-                    queryOutput ??= base64QueryOutput;
-
-                    newSolutions.Add(new Solution
-                    {
-                        Query = formattedQuery,
-                        QueryHash = queryHash,
-                        CreatedAt = DateTime.UtcNow
-                    });
+                    Query = FormattedQuery,
+                    QueryHash = QueryHash,
+                    CreatedAt = DateTime.UtcNow
                 }
-
-                exercise.QueryOutput = queryOutput;
-                exercise.Solutions = newSolutions;
+                ];
             }
 
             exercise.UpdatedAt = DateTime.UtcNow;

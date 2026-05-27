@@ -6,7 +6,7 @@ public class ExerciseDTO
     public string QuestionEN { get; set; }
     public string HintNL { get; set; }
     public string HintEN { get; set; }
-    public required List<string> SolutionQueries { get; set; }
+    public required string SolutionQuery { get; set; }
     public required int ChapterId { get; set; }
     
 }

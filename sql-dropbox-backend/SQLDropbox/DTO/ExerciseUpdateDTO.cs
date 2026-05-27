@@ -6,6 +6,6 @@
         public string? QuestionEN { get; set; }
         public string? HintNL { get; set; }
         public string? HintEN { get; set; }
-        public List<string>? SolutionQueries { get; set; }
+        public string? SolutionQuery { get; set; }
     }
 }
