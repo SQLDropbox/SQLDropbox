@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useParams } from "next/navigation";
+import { notFound, useParams } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { FaPlus } from "react-icons/fa6";
 
@@ -48,21 +48,7 @@ export default function Page() {
     });
 
     if (error || !course) {
-        return (
-            <div>
-                <Header />
-
-                <div className="max-w-350 mx-auto p-6">
-                    <div className="text-center py-12">
-                        <h1 className="text-2xl font-semibold">Cursus niet gevonden</h1>
-                        <p className="text-gray-600 mt-2">De gevraagde cursus bestaat niet of is niet bereikbaar.</p>
-                        <div className="mt-4">
-                            <a href="/admin" className="text-sm text-blue-600 hover:underline">Terug naar cursussen</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
+        return notFound();
     }
 
     if (isLoading) {
@@ -125,4 +111,6 @@ export default function Page() {
     );
 }
 
-
+function notfound() {
+    throw new Error("Function not implemented.");
+}
