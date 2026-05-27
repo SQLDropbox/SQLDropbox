@@ -144,6 +144,9 @@
             "login": "Inloggen"
         }
     },
+    "ChapterExercisePage": {
+        "invalidParams": "Geen geldige URL-parameters gevonden."
+    },
     "NotFound": {
         "stamp": "SYSTEEMFOUT",
         "title": "Record Niet Gevonden",

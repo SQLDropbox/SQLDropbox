@@ -144,6 +144,9 @@
             "login": "Login"
         }
     },
+    "ChapterExercisePage": {
+        "invalidParams": "No valid URL parameters were found."
+    },
     "NotFound": {
         "stamp": "SYSTEM ERROR",
         "title": "Record Not Found",
