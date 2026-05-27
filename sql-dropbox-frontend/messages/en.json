@@ -19,7 +19,7 @@
         "statusArchived": "ARCHIVED",
         "backToCourses": "Back to courses",
         "chaptersLabel": "Chapters",
-        "noChapters": "No chapters yet."
+        "noChapters": "There are no chapters available for this course, please contact your lecturer."
     },
     "CourseDialog": {
         "titleEdit": "Edit Course",
