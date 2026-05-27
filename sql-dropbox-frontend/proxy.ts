@@ -66,7 +66,12 @@ export async function proxy(req: NextRequest) {
         const { payload } = await verifyToken(token);
         role = payload[ROLE_CLAIM] as string;
     } catch {
-        return NextResponse.redirect(new URL("/login", req.url));
+        return NextResponse.redirect(new URL("/login", req.url), {
+            headers: {
+                "Set-Cookie":
+                    "token=; path=/; max-age=0; SameSite=Strict",
+            },
+        });
     }
 
     // =========================
