@@ -15,6 +15,7 @@ services:
             interval: 5s
             timeout: 5s
             retries: 10
+
         networks:
             - appnet
 
@@ -25,14 +26,22 @@ services:
         volumes:
             - ./keys:/run/keys:ro
         env_file:
-            - backend.dev.env
+            - backend.prod.env
         container_name: dotnet-api
         restart: unless-stopped
         ports:
             - "8080:8080"
         environment:
             ASPNETCORE_ENVIRONMENT: Production
-            ASPNETCORE_URLS: "http://+:8080"          
+            ASPNETCORE_URLS: "http://+:8080"
+            ConnectionStrings__DefaultConnection: ${DB_CONNECTION}
+            Password__Salt: ${PASSWORD_SALT}
+            Password__Pepper: ${PASSWORD_PEPPER}
+            Jwt__Issuer: ${JWT_ISSUER}
+            Jwt__Audience: ${JWT_AUDIENCE}
+            Jwt__AccessTokenMinutes: ${JWT_ACCESS_TOKEN_MINUTES}
+            Jwt__RefreshTokenDays: ${JWT_REFRESH_TOKEN_DAYS}
+            AllowedOrigins: ${ALLOWED_ORIGINS}
         networks:
             - appnet
 
@@ -43,13 +52,16 @@ services:
             args:
                 NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
         env_file:
-            - frontend.dev.env
+            - frontend.prod.env
         container_name: nextjs-app
         restart: unless-stopped
         depends_on:
             - api
         ports:
             - "3000:3000"
+        environment:
+            NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+            JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY}
         networks:
             - appnet
 

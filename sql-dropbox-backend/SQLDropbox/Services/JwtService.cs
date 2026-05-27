@@ -1,7 +1,5 @@
 ﻿using Microsoft.IdentityModel.Tokens;
-using SQLDropbox.Enums;
 using SQLDropbox.Models;
-using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -27,11 +25,11 @@ namespace SQLDropbox.Services
             _accessTokenMinutes = int.Parse(_configuration["Jwt:AccessTokenMinutes"]
                 ?? throw new InvalidOperationException("Jwt AccessTokenMinutes is not configured"));
 
-            var privateKeyPem = File.ReadAllText(configuration["Jwt:PrivateKeyPath"]
+            var privateKey = File.ReadAllText(configuration["Jwt:PrivateKeyPath"]
                 ?? throw new InvalidOperationException("Jwt PrivateKeyPath is not configured"));
 
             var rsa = RSA.Create();
-            rsa.ImportFromPem(privateKeyPem);
+            rsa.ImportFromPem(privateKey);
             _privateKey = new RsaSecurityKey(rsa);
         }
 

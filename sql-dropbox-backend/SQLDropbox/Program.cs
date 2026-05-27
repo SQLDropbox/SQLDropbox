@@ -74,10 +74,10 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 // JWT
-var publicKeyPem = File.ReadAllText(builder.Configuration["Jwt:PublicKeyPath"])
+var publicKey = File.ReadAllText(builder.Configuration["Jwt:PublicKeyPath"])
     ?? throw new Exception("Jwt:PublicKeyPath is missing");
 var rsa = RSA.Create();
-rsa.ImportFromPem(publicKeyPem);
+rsa.ImportFromPem(publicKey);
 
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer("Bearer", options =>
