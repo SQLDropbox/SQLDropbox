@@ -7,7 +7,7 @@ export interface Course {
     lecturer: string;
     isActive: boolean;
 
-    students?: Student[];
+    students?: User[];
     chapters?: Chapter[];
 
     studentCount?: number;
@@ -42,7 +42,7 @@ export interface Exercise {
     queryOutput?: string;
     solutionQueries?: string[];
 }
-export interface Student {
+export interface User {
     userCode: string;
     firstName: string;
     lastName: string;

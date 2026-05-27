@@ -5,7 +5,6 @@ using SQLDropbox.Data;
 using SQLDropbox.Repositories;
 using SQLDropbox.Services;
 using System.Security.Cryptography;
-using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,6 +37,7 @@ builder.Services.AddScoped<SchemaService>();
 builder.Services.AddScoped<SqlQueryService>();
 builder.Services.AddScoped<CsvExportService>();
 builder.Services.AddScoped<RoutineService>();
+builder.Services.AddScoped<CsvService>();
 builder.Services.AddScoped<RefreshTokenService>();
 
 // Add controllers to the container
@@ -46,7 +46,7 @@ builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
-// Swagger
+// SWAGGER
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -64,7 +64,7 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-// Postgres
+// POSTGRES
 // create migration ==> dotnet ef migrations add Init
 // update db with migration ==> dotnet ef database update
 // if EF not installed ==> dotnet tool install dotnet-ef
@@ -100,41 +100,45 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// CORS
+app.UseCors("AllowFrontend");
+
 if (app.Environment.IsDevelopment())
 {
-    // app.UseCors("AllowFrontend");
-    // app.MapOpenApi();
-    // app.UseSwagger();
-    // app.UseSwaggerUI();
+    // SWAGGER
+    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 
-    //// DB initialization on startup
-    //AsyncServiceScope scope = app.Services.CreateAsyncScope();
-    //AppDbContext db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    /////PasswordService pass = scope.ServiceProvider.GetRequiredService<PasswordService>();
-
-    ////await db.Database.EnsureDeletedAsync();
-    //await db.Database.MigrateAsync();
-
-    //await DbInitializer.SeedAsync(db/*, pass*/);
+    // DB MIGRATION
+    AsyncServiceScope scope = app.Services.CreateAsyncScope();
+    AppDbContext db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await db.Database.MigrateAsync();
 }
 
 if (app.Environment.IsProduction())
 {
-    // DB initialization on startup
+    // DB MIGRATION
     AsyncServiceScope scope = app.Services.CreateAsyncScope();
     AppDbContext db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+    // Delete the passwordservice
     PasswordService pass = scope.ServiceProvider.GetRequiredService<PasswordService>();
+
+    // Delete the delete
     await db.Database.EnsureDeletedAsync();
+
+    // Keep the migration
     await db.Database.MigrateAsync();
+
+    // Delete the seed
     await DbInitializer.SeedAsync(db, pass);
 }
 
-app.UseCors("AllowFrontend");
-app.MapOpenApi();
-app.UseSwagger();
-app.UseSwaggerUI();
-app.UseStaticFiles();
+if (app.Environment.IsProduction())
+{
+    app.UseHttpsRedirection();
+} 
 
 app.UseHttpsRedirection();
 
@@ -142,5 +146,10 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+if (app.Environment.IsProduction())
+{
+    app.UsePathBase("/api");
+}
 
 app.Run();
