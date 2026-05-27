@@ -38,7 +38,6 @@ async function privateFetch(
     url: string,
     options: RequestInit = {},
     type: FetchType = "json",
-    retry = true,
 ): Promise<any> {
     if (!API_URL) {
         const errorMessage =
@@ -49,7 +48,19 @@ async function privateFetch(
 
     const token = document.cookie.match(/(?:^|;\s*)token=([^;]*)/)?.[1];
 
-    if (!token) throw new Error("No token found, please log in.");
+    if (!token) {
+        try {
+            const refresh = await api.publicFetch(`/Auth/refresh`, {
+                method: "GET",
+                credentials: "include",
+            });
+            setJWTCookie(refresh.token);
+        } catch {
+            setJWTCookie(null);
+            window.location.href = "/login";
+            throw new Error("Session expired.");
+        }
+    }
 
     const headers = new Headers(options.headers);
 
@@ -63,7 +74,7 @@ async function privateFetch(
     // =========================
     // TOKEN EXPIRED → REFRESH
     // =========================
-    if (response.status === 401 && retry) {
+    if (response.status === 401) {
         try {
             const refresh = await api.publicFetch(`/Auth/refresh`, {
                 method: "GET",
