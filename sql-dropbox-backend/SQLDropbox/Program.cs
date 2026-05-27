@@ -132,7 +132,7 @@ if (app.Environment.IsProduction())
     await db.Database.MigrateAsync();
 
     // Delete the seed
-    await DbInitializer.SeedAsync(db, pass);
+    await DbInitializer.SeedAsyncProd(db, pass);
 }
 
 if (app.Environment.IsProduction())
