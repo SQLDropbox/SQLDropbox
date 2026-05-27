@@ -17,6 +17,14 @@ const login = async (emailOrCode: string, password: string) => {
     return api.publicFetch(`/Auth/login`, {
         method: "POST",
         body: JSON.stringify({ emailOrCode, password }),
+        credentials: "include",
+    });
+};
+
+const logout = async () => {
+    return api.publicFetch(`/Auth/logout`, {
+        method: "GET",
+        credentials: "include",
     });
 };
 
@@ -24,4 +32,5 @@ export const authService = {
     getAccountSetup,
     setupAccount,
     login,
+    logout,
 };

@@ -54,7 +54,7 @@ export default function CourseCard({
     return (
         <article
             className={`
-                relative ${surface}
+                flex flex-col relative ${surface}
                 p-6 border border-border
                 shadow-[inset_0_0_0_1px_var(--color-border)]
                 transition-transform duration-200 ${rotation}
@@ -132,6 +132,8 @@ export default function CourseCard({
                 <li>{t("students", { count: course.studentCount ?? 0 })}</li>
                 <li>{t("chapters", { count: course.chapterCount ?? 0 })}</li>
             </ul>
+
+            <div className="flex-1"></div>
 
             {/* Actions */}
             <div className="flex gap-2">

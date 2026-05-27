@@ -59,7 +59,7 @@ export default function Page() {
                 )}
 
                 {/* Course grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12 pb-24">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-8 md:gap-x-12 md:gap-y-18 pb-24">
                     {data?.map((course, index) => (
                         <CourseCard
                             key={course.courseId}

@@ -30,6 +30,23 @@ namespace SQLDropbox.Services
             return Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
         }
 
+        public void AttachCookie(HttpResponse response, string refreshToken, DateTime expiresAt)
+        {
+            response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = false, //true,
+                SameSite = SameSiteMode.Lax,
+                Expires = expiresAt,
+                Path = "/"
+            });
+        }
+
+        public void RemoveCookie(HttpResponse response)
+        {
+            response.Cookies.Delete("refreshToken", new CookieOptions { Path = "/" });
+        }
+
         public async Task<RefreshToken> CreateRefreshToken(User user, string ipAddress, string token)
         {
             string tokenHash = HashToken(token);

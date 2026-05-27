@@ -26,10 +26,8 @@ export default function Page() {
             setErrorMessage(t("errors.passwordEmpty"));
             return;
         }
-
         try {
-            const response = await authService.login(emailOrCode, password);
-            authUtils.login(router, response.token);
+            await authUtils.login(router, emailOrCode, password);
         } catch (err: any) {
             setErrorMessage(err.message ?? t("errors.generic"));
         }
