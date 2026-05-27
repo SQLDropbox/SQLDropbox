@@ -87,6 +87,14 @@
         "chapters": "Hoofdstukken",
         "students": "Studenten"
     },
+    "DuplicateCourseModal": {
+        "title": "Cursus dupliceren",
+        "description": "Je staat op het punt om {courseName} te dupliceren. Optioneel kun je een aangepaste URL (CourseId) opgeven. Laat leeg om er automatisch één te genereren.",
+        "placeholder": "bijv. {courseId}-copy",
+        "cancel": "Annuleren",
+        "confirm": "Bevestigen",
+        "duplicating": "Dupliceren..."
+    },
     "NotFound": {
         "stamp": "SYSTEEMFOUT",
         "title": "Record Niet Gevonden",
