@@ -6,16 +6,10 @@ namespace SQLDropbox.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class SchemaController : ControllerBase
+public class SchemaController(SchemaService schema, SqlQueryService sql) : ControllerBase
 {
-    private readonly SchemaService _schema;
-    private readonly SqlQueryService _sql;
-
-    public SchemaController(SchemaService schema, SqlQueryService sql)
-    {
-        _schema = schema;
-        _sql = sql;
-    }
+    private readonly SchemaService _schema = schema;
+    private readonly SqlQueryService _sql = sql;
 
     [HttpPost("clone-dynamic")]
     public async Task<IActionResult> CloneSchema([FromQuery] string sourceSchema)

@@ -81,13 +81,13 @@ namespace SQLDropbox.Repositories
                  $$;
              ");
 
-            //await context.Database.ExecuteSqlRawAsync(@"
-            //     GRANT USAGE, CREATE ON SCHEMA util TO sqldropbox_admin;
-            //     GRANT USAGE ON LANGUAGE plpgsql TO sqldropbox_admin;
-            //     GRANT SELECT ON ALL TABLES IN SCHEMA util TO sqldropbox_admin;
-            //     GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA util TO sqldropbox_admin;
-            //     GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA util TO sqldropbox_admin;
-            // ");
+            await context.Database.ExecuteSqlRawAsync(@"
+                 GRANT USAGE, CREATE ON SCHEMA util TO sqldropbox_admin;
+                 GRANT USAGE ON LANGUAGE plpgsql TO sqldropbox_admin;
+                 GRANT SELECT ON ALL TABLES IN SCHEMA util TO sqldropbox_admin;
+                 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA util TO sqldropbox_admin;
+                 GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA util TO sqldropbox_admin;
+             ");
 
             /* ANIMALS SCHEMA + TABLE */
             await context.Database.ExecuteSqlRawAsync(@"
@@ -370,150 +370,150 @@ namespace SQLDropbox.Repositories
         public static async Task SeedAsyncProd(AppDbContext context, PasswordService ps)
         {
             /* UTIL SCHEMA + PROCEDURES + PRIVILEGES */
-            await context.Database.ExecuteSqlRawAsync(@"
-                 CREATE SCHEMA IF NOT EXISTS util;
-             ");
+            //await context.Database.ExecuteSqlRawAsync(@"
+            //     CREATE SCHEMA IF NOT EXISTS util;
+            // ");
 
-            await context.Database.ExecuteSqlRawAsync(@"
-                 CREATE OR REPLACE PROCEDURE util.sp_clone_schema(
-                     source_schema TEXT,
-                     target_schema TEXT
-                 )
-                 LANGUAGE plpgsql
-                 AS $$
-                 DECLARE
-                     table_record RECORD;
-                 BEGIN
-                     EXECUTE format('CREATE SCHEMA IF NOT EXISTS %I', target_schema);
+            //await context.Database.ExecuteSqlRawAsync(@"
+            //     CREATE OR REPLACE PROCEDURE util.sp_clone_schema(
+            //         source_schema TEXT,
+            //         target_schema TEXT
+            //     )
+            //     LANGUAGE plpgsql
+            //     AS $$
+            //     DECLARE
+            //         table_record RECORD;
+            //     BEGIN
+            //         EXECUTE format('CREATE SCHEMA IF NOT EXISTS %I', target_schema);
 
-                     FOR table_record IN
-                         SELECT tablename
-                         FROM pg_tables
-                         WHERE schemaname = source_schema
-                     LOOP
-                         EXECUTE format(
-                             'CREATE TABLE %I.%I (LIKE %I.%I INCLUDING ALL)',
-                             target_schema,
-                             table_record.tablename,
-                             source_schema,
-                             table_record.tablename
-                         );
+            //         FOR table_record IN
+            //             SELECT tablename
+            //             FROM pg_tables
+            //             WHERE schemaname = source_schema
+            //         LOOP
+            //             EXECUTE format(
+            //                 'CREATE TABLE %I.%I (LIKE %I.%I INCLUDING ALL)',
+            //                 target_schema,
+            //                 table_record.tablename,
+            //                 source_schema,
+            //                 table_record.tablename
+            //             );
 
-                         EXECUTE format(
-                             'INSERT INTO %I.%I SELECT * FROM %I.%I',
-                             target_schema,
-                             table_record.tablename,
-                             source_schema,
-                             table_record.tablename
-                         );
-                     END LOOP;
-                 END;
-                 $$;
-             ");
+            //             EXECUTE format(
+            //                 'INSERT INTO %I.%I SELECT * FROM %I.%I',
+            //                 target_schema,
+            //                 table_record.tablename,
+            //                 source_schema,
+            //                 table_record.tablename
+            //             );
+            //         END LOOP;
+            //     END;
+            //     $$;
+            // ");
 
-            await context.Database.ExecuteSqlRawAsync(@"
-                 CREATE OR REPLACE PROCEDURE util.sp_delete_schema(
-                     schema_name TEXT
-                 )
-                 LANGUAGE plpgsql
-                 AS $$
-                 BEGIN
-                     EXECUTE format(
-                         'DROP SCHEMA IF EXISTS %I CASCADE',
-                         schema_name
-                     );
-                 END;
-                 $$;
-             ");
+            //await context.Database.ExecuteSqlRawAsync(@"
+            //     CREATE OR REPLACE PROCEDURE util.sp_delete_schema(
+            //         schema_name TEXT
+            //     )
+            //     LANGUAGE plpgsql
+            //     AS $$
+            //     BEGIN
+            //         EXECUTE format(
+            //             'DROP SCHEMA IF EXISTS %I CASCADE',
+            //             schema_name
+            //         );
+            //     END;
+            //     $$;
+            // ");
 
-            await context.Database.ExecuteSqlRawAsync(@"
-                 GRANT USAGE, CREATE ON SCHEMA util TO sqldropbox_admin;
-                 GRANT USAGE ON LANGUAGE plpgsql TO sqldropbox_admin;
-                 GRANT SELECT ON ALL TABLES IN SCHEMA util TO sqldropbox_admin;
-                 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA util TO sqldropbox_admin;
-                 GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA util TO sqldropbox_admin;
-            ");
+            //await context.Database.ExecuteSqlRawAsync(@"
+            //     GRANT USAGE, CREATE ON SCHEMA util TO sqldropbox_admin;
+            //     GRANT USAGE ON LANGUAGE plpgsql TO sqldropbox_admin;
+            //     GRANT SELECT ON ALL TABLES IN SCHEMA util TO sqldropbox_admin;
+            //     GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA util TO sqldropbox_admin;
+            //     GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA util TO sqldropbox_admin;
+            //");
 
-            await context.Database.ExecuteSqlRawAsync(@"
-                CREATE OR REPLACE PROCEDURE util.sp_clone_schema(
-                    source_schema TEXT,
-                    target_schema TEXT
-                )
-                LANGUAGE plpgsql
-                AS $$
-                DECLARE
-                    table_record RECORD;
-                BEGIN
-                    EXECUTE format('CREATE SCHEMA IF NOT EXISTS %I', target_schema);
+            //await context.Database.ExecuteSqlRawAsync(@"
+            //    CREATE OR REPLACE PROCEDURE util.sp_clone_schema(
+            //        source_schema TEXT,
+            //        target_schema TEXT
+            //    )
+            //    LANGUAGE plpgsql
+            //    AS $$
+            //    DECLARE
+            //        table_record RECORD;
+            //    BEGIN
+            //        EXECUTE format('CREATE SCHEMA IF NOT EXISTS %I', target_schema);
 
-                    FOR table_record IN
-                        SELECT tablename
-                        FROM pg_tables
-                        WHERE schemaname = source_schema
-                    LOOP
-                        EXECUTE format(
-                            'CREATE TABLE %I.%I (LIKE %I.%I INCLUDING ALL)',
-                            target_schema,
-                            table_record.tablename,
-                            source_schema,
-                            table_record.tablename
-                        );
+            //        FOR table_record IN
+            //            SELECT tablename
+            //            FROM pg_tables
+            //            WHERE schemaname = source_schema
+            //        LOOP
+            //            EXECUTE format(
+            //                'CREATE TABLE %I.%I (LIKE %I.%I INCLUDING ALL)',
+            //                target_schema,
+            //                table_record.tablename,
+            //                source_schema,
+            //                table_record.tablename
+            //            );
 
-                        EXECUTE format(
-                            'INSERT INTO %I.%I SELECT * FROM %I.%I',
-                            target_schema,
-                            table_record.tablename,
-                            source_schema,
-                            table_record.tablename
-                        );
-                    END LOOP;
-                END;
-                $$;
-            ");
+            //            EXECUTE format(
+            //                'INSERT INTO %I.%I SELECT * FROM %I.%I',
+            //                target_schema,
+            //                table_record.tablename,
+            //                source_schema,
+            //                table_record.tablename
+            //            );
+            //        END LOOP;
+            //    END;
+            //    $$;
+            //");
 
-            await context.Database.ExecuteSqlRawAsync(@"
-                CREATE OR REPLACE PROCEDURE util.sp_delete_schema(
-                    schema_name TEXT
-                )
-                LANGUAGE plpgsql
-                AS $$
-                BEGIN
-                    EXECUTE format(
-                        'DROP SCHEMA IF EXISTS %I CASCADE',
-                        schema_name
-                    );
-                END;
-                $$;
-            ");
+            //await context.Database.ExecuteSqlRawAsync(@"
+            //    CREATE OR REPLACE PROCEDURE util.sp_delete_schema(
+            //        schema_name TEXT
+            //    )
+            //    LANGUAGE plpgsql
+            //    AS $$
+            //    BEGIN
+            //        EXECUTE format(
+            //            'DROP SCHEMA IF EXISTS %I CASCADE',
+            //            schema_name
+            //        );
+            //    END;
+            //    $$;
+            //");
 
-            await context.Database.ExecuteSqlRawAsync(@"
-                GRANT USAGE, CREATE ON SCHEMA util TO sqldropbox_admin;
-                GRANT USAGE ON LANGUAGE plpgsql TO sqldropbox_admin;
-                GRANT SELECT ON ALL TABLES IN SCHEMA util TO sqldropbox_admin;
-                GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA util TO sqldropbox_admin;
-                GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA util TO sqldropbox_admin;
-            ");
+            //await context.Database.ExecuteSqlRawAsync(@"
+            //    GRANT USAGE, CREATE ON SCHEMA util TO sqldropbox_admin;
+            //    GRANT USAGE ON LANGUAGE plpgsql TO sqldropbox_admin;
+            //    GRANT SELECT ON ALL TABLES IN SCHEMA util TO sqldropbox_admin;
+            //    GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA util TO sqldropbox_admin;
+            //    GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA util TO sqldropbox_admin;
+            //");
 
-            /* ANIMALS SCHEMA + TABLE */
-            await context.Database.ExecuteSqlRawAsync(@"
-                CREATE SCHEMA IF NOT EXISTS animals;
+            ///* ANIMALS SCHEMA + TABLE */
+            //await context.Database.ExecuteSqlRawAsync(@"
+            //    CREATE SCHEMA IF NOT EXISTS animals;
 
-                CREATE TABLE IF NOT EXISTS animals.mammals (
-                    id SERIAL PRIMARY KEY,
-                    name TEXT NOT NULL,
-                    habitat TEXT NOT NULL
-                );
-            ");
+            //    CREATE TABLE IF NOT EXISTS animals.mammals (
+            //        id SERIAL PRIMARY KEY,
+            //        name TEXT NOT NULL,
+            //        habitat TEXT NOT NULL
+            //    );
+            //");
 
-            await context.Database.ExecuteSqlRawAsync(@"
-                INSERT INTO animals.mammals (name, habitat) VALUES
-                ('Elephant', 'Savannah'),
-                ('Tiger', 'Jungle'),
-                ('Polar Bear', 'Arctic'),
-                ('Dolphin', 'Ocean'),
-                ('Bat', 'Caves'),
-                ('Kangaroo', 'Grasslands');
-            ");
+            //await context.Database.ExecuteSqlRawAsync(@"
+            //    INSERT INTO animals.mammals (name, habitat) VALUES
+            //    ('Elephant', 'Savannah'),
+            //    ('Tiger', 'Jungle'),
+            //    ('Polar Bear', 'Arctic'),
+            //    ('Dolphin', 'Ocean'),
+            //    ('Bat', 'Caves'),
+            //    ('Kangaroo', 'Grasslands');
+            //");
 
             /* ADMINS */
             var admin = new User
@@ -521,7 +521,7 @@ namespace SQLDropbox.Repositories
                 UserCode = "admin",
                 FirstName = "Admin",
                 Email = "Admin@ucll.be",
-                Password = ps.HashPassword("Admin"),
+                Password = ps.HashPassword("V$k0&q-8~3oQmsbO"),
                 Role = Role.Admin,
                 CreatedAt = DateTime.UtcNow,
             };
@@ -684,7 +684,7 @@ namespace SQLDropbox.Repositories
                 FirstName = "Lector-Lander",
                 LastName = "Dirix",
                 Email = "u0123456@ucll.be",
-                Password = ps.HashPassword("u0123456"),
+                Password = ps.HashPassword("p1g8V!2ewg-&r-pY"),
                 Role = Role.Lecturer,
                 LecturerCourses = [course1, course2],
                 CreatedAt = DateTime.UtcNow,
@@ -695,7 +695,7 @@ namespace SQLDropbox.Repositories
                 FirstName = "Lector-Joran",
                 LastName = "Dirix",
                 Email = "u1234567@ucll.be",
-                Password = ps.HashPassword("u1234567"),
+                Password = ps.HashPassword("vbN01wU;'.0Pi5kr"),
                 Role = Role.Lecturer,
                 LecturerCourses = [course1, course3],
                 CreatedAt = DateTime.UtcNow,
@@ -708,7 +708,7 @@ namespace SQLDropbox.Repositories
                 FirstName = "Example",
                 LastName = "student",
                 Email = "r0123456@ucll.be",
-                Password = ps.HashPassword("r0123456"),
+                Password = ps.HashPassword("Kf55L5=0tr@Qd~dk"),
                 Role = Role.Student,
                 StudentCourses = [course1],
                 CreatedAt = DateTime.UtcNow,

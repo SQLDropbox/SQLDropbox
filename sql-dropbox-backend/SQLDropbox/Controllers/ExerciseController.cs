@@ -74,7 +74,7 @@ public class ExerciseController(AppDbContext db, SolutionService solutionService
     [HttpGet("{id}")]
     public async Task<IActionResult> GetExerciseById(int id)
     {
-        var exercise = await _db.Exercises.Include(e => e.Solutions).FirstOrDefaultAsync(e => e.ExerciseId == id && e.DeletedAt == null);
+        var exercise = await _db.Exercises.Include(e => e.Solutions.Where(s => s.DeletedAt == null)).FirstOrDefaultAsync(e => e.DeletedAt == null && e.ExerciseId == id);
 
         if (exercise == null)
         {
@@ -86,7 +86,7 @@ public class ExerciseController(AppDbContext db, SolutionService solutionService
     [HttpDelete("{id}")]
     public ActionResult DeleteExercise(int id)
     {
-        var exercise = _db.Exercises.FirstOrDefault(x => x.ExerciseId == id);
+        var exercise = _db.Exercises.FirstOrDefault(x => x.DeletedAt == null && x.ExerciseId == id);
 
         if (exercise == null)
         {
@@ -105,7 +105,7 @@ public class ExerciseController(AppDbContext db, SolutionService solutionService
             Exercise? exercise = await _db.Exercises
                 .Include(e => e.Chapter)
                 .ThenInclude(c => c.Schema)
-                .Include(e => e.Solutions)
+                .Include(e => e.Solutions.Where(s => s.DeletedAt == null))
                 .FirstOrDefaultAsync(e => e.DeletedAt == null && e.ExerciseId == id);
 
             if (exercise == null) return BadRequest(new { message = "Exercise not found." });

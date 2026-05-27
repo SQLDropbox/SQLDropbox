@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using SQLDropbox.Data;
 using SQLDropbox.DTO;
 using SQLDropbox.Helpers;
@@ -11,12 +10,12 @@ namespace SQLDropbox.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class UtilitiesController(AppDbContext db, PasswordService ps, SolutionService soS, RandomExerciseSelectorService ress) : BaseController
+public class UtilitiesController(AppDbContext db, PasswordService passwordService, SolutionService solutionService, RandomExerciseSelectorService randomExerciseSelectorService) : BaseController
 {
     private readonly AppDbContext _db = db;
-    private readonly PasswordService _ps = ps;
-    private readonly SolutionService _soS = soS;
-    private readonly RandomExerciseSelectorService _ress = ress;
+    private readonly PasswordService _ps = passwordService;
+    private readonly SolutionService _soS = solutionService;
+    private readonly RandomExerciseSelectorService _ress = randomExerciseSelectorService;
 
     [HttpGet("seed-db")]
     public async Task<IActionResult> SeedTheDb()
@@ -101,6 +100,6 @@ public class UtilitiesController(AppDbContext db, PasswordService ps, SolutionSe
         catch (Exception ex)
         {
             return BadRequest(ex);
-        }       
+        }
     }
 }
