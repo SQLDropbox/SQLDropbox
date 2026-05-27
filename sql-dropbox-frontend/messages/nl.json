@@ -52,6 +52,30 @@
         "save": "OPSLAAN",
         "create": "AANMAKEN"
     },
+    "ChapterDialog": {
+        "titleEdit": "Hoofdstuk bewerken",
+        "titleAdd": "Hoofdstuk toevoegen",
+        "subtitleEdit": "Werk de hoofdstukinformatie bij.",
+        "subtitleAdd": "Maak een nieuw hoofdstuk aan.",
+        "chapterNameEN": "Hoofdstuknaam EN",
+        "chapterNameNL": "Hoofdstuknaam NL",
+        "chapterNameENPlaceholder": "Voer de Engelse hoofdstuknaam in",
+        "chapterNameNLPlaceholder": "Voer de Nederlandse hoofdstuknaam in",
+        "chapterDescriptionEN": "Beschrijving EN",
+        "chapterDescriptionNL": "Beschrijving NL",
+        "amountOfExercises": "Aantal oefeningen",
+        "saveChanges": "Wijzigingen opslaan",
+        "createChapter": "Hoofdstuk aanmaken",
+        "saving": "Opslaan...",
+        "cancel": "Annuleren",
+        "delete": "Verwijderen",
+        "deleteTitle": "Hoofdstuk verwijderen",
+        "deleteDescription": "Weet je zeker dat je dit hoofdstuk wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
+        "errors": {
+            "chapterNameENRequired": "Hoofdstuknaam (EN) is verplicht.",
+            "chapterNameNLRequired": "Hoofdstuknaam (NL) is verplicht."
+        }
+    },
     "NotFound": {
         "stamp": "SYSTEEMFOUT",
         "title": "Record Niet Gevonden",

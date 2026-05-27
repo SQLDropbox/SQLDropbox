@@ -52,6 +52,30 @@
         "save": "SAVE",
         "create": "CREATE"
     },
+    "ChapterDialog": {
+        "titleEdit": "Edit Chapter",
+        "titleAdd": "Add Chapter",
+        "subtitleEdit": "Update chapter information.",
+        "subtitleAdd": "Create a new chapter.",
+        "chapterNameEN": "Chapter Name EN",
+        "chapterNameNL": "Chapter Name NL",
+        "chapterNameENPlaceholder": "Enter the English chapter name",
+        "chapterNameNLPlaceholder": "Enter the Dutch chapter name",
+        "chapterDescriptionEN": "Description EN",
+        "chapterDescriptionNL": "Description NL",
+        "amountOfExercises": "Exercise count",
+        "saveChanges": "Save Changes",
+        "createChapter": "Create Chapter",
+        "saving": "Saving...",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "deleteTitle": "Delete Chapter",
+        "deleteDescription": "Are you sure you want to delete this chapter? This action cannot be undone.",
+        "errors": {
+            "chapterNameENRequired": "Chapter name (EN) is required.",
+            "chapterNameNLRequired": "Chapter name (NL) is required."
+        }
+    },
     "NotFound": {
         "stamp": "SYSTEM ERROR",
         "title": "Record Not Found",
