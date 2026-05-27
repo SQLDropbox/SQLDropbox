@@ -9,6 +9,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Keys\**" />
+    <Content Remove="Keys\**" />
+    <EmbeddedResource Remove="Keys\**" />
+    <None Remove="Keys\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="BCrypt.Net-Next" Version="4.2.0" />
     <PackageReference Include="CsvHelper" Version="33.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.8" />
@@ -30,7 +37,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Keys\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
 

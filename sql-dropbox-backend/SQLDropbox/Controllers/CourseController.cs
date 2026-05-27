@@ -60,16 +60,16 @@ public class CourseController(AppDbContext db) : BaseController
         if (id == null || role == null) return Unauthorized();
 
         var query = _db.Courses
-            .Include(x => x.Chapters)
-            .ThenInclude(c => c.Exercises)
-            .ThenInclude(e => e.UserExercises)           
-            .Include(x => x.Students)
+            .Include(x => x.Chapters.Where(c => c.DeletedAt == null))
+            .ThenInclude(c => c.Exercises.Where(e => e.DeletedAt == null))
+            .ThenInclude(e => e.UserExercises.Where(ue => ue.DeletedAt == null))
+            .Include(x => x.Students.Where(s => s.DeletedAt == null))
             .Where(x => x.DeletedAt == null)
             .AsQueryable();
 
         if (role == Role.Student)
         {
-            query = query.Where(x => x.IsActive && x.Students.Any(s => s.UserId == id));            
+            query = query.Where(x => x.IsActive && x.Students.Any(s => s.UserId == id));
         }
 
         var totalCourseCount = query.Count();
@@ -117,7 +117,7 @@ public class CourseController(AppDbContext db) : BaseController
     public ActionResult AddCourse([FromBody] CourseDTO course)
     {
         if (!ModelState.IsValid)
-            return BadRequest(ModelState);       
+            return BadRequest(ModelState);
 
         if (_db.Courses.Any(x => x.CourseId == course.CourseId))
         {
@@ -149,12 +149,12 @@ public class CourseController(AppDbContext db) : BaseController
 
     [Authorize(Roles = "Admin,Lecturer")]
     [HttpPut("{courseId}")]
-    public ActionResult UpdateCourse(string courseId, [FromBody] CourseDTO course)
+    public async Task<IActionResult> UpdateCourse(string courseId, [FromBody] CourseDTO course)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var existing = _db.Courses.Find(courseId);
+        var existing = await _db.Courses.FirstOrDefaultAsync(c => c.DeletedAt == null & c.CourseId == courseId);
 
         if (existing == null)
             return NotFound();
@@ -176,7 +176,7 @@ public class CourseController(AppDbContext db) : BaseController
     [HttpDelete("{courseID}")]
     public ActionResult DeleteCourse(string courseID)
     {
-        var course = _db.Courses.FirstOrDefault(x => x.CourseId == courseID);
+        var course = _db.Courses.FirstOrDefault(x => x.DeletedAt == null && x.CourseId == courseID);
 
         if (course == null)
         {
@@ -198,7 +198,7 @@ public class CourseController(AppDbContext db) : BaseController
             .Include(c => c.Chapters.Where(ch => ch.DeletedAt == null))
             .ThenInclude(ch => ch.Exercises.Where(e => e.DeletedAt == null))
             .FirstOrDefault(c => c.CourseId == courseId && c.DeletedAt == null);
-        
+
         if (existingCourse == null)
             return NotFound("Original course not found");
 
@@ -210,7 +210,7 @@ public class CourseController(AppDbContext db) : BaseController
             string baseId = existingCourse.CourseId + "-copy";
             finalCourseId = baseId;
             int counter = 1;
-            
+
             while (_db.Courses.Any(x => x.CourseId == finalCourseId))
             {
                 finalCourseId = $"{baseId}-{counter++}";
@@ -225,10 +225,6 @@ public class CourseController(AppDbContext db) : BaseController
             }
             finalCourseId = newCourseId;
         }
-        
-        
-
-        
 
         var duplicateCourse = new Course
         {
@@ -240,7 +236,7 @@ public class CourseController(AppDbContext db) : BaseController
             Lecturer = existingCourse.Lecturer,
             IsActive = false,
             CreatedAt = DateTime.Now,
-            Chapters = new List<Chapter>()
+            Chapters = []
         };
 
         foreach (var chapter in existingCourse.Chapters)
@@ -256,7 +252,7 @@ public class CourseController(AppDbContext db) : BaseController
                 Deadline = chapter.Deadline,
                 Schema = chapter.Schema,
                 CreatedAt = DateTime.Now,
-                Exercises = new List<Exercise>()
+                Exercises = []
             };
 
             foreach (var exercises in chapter.Exercises)

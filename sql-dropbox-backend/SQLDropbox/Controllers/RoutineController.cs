@@ -7,16 +7,10 @@ namespace SQLDropbox.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class RoutineController : ControllerBase
+public class RoutineController(SchemaService schema, SqlQueryService sql) : ControllerBase
 {
-    private readonly SchemaService _schema;
-    private readonly SqlQueryService _sql;
-
-    public RoutineController(SchemaService schema, SqlQueryService sql)
-    {
-        _schema = schema;
-        _sql = sql;
-    }
+    private readonly SchemaService _schema = schema;
+    private readonly SqlQueryService _sql = sql;
 
     [HttpPost("{schema}")]
     [Consumes("application/json")]

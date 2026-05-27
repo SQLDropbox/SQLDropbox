@@ -9,7 +9,7 @@ namespace SQLDropbox.Models
     {
         [Key]
         public Guid UserId { get; set; }
-        public string? UserCode { get; set; }
+        public required string UserCode { get; set; }
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
         public required string Email { get; set; }

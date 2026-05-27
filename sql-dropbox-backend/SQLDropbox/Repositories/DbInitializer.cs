@@ -81,13 +81,24 @@ namespace SQLDropbox.Repositories
                  $$;
              ");
 
-            //await context.Database.ExecuteSqlRawAsync(@"
-            //     GRANT USAGE, CREATE ON SCHEMA util TO sqldropbox_admin;
-            //     GRANT USAGE ON LANGUAGE plpgsql TO sqldropbox_admin;
-            //     GRANT SELECT ON ALL TABLES IN SCHEMA util TO sqldropbox_admin;
-            //     GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA util TO sqldropbox_admin;
-            //     GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA util TO sqldropbox_admin;
-            // ");
+            await context.Database.ExecuteSqlRawAsync(@"
+                 DO $$
+                 BEGIN
+                     IF NOT EXISTS (
+                         SELECT FROM pg_catalog.pg_roles
+                         WHERE rolname = 'sqldropbox_admin'
+                     ) THEN
+                         CREATE ROLE sqldropbox_admin
+                         WITH LOGIN PASSWORD 'r0H8X2Z0XRsA7C9L';
+                     END IF;
+                 END
+                 $$;
+                 GRANT USAGE, CREATE ON SCHEMA util TO sqldropbox_admin;
+                 GRANT USAGE ON LANGUAGE plpgsql TO sqldropbox_admin;
+                 GRANT SELECT ON ALL TABLES IN SCHEMA util TO sqldropbox_admin;
+                 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA util TO sqldropbox_admin;
+                 GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA util TO sqldropbox_admin;
+             ");
 
             /* ANIMALS SCHEMA + TABLE */
             await context.Database.ExecuteSqlRawAsync(@"
@@ -427,6 +438,17 @@ namespace SQLDropbox.Repositories
              ");
 
             await context.Database.ExecuteSqlRawAsync(@"
+                 DO $$
+                 BEGIN
+                     IF NOT EXISTS (
+                         SELECT FROM pg_catalog.pg_roles
+                         WHERE rolname = 'sqldropbox_admin'
+                     ) THEN
+                         CREATE ROLE sqldropbox_admin
+                         WITH LOGIN PASSWORD 'r0H8X2Z0XRsA7C9L';
+                     END IF;
+                 END
+                 $$;
                  GRANT USAGE, CREATE ON SCHEMA util TO sqldropbox_admin;
                  GRANT USAGE ON LANGUAGE plpgsql TO sqldropbox_admin;
                  GRANT SELECT ON ALL TABLES IN SCHEMA util TO sqldropbox_admin;
@@ -521,7 +543,7 @@ namespace SQLDropbox.Repositories
                 UserCode = "admin",
                 FirstName = "Admin",
                 Email = "Admin@ucll.be",
-                Password = ps.HashPassword("Admin"),
+                Password = ps.HashPassword("V$k0&q-8~3oQmsbO"),
                 Role = Role.Admin,
                 CreatedAt = DateTime.UtcNow,
             };
@@ -684,7 +706,7 @@ namespace SQLDropbox.Repositories
                 FirstName = "Lector-Lander",
                 LastName = "Dirix",
                 Email = "u0123456@ucll.be",
-                Password = ps.HashPassword("u0123456"),
+                Password = ps.HashPassword("p1g8V!2ewg-&r-pY"),
                 Role = Role.Lecturer,
                 LecturerCourses = [course1, course2],
                 CreatedAt = DateTime.UtcNow,
@@ -695,7 +717,7 @@ namespace SQLDropbox.Repositories
                 FirstName = "Lector-Joran",
                 LastName = "Dirix",
                 Email = "u1234567@ucll.be",
-                Password = ps.HashPassword("u1234567"),
+                Password = ps.HashPassword("vbN01wU;'.0Pi5kr"),
                 Role = Role.Lecturer,
                 LecturerCourses = [course1, course3],
                 CreatedAt = DateTime.UtcNow,
@@ -708,7 +730,7 @@ namespace SQLDropbox.Repositories
                 FirstName = "Example",
                 LastName = "student",
                 Email = "r0123456@ucll.be",
-                Password = ps.HashPassword("r0123456"),
+                Password = ps.HashPassword("Kf55L5=0tr@Qd~dk"),
                 Role = Role.Student,
                 StudentCourses = [course1],
                 CreatedAt = DateTime.UtcNow,

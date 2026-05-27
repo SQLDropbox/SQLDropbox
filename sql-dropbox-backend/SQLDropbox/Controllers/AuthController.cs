@@ -24,7 +24,7 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
         if (!Guid.TryParse(userId, out Guid guid))
             return BadRequest("Not a valid setup code.");
 
-        var user = await _db.Users.FirstOrDefaultAsync(u => u.UserId == guid);
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.DeletedAt == null && u.UserId == guid);
         if (user != null)
         {
             if (user.Password != null) return BadRequest("This account is already set up.");
@@ -42,7 +42,7 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
             if (!Guid.TryParse(dto.Guid, out Guid guid))
                 return BadRequest("Not a valid setup code.");
 
-            User? user = await _db.Users.FirstOrDefaultAsync(u => u.UserId == guid);
+            User? user = await _db.Users.FirstOrDefaultAsync(u => u.DeletedAt == null && u.UserId == guid);
             if (user != null)
             {
                 if (user.Password != null)
@@ -50,15 +50,15 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
 
                 string hashedPassword = _pS.HashPassword(dto.Password);
                 user.Password = hashedPassword;
-                _db.Users.Update(user);
 
+                _db.Users.Update(user);
                 await _db.SaveChangesAsync();
 
                 string accessToken = _jwtS.GenerateAccessToken(user);
                 string refreshToken = _rtS.GenerateRefreshToken();
                 RefreshToken validRefreshToken = await _rtS.CreateRefreshToken(user, HttpContext.Connection.RemoteIpAddress!.ToString(), refreshToken);
 
-                _rtS.AttachCookie(Response, refreshToken, validRefreshToken.ExpiresAt);               
+                _rtS.AttachCookie(Response, refreshToken, validRefreshToken.ExpiresAt);
 
                 return Ok(new { token = accessToken });
             }
@@ -80,8 +80,8 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
                 return BadRequest("Email or code and password are required.");
 
             User? user = dto.EmailOrCode.Contains('@') ?
-                await _db.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == dto.EmailOrCode.ToLower()) :
-                await _db.Users.FirstOrDefaultAsync(u => u.UserCode!.ToLower() == dto.EmailOrCode.ToLower());
+                await _db.Users.FirstOrDefaultAsync(u => u.DeletedAt == null && u.Email.ToLower() == dto.EmailOrCode.ToLower()) :
+                await _db.Users.FirstOrDefaultAsync(u => u.DeletedAt == null && u.UserCode.ToLower() == dto.EmailOrCode.ToLower());
 
             if (user != null)
             {

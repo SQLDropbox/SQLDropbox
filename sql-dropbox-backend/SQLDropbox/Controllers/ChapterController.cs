@@ -1,9 +1,7 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SQLDropbox.Data;
 using SQLDropbox.DTO;
-using SQLDropbox.Enums;
 using SQLDropbox.Models;
 using SQLDropbox.Services;
 
@@ -11,10 +9,10 @@ namespace SQLDropbox.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class ChapterController( AppDbContext db, RandomExerciseSelectorService ress, IConfiguration config) : BaseController
+public class ChapterController(AppDbContext db, RandomExerciseSelectorService randomExerciseSelectorService, IConfiguration config) : BaseController
 {
     private readonly AppDbContext _db = db;
-    private readonly RandomExerciseSelectorService _ress = ress;
+    private readonly RandomExerciseSelectorService _ress = randomExerciseSelectorService;
     private readonly IConfiguration _config = config;
     private string BaseUrl => $"{Request.Scheme}://{Request.Host}";
 
@@ -43,7 +41,7 @@ public class ChapterController( AppDbContext db, RandomExerciseSelectorService r
     [HttpGet("{id}")]
     public async Task<ActionResult> GetChapterByChapterId(int id)
     {
-        var chapter = await _db.Chapters.Where(x => x.ChapterId == id && x.DeletedAt == null).Select(x => new
+        var chapter = await _db.Chapters.Where(x => x.DeletedAt == null && x.ChapterId == id).Select(x => new
         {
             x.ChapterId,
             x.ChapterNameNL,
@@ -68,7 +66,7 @@ public class ChapterController( AppDbContext db, RandomExerciseSelectorService r
     [HttpPost("course/{courseId}")]
     public async Task<ActionResult> CreateChapter(string courseId, [FromBody] ChapterDTO dto)
     {
-        var course = await _db.Courses.FirstOrDefaultAsync(x => x.CourseId == courseId);
+        var course = await _db.Courses.FirstOrDefaultAsync(x => x.DeletedAt == null && x.CourseId == courseId);
 
         if (course == null)
             return BadRequest("Course does not exist");
@@ -78,10 +76,10 @@ public class ChapterController( AppDbContext db, RandomExerciseSelectorService r
         if (schema == null)
             return BadRequest("Schema does not exist");
 
-        var maxOrder = await  _db.Chapters.Where(c => c.Course.CourseId == courseId && c.DeletedAt == null).MaxAsync(c => c.Order);
-        
+        var maxOrder = await _db.Chapters.Where(c => c.DeletedAt == null && c.Course.CourseId == courseId).MaxAsync(c => c.Order);
+
         int nextOrder = (maxOrder ?? -1) + 1;
-        
+
         var newChapter = new Chapter
         {
             ChapterNameNL = dto.ChapterNameNL,
@@ -104,22 +102,22 @@ public class ChapterController( AppDbContext db, RandomExerciseSelectorService r
     [HttpPut("{id}")]
     public async Task<ActionResult> UpdateChapter(int id, [FromBody] UpdateChapterDTO dto)
     {
-        var chapter = await _db.Chapters.FirstOrDefaultAsync(x => x.ChapterId == id && x.DeletedAt == null);
+        var chapter = await _db.Chapters.FirstOrDefaultAsync(x => x.DeletedAt == null && x.ChapterId == id);
 
         if (chapter == null)
         {
             return NotFound(new { message = $"Chapter with ID {id} not found." });
         }
 
-        if (dto.ChapterNameNL != null)chapter.ChapterNameNL = dto.ChapterNameNL;
-        if (dto.ChapterNameEN != null)chapter.ChapterNameEN = dto.ChapterNameEN;
-        if (dto.ChapterDescriptionNL != null)chapter.ChapterDescriptionNL = dto.ChapterDescriptionNL;
-        if (dto.ChapterDescriptionEN != null)chapter.ChapterDescriptionEN = dto.ChapterDescriptionEN;
-        if (dto.AmountOfExercises.HasValue)chapter.AmountOfExercises = dto.AmountOfExercises.Value;
+        if (dto.ChapterNameNL != null) chapter.ChapterNameNL = dto.ChapterNameNL;
+        if (dto.ChapterNameEN != null) chapter.ChapterNameEN = dto.ChapterNameEN;
+        if (dto.ChapterDescriptionNL != null) chapter.ChapterDescriptionNL = dto.ChapterDescriptionNL;
+        if (dto.ChapterDescriptionEN != null) chapter.ChapterDescriptionEN = dto.ChapterDescriptionEN;
+        if (dto.AmountOfExercises.HasValue) chapter.AmountOfExercises = dto.AmountOfExercises.Value;
 
         if (dto.SchemaId.HasValue)
         {
-            var schema = await _db.Schemas.FirstOrDefaultAsync(x => x.SchemaId == dto.SchemaId.Value);
+            var schema = await _db.Schemas.FirstOrDefaultAsync(x => x.DeletedAt == null && x.SchemaId == dto.SchemaId.Value);
 
             if (schema == null)
                 return BadRequest("Schema does not exist");
@@ -135,18 +133,20 @@ public class ChapterController( AppDbContext db, RandomExerciseSelectorService r
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteChapter(int id)
     {
-        var chapter = await _db.Chapters.FirstOrDefaultAsync(x => x.ChapterId == id && x.DeletedAt == null);
+        var chapter = await _db.Chapters.FirstOrDefaultAsync(x => x.DeletedAt == null && x.ChapterId == id);
 
         if (chapter == null)
         {
             return NotFound(new { message = $"Chapter with ID {id} not found." });
         }
-        
+
         chapter.DeletedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync();
         return Ok(new { message = $"Chapter with ID {id} successfully deleted." });
     }
 
+    // TODO -> finish this (Joran)
+    // TODO -> when getting exercises for chapter, when admin/lecturer, return all, if student randomly generate and return those
     //[Authorize]
     [HttpGet("{chapterId}/exercises")]
     public async Task<ActionResult<IEnumerable<Exercise>>> GetExercisesByChapter(int chapterId)
@@ -171,7 +171,7 @@ public class ChapterController( AppDbContext db, RandomExerciseSelectorService r
             //if (role == Role.Student)
             //{
             //    User? student = await _db.Users
-            //        .Where(u => u.UserId == userId)
+            //        .Where(u => u.DeletedAt == null && u.UserId == userId)
             //        .FirstOrDefaultAsync();
 
             //    if (student == null)
@@ -201,27 +201,27 @@ public class ChapterController( AppDbContext db, RandomExerciseSelectorService r
 
             return Ok(chapter.Exercises);
         }
-        catch (Exception ex) 
+        catch (Exception ex)
         {
             return BadRequest(ex);
-        }        
+        }
     }
 
     [HttpPost("course/{courseId}/reorder")]
     public async Task<ActionResult> ReorderChapter(string courseId, [FromBody] ReorderChaptersDTO dto)
     {
-        var chapters = await _db.Chapters.Where(c => c.Course.CourseId == courseId && c.DeletedAt == null).ToListAsync();
+        var chapters = await _db.Chapters.Where(c => c.DeletedAt == null && c.Course.CourseId == courseId).ToListAsync();
 
-        if (!chapters.Any())
+        if (chapters.Count == 0)
         {
             return NotFound(new { message = $"Chapter with ID {courseId} not found." });
         }
-        
-        for (int i = 0;  i < dto.OrderedIds.Count; i++)
+
+        for (int i = 0; i < dto.OrderedIds.Count; i++)
         {
             if (int.TryParse(dto.OrderedIds[i], out int chapterId))
             {
-                var chapterToUpdate = chapters.FirstOrDefault(c => c.ChapterId == chapterId);
+                var chapterToUpdate = chapters.FirstOrDefault(c => c.DeletedAt == null && c.ChapterId == chapterId);
 
                 if (chapterToUpdate != null)
                 {
@@ -231,7 +231,7 @@ public class ChapterController( AppDbContext db, RandomExerciseSelectorService r
             }
         }
         await _db.SaveChangesAsync();
-        
+
         return Ok(chapters);
     }
 }

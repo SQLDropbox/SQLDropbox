@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SQLDropbox.Data;
 using SQLDropbox.DTO;
-using SQLDropbox.Enums;
 using SQLDropbox.Models;
 using SQLDropbox.Services;
 
@@ -14,7 +13,7 @@ namespace SQLDropbox.Controllers
     public class UserController(AppDbContext db, PasswordService passwordService, CsvService csvService, UserService userService) : BaseController
     {
         private readonly AppDbContext _db = db;
-        private readonly PasswordService _passwordService = passwordService;   
+        private readonly PasswordService _passwordService = passwordService;
         private readonly CsvService _csvService = csvService;
         private readonly UserService _userService = userService;
 
@@ -23,7 +22,7 @@ namespace SQLDropbox.Controllers
         public async Task<ActionResult> AddStudentToCourse(string courseId, StudentDTO dto)
         {
             Course? course = await _db.Courses
-                .FirstOrDefaultAsync(x => x.CourseId == courseId);
+                .FirstOrDefaultAsync(x => x.DeletedAt == null && x.CourseId == courseId);
 
             if (course == null)
                 return BadRequest("Course not found");
@@ -45,7 +44,7 @@ namespace SQLDropbox.Controllers
         public async Task<ActionResult> PreviewImportStudents(string courseId, IFormFile file)
         {
             var course = await _db.Courses
-                .FirstOrDefaultAsync(x => x.CourseId == courseId);
+                .FirstOrDefaultAsync(x => x.DeletedAt == null && x.CourseId == courseId);
 
             if (course == null)
                 return BadRequest("Course not found");
@@ -71,14 +70,14 @@ namespace SQLDropbox.Controllers
         public async Task<ActionResult> ImportStudents(string courseId, [FromBody] List<StudentDTO> students)
         {
             var course = await _db.Courses
-                .FirstOrDefaultAsync(x => x.CourseId == courseId);
+                .FirstOrDefaultAsync(x => x.DeletedAt == null && x.CourseId == courseId);
 
             if (course == null)
                 return BadRequest("Course not found");
 
             int added = 0;
             int alreadyEnrolled = 0;
-            List<string> errors = new();
+            List<string> errors = [];
 
             foreach (var student in students)
             {
@@ -119,14 +118,14 @@ namespace SQLDropbox.Controllers
         {
             try
             {
-                var course = await _db.Courses.FirstOrDefaultAsync(x => x.CourseId == courseId);
+                var course = await _db.Courses.FirstOrDefaultAsync(x => x.DeletedAt == null && x.CourseId == courseId);
 
                 if (course == null)
                     return BadRequest("Course not found");
 
                 var students = await _db.Users
-                    .Include(u => u.StudentCourses)
-                    .Where(u => u.StudentCourses.Any(c => c.CourseId == courseId))
+                    .Include(u => u.StudentCourses.Where(sc => sc.DeletedAt == null))
+                    .Where(u => u.DeletedAt == null && u.StudentCourses.Any(c => c.CourseId == courseId))
                     .ToListAsync();
 
                 students.ForEach(x => x.DeletedAt = DateTime.UtcNow);

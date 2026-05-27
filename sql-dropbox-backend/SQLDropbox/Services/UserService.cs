@@ -38,7 +38,7 @@ namespace SQLDropbox.Services
                 if (course == null)
                     return (false, false, "Course not found");
 
-                var user = await _db.Users.Include(x => x.StudentCourses).FirstOrDefaultAsync(u => u.UserCode == dto.UserCode);
+                var user = await _db.Users.Include(x => x.StudentCourses.Where(sc => sc.DeletedAt == null)).FirstOrDefaultAsync(u => u.DeletedAt == null && u.UserCode == dto.UserCode);
 
                 if (user != null)
                 {
