@@ -1,21 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import {
-    FaArrowLeft,
-    FaBookOpen,
-    FaCircleInfo,
-    FaLightbulb,
-    FaPlay,
-} from "react-icons/fa6";
+import { FaArrowLeft, FaBookOpen, FaCircleInfo, FaLightbulb, FaPlay } from "react-icons/fa6";
 import { useQuery } from "@tanstack/react-query";
-import { useRef } from "react";
 import { Chapter, Course, Exercise } from "@/types/types";
 import { courseService } from "@/services/courseService";
 import { queryService } from "@/services/queryService";
 import QueryResult from "@/components/student/QueryResult";
-
 import ExerciseSidebar from "@/components/student/exerciseSidebar";
 
 interface StudentExerciseWorkspaceProps {
@@ -47,154 +39,151 @@ export default function StudentExerciseWorkspace({
 
     useEffect(() => {
         setActiveExerciseId((currentActiveId) => {
-            if (exercises.length === 0) {
-                return null;
-            }
-
+            if (exercises.length === 0) return null;
             const currentExerciseExists = exercises.some(
                 (exercise) => exercise.exerciseId === currentActiveId,
             );
-
-            return currentExerciseExists
-                ? currentActiveId
-                : exercises[0].exerciseId;
+            return currentExerciseExists ? currentActiveId : exercises[0].exerciseId;
         });
     }, [exercises]);
 
     const activeExercise =
-        exercises.find(
-            (exercise) => exercise.exerciseId === activeExerciseId,
-        ) || exercises[0];
+        exercises.find((exercise) => exercise.exerciseId === activeExerciseId) || exercises[0];
 
     const totalExercises = exercises.length;
-
     const completedCount = exercises.filter((exercise) =>
         completedExerciseIds.includes(exercise.exerciseId),
     ).length;
 
     const progressPercentage =
-        totalExercises > 0
-            ? (completedCount / totalExercises) * 100
-            : 0;
+        totalExercises > 0 ? (completedCount / totalExercises) * 100 : 0;
 
     if (error) {
         return (
-            <div className="flex min-h-[calc(100vh-4rem)] w-full items-center justify-center bg-white p-6">
-                <p className="text-red-500">Fout: {error.message}</p>
+            <div className="min-h-[calc(100vh-4rem)] bg-paper text-ink flex items-center justify-center px-6">
+                <div className="bg-surface-2 border-2 border-border px-6 py-5 shadow-[6px_6px_0px_0px_var(--color-border)]">
+                    <p className="font-mono text-sm text-error">Error: {error.message}</p>
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="flex h-[calc(100vh-4rem)] w-full flex-col overflow-auto bg-white">
-            <div className="border-b border-gray-200 px-6 py-5 sm:px-8">
+        <div className="min-h-[calc(100vh-4rem)] bg-paper text-ink px-6 py-8">
+            <div className="max-w-7xl mx-auto">
                 <Link
                     href={`/${courseId}`}
-                    className="inline-flex items-center gap-2 text-sm font-medium text-sky-600 transition-colors hover:text-sky-700"
+                    className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-muted hover:text-ink mb-8"
                 >
-                    <FaArrowLeft />
+                    <FaArrowLeft className="text-[12px]" />
                     Back to chapters
                 </Link>
 
-                <div className="mt-5 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-                    <div className="space-y-2">
-                        <div className="flex items-center gap-3 text-sm text-gray-500">
-                            <FaBookOpen className="text-sky-600" />
-                            <span>
-                                {course?.courseNameEN ||
-                                    course?.courseNameNL ||
-                                    "Course"}
-                            </span>
-                        </div>
-
-                        <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
-                            {chapter?.chapterNameEN ||
-                                chapter?.chapterNameNL ||
-                                `Chapter ${chapterId}`}
-                        </h1>
+                <div className="relative bg-surface-2 border-2 border-border shadow-[6px_6px_0px_0px_var(--color-border)]">
+                    <div className="absolute -top-6 -left-px min-w-[30%] bg-surface-2 px-4 py-1 border border-border border-b-0">
+                        <span className="font-mono text-xs uppercase tracking-wider text-muted">
+                            ID: {courseId?.toUpperCase()} / CHAPTER {chapterId}
+                        </span>
                     </div>
 
-                    <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                        <div className="flex items-center justify-between text-sm font-medium text-slate-700">
-                            <span>Progress</span>
-                            <span>
-                                {completedCount}/{totalExercises} completed
-                            </span>
-                        </div>
+                    <div className="border-b-2 border-border px-8 pt-8 pb-6">
+                        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+                            <div>
+                                <div className="flex items-center gap-3 font-mono text-xs uppercase tracking-widest text-muted mb-3">
+                                    <FaBookOpen className="text-accent" />
+                                    <span>
+                                        {course?.courseNameEN || course?.courseNameNL || "Course"}
+                                    </span>
+                                </div>
 
-                        <div className="mt-3 h-3 overflow-hidden rounded-full bg-white">
-                            <div
-                                className="h-full rounded-full bg-linear-to-r from-slate-950 to-sky-600 transition-all"
-                                style={{
-                                    width: `${progressPercentage}%`,
-                                }}
-                            />
-                        </div>
+                                <h1 className="font-display text-4xl font-bold mb-2">
+                                    {chapter?.chapterNameEN ||
+                                        chapter?.chapterNameNL ||
+                                        `Chapter ${chapterId}`}
+                                </h1>
 
-                        <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
-                            <span>
-                                {Math.round(progressPercentage)}%
-                            </span>
+                                <p className="font-mono text-sm text-muted max-w-2xl">
+                                    SQL exercises, schema reference, and expected output.
+                                </p>
+                            </div>
+
+                            <div className="w-full max-w-md border border-border bg-paper px-4 py-4">
+                                <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.2em] text-muted">
+                                    <span>Progress</span>
+                                    <span>{completedCount}/{totalExercises}</span>
+                                </div>
+
+                                <div className="mt-3 h-3 border border-border bg-surface-2">
+                                    <div
+                                        className="h-full bg-accent transition-all"
+                                        style={{ width: `${progressPercentage}%` }}
+                                    />
+                                </div>
+
+                                <div className="mt-3 flex items-center justify-between font-mono text-[10px] uppercase tracking-widest text-muted">
+                                    <span>{Math.round(progressPercentage)}% complete</span>
+                                    <span>{totalExercises} exercises</span>
+                                </div>
+                            </div>
                         </div>
+                    </div>
+
+                    <div className="grid min-h-[70vh] lg:grid-cols-[320px_minmax(0,1fr)]">
+                        <aside className="border-r-2 border-border bg-paper">
+                            <div className="px-6 pt-6">
+                                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted mb-5 border-l-2 border-accent pl-3">
+                                    Exercise list
+                                </p>
+                            </div>
+
+                            <div className="px-4 pb-6">
+                                <ExerciseSidebar
+                                    exercises={exercises}
+                                    activeExerciseId={activeExercise?.exerciseId ?? null}
+                                    completedExerciseIds={completedExerciseIds}
+                                    onSelectExercise={setActiveExerciseId}
+                                    isLoading={isLoading}
+                                />
+                            </div>
+                        </aside>
+
+                        <section className="min-w-0 bg-surface-2 px-6 py-6 md:px-8">
+                            {isLoading ? (
+                                <div className="space-y-4 animate-pulse">
+                                    <div className="h-6 w-48 bg-paper border border-border" />
+                                    <div className="h-40 w-full bg-paper border border-border" />
+                                    <div className="h-64 w-full bg-paper border border-border" />
+                                </div>
+                            ) : activeExercise ? (
+                                <ExercisePanel
+                                    key={activeExercise.exerciseId}
+                                    exercise={activeExercise}
+                                    chapterName={
+                                        chapter?.chapterNameEN ||
+                                        chapter?.chapterNameNL ||
+                                        `Chapter ${chapterId}`
+                                    }
+                                    schemaName={chapter?.schemaName || ""}
+                                    schemaImage={chapter?.schemaImage || null}
+                                />
+                            ) : (
+                                <div className="bg-paper border border-dashed border-border px-6 py-10 font-mono text-sm text-muted">
+                                    No exercises found for this chapter.
+                                </div>
+                            )}
+                        </section>
+                    </div>
+
+                    <div className="relative z-20 border-t border-border bg-surface-2 px-8 py-6 flex justify-between items-center">
+                        <div className="absolute -top-6 -right-px min-w-[30%] bg-surface-2 px-4 h-8 border border-border border-b-0" />
+                        <span className="font-mono text-[10px] uppercase tracking-widest text-muted">
+                            {courseId?.toUpperCase()}
+                        </span>
+                        <span className="font-mono text-[10px] uppercase tracking-widest text-muted">
+                            Chapter {chapterId}
+                        </span>
                     </div>
                 </div>
-            </div>
-
-            <div className="grid flex-1 min-h-0 gap-0 lg:grid-cols-[320px_minmax(0,1fr)]">
-                <ExerciseSidebar
-                    exercises={exercises}
-                    activeExerciseId={activeExercise?.exerciseId ?? null}
-                    completedExerciseIds={completedExerciseIds}
-                    onSelectExercise={setActiveExerciseId}
-                    isLoading={isLoading}
-                />
-
-                <section className="min-w-0 bg-white px-5 py-6 sm:px-8">
-                    {isLoading ? (
-                        <div className="space-y-6">
-                            <div className="space-y-2">
-                                <div className="h-6 w-56 rounded bg-slate-100 animate-pulse" />
-                                <div className="h-4 w-40 rounded bg-slate-100 animate-pulse" />
-                            </div>
-
-                            <div className="rounded-3xl border border-gray-200 bg-[#f6f6f8] p-5 shadow-inner sm:p-6">
-                                <div className="space-y-4">
-                                    <div className="h-4 w-64 rounded bg-slate-100 animate-pulse" />
-                                    <div className="h-3 w-80 rounded bg-slate-100 animate-pulse" />
-                                </div>
-                            </div>
-
-                            <div className="space-y-3">
-                                <div className="flex items-center justify-between">
-                                    <div className="h-5 w-40 rounded bg-slate-100 animate-pulse" />
-                                    <div className="h-8 w-24 rounded bg-slate-100 animate-pulse" />
-                                </div>
-
-                                <div className="h-48 w-full rounded bg-slate-100 animate-pulse" />
-
-                                <div className="flex flex-wrap gap-3">
-                                    <div className="h-10 w-24 rounded bg-slate-100 animate-pulse" />
-                                </div>
-                            </div>
-                        </div>
-                    ) : activeExercise ? (
-                        <ExercisePanel
-                            key={activeExercise.exerciseId}
-                            exercise={activeExercise}
-                            chapterName={
-                                chapter?.chapterNameEN ||
-                                chapter?.chapterNameNL ||
-                                `Chapter ${chapterId}`
-                            }
-                            schemaName={chapter?.schemaName || ""}
-                            schemaImage={chapter?.schemaImage || null}
-                        />
-                    ) : (
-                        <div className="flex min-h-112 items-center justify-center rounded-3xl border border-dashed border-gray-300 bg-slate-50 p-6 text-sm text-slate-500">
-                            No exercises found for this chapter.
-                        </div>
-                    )}
-                </section>
             </div>
         </div>
     );
@@ -227,39 +216,25 @@ function ExercisePanel({
     const [scale, setScale] = useState(1);
     const [isHoveringImage, setIsHoveringImage] = useState(false);
     const [position, setPosition] = useState({ x: 0, y: 0 });
+    const [isDragging, setIsDragging] = useState(false);
+    const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+    const [queryError, setQueryError] = useState<string | null>(null);
+    const [isExecuting, setIsExecuting] = useState(false);
 
     useEffect(() => {
         const el = imageContainerRef.current;
         if (!el) return;
-        
+
         const handleWheelEvent = (e: WheelEvent) => {
             if (!isHoveringImage) return;
-        
             e.preventDefault();
-        
             const delta = -e.deltaY * 0.0015;
-        
-            setScale((prev) => {
-                const next = prev + delta;
-                return Math.min(Math.max(next, 0.5), 4);
-            });
+            setScale((prev) => Math.min(Math.max(prev + delta, 0.5), 4));
         };
-    
-        el.addEventListener("wheel", handleWheelEvent, {
-            passive: false,
-        });
-    
-        return () => {
-            el.removeEventListener("wheel", handleWheelEvent);
-        };
+
+        el.addEventListener("wheel", handleWheelEvent, { passive: false });
+        return () => el.removeEventListener("wheel", handleWheelEvent);
     }, [isHoveringImage]);
-
-    const [isDragging, setIsDragging] = useState(false);
-    const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-
-    const [queryError, setQueryError] = useState<string | null>(null);
-
-    const [isExecuting, setIsExecuting] = useState(false);
 
     const handleRunQuery = async () => {
         if (!queryValue.trim()) return;
@@ -280,82 +255,52 @@ function ExercisePanel({
             });
 
             setQueryResult(result);
-
         } catch (err) {
             setQueryError(
-                err instanceof Error
-                    ? err.message
-                    : "Something went wrong",
+                err instanceof Error ? err.message : "Something went wrong",
             );
         } finally {
             setIsExecuting(false);
         }
     };
 
-    const zoomIn = () => {
-        setScale((prev) => Math.min(prev + 0.2, 4));
-    };
-    
-    const zoomOut = () => {
-        setScale((prev) => Math.max(prev - 0.2, 0.5));
-    };
-    
+    const zoomIn = () => setScale((prev) => Math.min(prev + 0.2, 4));
+    const zoomOut = () => setScale((prev) => Math.max(prev - 0.2, 0.5));
     const resetZoom = () => {
         setScale(1);
         setPosition({ x: 0, y: 0 });
     };
-    
-    const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        const delta = -e.deltaY * 0.0015;
-        
-        setScale((prev) => {
-            const next = prev + delta;
-        
-            return Math.min(Math.max(next, 0.5), 4);
-        });
-    };
-    
-    const handleMouseDown = (
-        e: React.MouseEvent<HTMLDivElement>,
-    ) => {
+
+    const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
         setIsDragging(true);
-    
         setDragStart({
             x: e.clientX - position.x,
             y: e.clientY - position.y,
         });
     };
-    
-    const handleMouseMove = (
-        e: React.MouseEvent<HTMLDivElement>,
-    ) => {
+
+    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
         if (!isDragging) return;
-    
         setPosition({
             x: e.clientX - dragStart.x,
             y: e.clientY - dragStart.y,
         });
     };
-    
-    const handleMouseUp = () => {
-        setIsDragging(false);
-    };
+
+    const handleMouseUp = () => setIsDragging(false);
 
     return (
-        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <div className="flex flex-wrap gap-2 rounded-2xl border border-gray-200 bg-slate-50 p-2">
+        <div className="space-y-6">
+            <div className="flex flex-wrap gap-2 border-b border-border pb-3">
                 {PANEL_TABS.map(({ id, label }) => (
                     <button
                         key={id}
                         type="button"
                         onClick={() => setActiveTab(id)}
-                        className={`rounded-xl px-4 py-2 text-sm font-medium transition-colors ${
+                        className={`px-4 py-2 border font-mono text-[10px] uppercase tracking-[0.2em] transition-colors ${
                             activeTab === id
-                                ? "bg-white text-slate-950 shadow-sm"
-                                : "text-slate-500 hover:text-slate-900"
+                                ? "bg-paper border-border text-ink"
+                                : "bg-surface-2 border-transparent text-muted hover:border-border hover:text-ink"
                         }`}
                     >
                         {label}
@@ -363,27 +308,28 @@ function ExercisePanel({
                 ))}
             </div>
 
-            <div className="min-h-48 rounded-3xl border border-gray-200 bg-[#f6f6f8] p-5 shadow-inner sm:p-6">
+            <div className="bg-paper border border-border shadow-[0px_-3px_0px_0px_var(--color-border)] p-6">
                 {activeTab === "question" && (
                     <div className="space-y-4">
-                        <h3 className="text-lg font-semibold text-slate-900">
-                            {exercise.questionNL || "Exercise question"}
-                        </h3>
+                        <div>
+                            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted mb-2">
+                                Exercise prompt
+                            </p>
+                            <h3 className="font-display text-2xl font-bold text-ink">
+                                {exercise.questionNL || "Exercise question"}
+                            </h3>
+                        </div>
 
-                        <p className="max-w-3xl text-sm leading-6 text-slate-600">
-                            {exercise.questionEN ||
-                                exercise.questionNL}
+                        <p className="font-mono text-sm leading-7 text-muted max-w-3xl">
+                            {exercise.questionEN || exercise.questionNL}
                         </p>
 
-                        <div className="rounded-2xl border border-sky-200 bg-sky-50 p-4 text-sm text-sky-900">
-                            <div className="flex items-start gap-2">
-                                <FaCircleInfo className="mt-0.5 text-sky-600" />
-
-                                <p>
-                                    Write your SQL query below.
-                                    Use the hint if you need help,
-                                    then run the query to validate
-                                    your answer.
+                        <div className="border border-border bg-surface-2 px-4 py-4">
+                            <div className="flex items-start gap-3">
+                                <FaCircleInfo className="mt-0.5 text-accent" />
+                                <p className="font-mono text-sm text-muted">
+                                    Write your SQL query below, use the hint only when needed,
+                                    and run the query to validate your answer.
                                 </p>
                             </div>
                         </div>
@@ -391,50 +337,49 @@ function ExercisePanel({
                 )}
 
                 {activeTab === "schema" && (
-                    <div className="space-y-4 text-sm text-slate-700">
-                        <h3 className="text-lg font-semibold text-slate-900">
+                    <div className="space-y-4">
+                        <h3 className="font-display text-2xl font-bold text-ink">
                             Database Schema
                         </h3>
-                                
-                        <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-4">
-                            <p className="text-sm text-slate-500">Active schema:</p>
-                                
-                            <code className="mt-2 block rounded bg-slate-100 px-3 py-2 text-sm">
+
+                        <div className="border border-border bg-surface-2 p-4">
+                            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted">
+                                Active schema
+                            </p>
+
+                            <code className="mt-3 block border border-border bg-paper px-3 py-2 font-mono text-sm text-ink">
                                 {schemaName || "No schema linked"}
                             </code>
-                                
+
                             {schemaImage ? (
                                 <div className="mt-4">
-                                    <div className="mb-3 flex items-center gap-2">
+                                    <div className="mb-3 flex flex-wrap items-center gap-2">
                                         <button
                                             onClick={zoomIn}
-                                            className="rounded-lg border border-slate-300 bg-white px-3 py-1 text-sm hover:bg-slate-100"
+                                            className="border border-border px-3 py-1 font-mono text-xs uppercase tracking-widest text-muted hover:text-ink hover:border-ink"
                                         >
                                             +
                                         </button>
-
                                         <button
                                             onClick={zoomOut}
-                                            className="rounded-lg border border-slate-300 bg-white px-3 py-1 text-sm hover:bg-slate-100"
+                                            className="border border-border px-3 py-1 font-mono text-xs uppercase tracking-widest text-muted hover:text-ink hover:border-ink"
                                         >
                                             -
                                         </button>
-
                                         <button
                                             onClick={resetZoom}
-                                            className="rounded-lg border border-slate-300 bg-white px-3 py-1 text-sm hover:bg-slate-100"
+                                            className="border border-border px-3 py-1 font-mono text-xs uppercase tracking-widest text-muted hover:text-ink hover:border-ink"
                                         >
                                             Reset
                                         </button>
-
-                                        <span className="ml-2 text-sm text-slate-500">
+                                        <span className="ml-2 font-mono text-xs uppercase tracking-widest text-muted">
                                             {Math.round(scale * 100)}%
                                         </span>
                                     </div>
 
                                     <div
                                         ref={imageContainerRef}
-                                        className="relative h-[600px] overflow-hidden rounded-2xl border border-slate-300 bg-slate-100 touch-none"
+                                        className="relative h-[600px] overflow-hidden border border-border bg-paper touch-none"
                                         style={{ overscrollBehavior: "contain" }}
                                         onMouseEnter={() => setIsHoveringImage(true)}
                                         onMouseLeave={() => setIsHoveringImage(false)}
@@ -459,7 +404,7 @@ function ExercisePanel({
                                     </div>
                                 </div>
                             ) : (
-                                <p className="mt-4 text-sm text-slate-500">
+                                <p className="mt-4 font-mono text-sm text-muted">
                                     No schema image is available for this chapter yet.
                                 </p>
                             )}
@@ -468,20 +413,19 @@ function ExercisePanel({
                 )}
 
                 {activeTab === "output" && (
-                    <div className="space-y-3 text-sm text-slate-700">
-                        <h3 className="text-lg font-semibold text-slate-900">
+                    <div className="space-y-3">
+                        <h3 className="font-display text-2xl font-bold text-ink">
                             Expected Output
                         </h3>
 
-                        <div className="min-h-40 rounded-2xl border border-dashed border-slate-300 bg-white p-4">
+                        <div className="min-h-40 border border-dashed border-border bg-surface-2 p-4">
                             {exercise.queryOutput ? (
-                                <pre className="whitespace-pre-wrap font-mono text-sm leading-6 text-slate-800">
+                                <pre className="whitespace-pre-wrap font-mono text-sm leading-6 text-ink">
                                     {exercise.queryOutput}
                                 </pre>
                             ) : (
-                                <p className="text-sm text-slate-500">
-                                    No expected output is available
-                                    for this exercise yet.
+                                <p className="font-mono text-sm text-muted">
+                                    No expected output is available for this exercise yet.
                                 </p>
                             )}
                         </div>
@@ -489,65 +433,61 @@ function ExercisePanel({
                 )}
             </div>
 
-            <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-slate-900">
-                        Your SQL Query
-                    </h3>
+            <div className="bg-paper border border-border p-6 shadow-[0px_-3px_0px_0px_var(--color-border)] space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted mb-2">
+                            Workspace
+                        </p>
+                        <h3 className="font-display text-2xl font-bold text-ink">
+                            Your SQL Query
+                        </h3>
+                    </div>
 
                     {exercise.hintNL && (
                         <button
                             type="button"
-                            onClick={() =>
-                                setShowHint((current) => !current)
-                            }
-                            className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-slate-800 transition-colors hover:bg-slate-100"
+                            onClick={() => setShowHint((current) => !current)}
+                            className="inline-flex items-center gap-2 border-2 border-accent text-accent px-4 py-2 font-mono text-xs uppercase tracking-widest hover:bg-accent hover:text-paper transition-colors"
                         >
-                            <FaLightbulb className="text-amber-500" />
-
-                            {showHint
-                                ? "Hide Hint"
-                                : "Show Hint"}
+                            <FaLightbulb />
+                            {showHint ? "Hide Hint" : "Show Hint"}
                         </button>
                     )}
                 </div>
 
                 {showHint && exercise.hintNL && (
-                    <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 animate-in fade-in zoom-in-95">
+                    <div className="border border-border bg-warning px-4 py-3 font-mono text-sm text-muted">
                         {exercise.hintNL}
                     </div>
                 )}
 
                 <textarea
                     value={queryValue}
-                    onChange={(event) =>
-                        setQueryValue(event.target.value)
-                    }
+                    onChange={(event) => setQueryValue(event.target.value)}
                     placeholder="SELECT * FROM ..."
                     rows={12}
                     spellCheck={false}
-                    className="min-h-64 w-full rounded-3xl border border-gray-200 bg-[#f3f3f5] px-5 py-4 font-mono text-sm text-slate-800 outline-none transition focus:border-slate-400 focus:ring-4 focus:ring-slate-200"
+                    className="min-h-64 w-full border border-border bg-surface-2 px-5 py-4 font-mono text-sm text-ink outline-none transition focus:border-accent"
                 />
 
                 <button
                     type="button"
                     onClick={handleRunQuery}
                     disabled={isExecuting}
-                    className="inline-flex items-center gap-2 rounded-2xl bg-slate-950 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-950/20 transition hover:bg-slate-800 disabled:opacity-50"
+                    className="inline-flex items-center gap-2 border-2 border-accent text-accent px-6 py-3 font-mono text-xs uppercase tracking-widest hover:bg-accent hover:text-paper transition-colors disabled:opacity-50"
                 >
                     <FaPlay />
                     {isExecuting ? "Running..." : "Run Query"}
                 </button>
 
                 {queryError && (
-                    <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+                    <div className="border border-error bg-paper px-4 py-3 font-mono text-sm text-error">
                         {queryError}
                     </div>
                 )}
 
-                {queryResult && (
-                    <QueryResult result={queryResult} />
-                )}
+                {queryResult && <QueryResult result={queryResult} />}
             </div>
         </div>
     );
