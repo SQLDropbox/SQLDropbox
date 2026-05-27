@@ -18,15 +18,15 @@ const login = async (
 const logout = async (router: AppRouterInstance) => {
     try {
         await authService.logout();
-
-        setJWTCookie(null);
-
-        setTimeout(() => {
-            router.push("/login");
-        }, 50);
     } catch (err) {
         console.error("Error logging out:", err);
     }
+
+    setJWTCookie(null);
+
+    setTimeout(() => {
+        router.push("/login");
+    }, 50);
 };
 
 export const setJWTCookie = (token: string | null = null) => {
