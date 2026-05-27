@@ -13,6 +13,7 @@ import EditChapterDialog from "@/components/admin/chapter/editChapterDialog";
 import { Course, Chapter } from "@/types/types";
 import { courseService } from "@/services/courseService";
 import { chapterService } from "@/services/chapterService";
+import Loading from "@/components/loading";
 
 export default function Page() {
     const params = useParams();
@@ -20,7 +21,9 @@ export default function Page() {
     const queryClient = useQueryClient();
 
     const [editDialogOpen, setEditDialogOpen] = useState(false);
-    const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
+    const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(
+        null,
+    );
 
     const reorderMutation = useMutation({
         mutationFn: (orderedIds: string[]) =>
@@ -44,28 +47,12 @@ export default function Page() {
         retry: false,
     });
 
-    if (isLoading) {
-        return (
-            <div className="min-h-screen flex flex-col">
-                <Header />
-
-                <div className="flex-1 flex flex-col items-center justify-center gap-3">
-                    <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-300 border-t-blue-600" />
-                    <p className="text-sm text-gray-600">Loading...</p>
-                </div>
-            </div>
-        );
+    if (error || !course) {
+        return notfound();
     }
 
-    if (error || !course) {
-        return (
-            <div>
-                <Header />
-                <div className="max-w-350 mx-auto p-6">
-                    <p>Course not found</p>
-                </div>
-            </div>
-        );
+    if (isLoading) {
+        return <Loading />;
     }
 
     const chapters = course.chapters ?? [];
@@ -122,4 +109,8 @@ export default function Page() {
             />
         </div>
     );
+}
+
+function notfound() {
+    throw new Error("Function not implemented.");
 }
