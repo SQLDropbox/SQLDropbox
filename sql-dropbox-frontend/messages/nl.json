@@ -86,6 +86,40 @@
         "edit": "Bewerk oefening",
         "hintPrefix": "Hint"
     },
+    "EditExerciseDialog": {
+        "titleEdit": "Oefening bewerken",
+        "titleAdd": "Oefening toevoegen",
+        "subtitleEdit": "Werk de oefeninggegevens bij.",
+        "subtitleAdd": "Voeg een nieuwe oefening toe aan dit hoofdstuk.",
+        "questionsHeader": "Vragen",
+        "hintsHeader": "Hints",
+        "placeholders": {
+            "questionNL": "Vraag (Nederlands)",
+            "questionEN": "Vraag (Engels)",
+            "hintNL": "Hint (Nederlands) - optioneel",
+            "hintEN": "Hint (Engels) - optioneel",
+            "queryOutput": "JSON / CSV-weergave van de verwachte output",
+            "solution": "SELECT * FROM table..."
+        },
+        "queryOutputHeader": "Verwachte Query Output",
+        "solutionsHeader": "Oplossingen (SQL Queries)",
+        "addSolution": "Extra oplossing toevoegen",
+        "removeSolution": "Oplossing verwijderen",
+        "delete": "Verwijderen",
+        "cancel": "Annuleren",
+        "saving": "Bezig...",
+        "save": "Opslaan",
+        "create": "Aanmaken",
+        "errors": {
+            "questionNLRequired": "Nederlandse vraag is verplicht.",
+            "questionENRequired": "Engelse vraag is verplicht.",
+            "atLeastOneSolution": "Minstens één oplossing is verplicht."
+        },
+        "confirm": {
+            "title": "Oefening verwijderen",
+            "description": "Weet je zeker dat je deze oefening wilt verwijderen? Alle gekoppelde oplossingen worden verwijderd."
+        }
+    },
     "AdminCourseDetailsHeader": {
         "backToCourses": "Terug naar cursussen",
         "lecturer": "Lector",

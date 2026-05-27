@@ -86,6 +86,40 @@
         "edit": "Edit exercise",
         "hintPrefix": "Hint"
     },
+    "EditExerciseDialog": {
+        "titleEdit": "Edit exercise",
+        "titleAdd": "Add exercise",
+        "subtitleEdit": "Update the exercise details.",
+        "subtitleAdd": "Add a new exercise to this chapter.",
+        "questionsHeader": "Questions",
+        "hintsHeader": "Hints",
+        "placeholders": {
+            "questionNL": "Question (Dutch)",
+            "questionEN": "Question (English)",
+            "hintNL": "Hint (Dutch) - optional",
+            "hintEN": "Hint (English) - optional",
+            "queryOutput": "JSON / CSV representation of expected output",
+            "solution": "SELECT * FROM table..."
+        },
+        "queryOutputHeader": "Expected Query Output",
+        "solutionsHeader": "Solutions (SQL Queries)",
+        "addSolution": "Add extra solution",
+        "removeSolution": "Remove solution",
+        "delete": "Delete",
+        "cancel": "Cancel",
+        "saving": "Saving...",
+        "save": "Save",
+        "create": "Create",
+        "errors": {
+            "questionNLRequired": "Dutch question is required.",
+            "questionENRequired": "English question is required.",
+            "atLeastOneSolution": "At least one solution is required."
+        },
+        "confirm": {
+            "title": "Delete exercise",
+            "description": "Are you sure you want to delete this exercise? All related solutions will be removed."
+        }
+    },
     "AdminCourseDetailsHeader": {
         "backToCourses": "Back to courses",
         "lecturer": "Lecturer",
