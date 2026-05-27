@@ -138,7 +138,9 @@ if (app.Environment.IsProduction())
 if (app.Environment.IsProduction())
 {
     app.UseHttpsRedirection();
-}
+} 
+
+app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();

@@ -29,6 +29,7 @@ export interface Chapter {
     schemaId?: number | null;
     completedAmount?: number;
     schemaName?: string;
+    schemaImage?: string | null;
 }
 
 export interface Exercise {

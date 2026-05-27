@@ -11,10 +11,12 @@ namespace SQLDropbox.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class ChapterController(AppDbContext db, RandomExerciseSelectorService ress) : BaseController
+public class ChapterController( AppDbContext db, RandomExerciseSelectorService ress, IConfiguration config) : BaseController
 {
     private readonly AppDbContext _db = db;
     private readonly RandomExerciseSelectorService _ress = ress;
+    private readonly IConfiguration _config = config;
+    private string BaseUrl => $"{Request.Scheme}://{Request.Host}";
 
     [HttpGet]
     public ActionResult GetChapters()
@@ -33,6 +35,7 @@ public class ChapterController(AppDbContext db, RandomExerciseSelectorService re
                 x.Schema.SchemaId,
                 x.Schema.SchemaName,
                 x.Course.CourseId,
+                SchemaImage = string.IsNullOrEmpty(x.Schema.SchemaImage) ? null : $"{BaseUrl}/schema-images/{x.Schema.SchemaImage}",
             }).ToList();
         return Ok(chapters);
     }
@@ -50,7 +53,8 @@ public class ChapterController(AppDbContext db, RandomExerciseSelectorService re
             x.Schema.SchemaId,
             x.Schema.SchemaName,
             x.AmountOfExercises,
-            x.CreatedAt
+            x.CreatedAt,
+            SchemaImage = string.IsNullOrEmpty(x.Schema.SchemaImage) ? null : $"{BaseUrl}/schema-images/{x.Schema.SchemaImage}",
 
         }).FirstOrDefaultAsync();
         if (chapter == null)

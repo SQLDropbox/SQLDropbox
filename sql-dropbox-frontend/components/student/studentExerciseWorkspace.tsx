@@ -10,7 +10,7 @@ import {
     FaPlay,
 } from "react-icons/fa6";
 import { useQuery } from "@tanstack/react-query";
-
+import { useRef } from "react";
 import { Chapter, Course, Exercise } from "@/types/types";
 import { courseService } from "@/services/courseService";
 import { queryService } from "@/services/queryService";
@@ -187,6 +187,7 @@ export default function StudentExerciseWorkspace({
                                 `Chapter ${chapterId}`
                             }
                             schemaName={chapter?.schemaName || ""}
+                            schemaImage={chapter?.schemaImage || null}
                         />
                     ) : (
                         <div className="flex min-h-112 items-center justify-center rounded-3xl border border-dashed border-gray-300 bg-slate-50 p-6 text-sm text-slate-500">
@@ -211,19 +212,50 @@ function ExercisePanel({
     exercise,
     chapterName,
     schemaName,
+    schemaImage,
 }: {
     exercise: Exercise;
     chapterName: string;
     schemaName: string;
+    schemaImage?: string | null;
 }) {
-    const [activeTab, setActiveTab] =
-        useState<PanelTab>("question");
-
+    const [activeTab, setActiveTab] = useState<PanelTab>("question");
     const [showHint, setShowHint] = useState(false);
-
     const [queryValue, setQueryValue] = useState("");
-
     const [queryResult, setQueryResult] = useState<any>(null);
+    const imageContainerRef = useRef<HTMLDivElement | null>(null);
+    const [scale, setScale] = useState(1);
+    const [isHoveringImage, setIsHoveringImage] = useState(false);
+    const [position, setPosition] = useState({ x: 0, y: 0 });
+
+    useEffect(() => {
+        const el = imageContainerRef.current;
+        if (!el) return;
+        
+        const handleWheelEvent = (e: WheelEvent) => {
+            if (!isHoveringImage) return;
+        
+            e.preventDefault();
+        
+            const delta = -e.deltaY * 0.0015;
+        
+            setScale((prev) => {
+                const next = prev + delta;
+                return Math.min(Math.max(next, 0.5), 4);
+            });
+        };
+    
+        el.addEventListener("wheel", handleWheelEvent, {
+            passive: false,
+        });
+    
+        return () => {
+            el.removeEventListener("wheel", handleWheelEvent);
+        };
+    }, [isHoveringImage]);
+
+    const [isDragging, setIsDragging] = useState(false);
+    const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
     const [queryError, setQueryError] = useState<string | null>(null);
 
@@ -258,6 +290,58 @@ function ExercisePanel({
         } finally {
             setIsExecuting(false);
         }
+    };
+
+    const zoomIn = () => {
+        setScale((prev) => Math.min(prev + 0.2, 4));
+    };
+    
+    const zoomOut = () => {
+        setScale((prev) => Math.max(prev - 0.2, 0.5));
+    };
+    
+    const resetZoom = () => {
+        setScale(1);
+        setPosition({ x: 0, y: 0 });
+    };
+    
+    const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const delta = -e.deltaY * 0.0015;
+        
+        setScale((prev) => {
+            const next = prev + delta;
+        
+            return Math.min(Math.max(next, 0.5), 4);
+        });
+    };
+    
+    const handleMouseDown = (
+        e: React.MouseEvent<HTMLDivElement>,
+    ) => {
+        setIsDragging(true);
+    
+        setDragStart({
+            x: e.clientX - position.x,
+            y: e.clientY - position.y,
+        });
+    };
+    
+    const handleMouseMove = (
+        e: React.MouseEvent<HTMLDivElement>,
+    ) => {
+        if (!isDragging) return;
+    
+        setPosition({
+            x: e.clientX - dragStart.x,
+            y: e.clientY - dragStart.y,
+        });
+    };
+    
+    const handleMouseUp = () => {
+        setIsDragging(false);
     };
 
     return (
@@ -307,19 +391,78 @@ function ExercisePanel({
                 )}
 
                 {activeTab === "schema" && (
-                    <div className="space-y-3 text-sm text-slate-700">
+                    <div className="space-y-4 text-sm text-slate-700">
                         <h3 className="text-lg font-semibold text-slate-900">
                             Database Schema
                         </h3>
-
-                        <div className="min-h-40 rounded-2xl border border-dashed border-slate-300 bg-white p-4">
-                            <p className="text-sm text-slate-500">
-                                Active schema:
-                            </p>
-
+                                
+                        <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-4">
+                            <p className="text-sm text-slate-500">Active schema:</p>
+                                
                             <code className="mt-2 block rounded bg-slate-100 px-3 py-2 text-sm">
-                                {schemaName}
+                                {schemaName || "No schema linked"}
                             </code>
+                                
+                            {schemaImage ? (
+                                <div className="mt-4">
+                                    <div className="mb-3 flex items-center gap-2">
+                                        <button
+                                            onClick={zoomIn}
+                                            className="rounded-lg border border-slate-300 bg-white px-3 py-1 text-sm hover:bg-slate-100"
+                                        >
+                                            +
+                                        </button>
+
+                                        <button
+                                            onClick={zoomOut}
+                                            className="rounded-lg border border-slate-300 bg-white px-3 py-1 text-sm hover:bg-slate-100"
+                                        >
+                                            -
+                                        </button>
+
+                                        <button
+                                            onClick={resetZoom}
+                                            className="rounded-lg border border-slate-300 bg-white px-3 py-1 text-sm hover:bg-slate-100"
+                                        >
+                                            Reset
+                                        </button>
+
+                                        <span className="ml-2 text-sm text-slate-500">
+                                            {Math.round(scale * 100)}%
+                                        </span>
+                                    </div>
+
+                                    <div
+                                        ref={imageContainerRef}
+                                        className="relative h-[600px] overflow-hidden rounded-2xl border border-slate-300 bg-slate-100 touch-none"
+                                        style={{ overscrollBehavior: "contain" }}
+                                        onMouseEnter={() => setIsHoveringImage(true)}
+                                        onMouseLeave={() => setIsHoveringImage(false)}
+                                        onMouseMove={handleMouseMove}
+                                        onMouseUp={handleMouseUp}
+                                    >
+                                        <div
+                                            onMouseDown={handleMouseDown}
+                                            className="flex h-full w-full cursor-grab items-center justify-center active:cursor-grabbing"
+                                        >
+                                            <img
+                                                src={schemaImage}
+                                                alt={`Database schema for ${schemaName}`}
+                                                draggable={false}
+                                                className="select-none object-contain transition-transform duration-75"
+                                                style={{
+                                                    transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
+                                                    maxWidth: "none",
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <p className="mt-4 text-sm text-slate-500">
+                                    No schema image is available for this chapter yet.
+                                </p>
+                            )}
                         </div>
                     </div>
                 )}
