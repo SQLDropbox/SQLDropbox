@@ -1,3 +1,4 @@
+import { setJWTCookie } from "@/utils/authUtils";
 import { authService } from "./authService";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -21,7 +22,6 @@ async function publicFetch(
     if (type === "json") {
         headers.set("Content-Type", "application/json");
     }
-    headers.set("Content-Type", "application/json");
 
     const response = await fetch(API_URL + url, { ...options, headers });
 
@@ -69,7 +69,7 @@ async function privateFetch(
                 method: "GET",
                 credentials: "include",
             });
-            document.cookie = `token=${refresh.token}; path=/; max-age=${10}; SameSite=Strict`;
+            setJWTCookie(refresh.token);
             headers.set("Authorization", `Bearer ${refresh.token}`);
 
             response = await fetch(API_URL + url, {
@@ -78,6 +78,7 @@ async function privateFetch(
                 credentials: "include",
             });
         } catch {
+            setJWTCookie(null);
             window.location.href = "/login";
             throw new Error("Session expired.");
         }
