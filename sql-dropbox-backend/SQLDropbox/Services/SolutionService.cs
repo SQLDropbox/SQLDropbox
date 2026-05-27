@@ -1,12 +1,15 @@
-﻿using SQLDropbox.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using SQLDropbox.Data;
+using SQLDropbox.Models;
 using SqlParser;
 using System.IO.Hashing;
 using System.Text;
 
 namespace SQLDropbox.Services
 {
-    public class SolutionService(SchemaService scS)
+    public class SolutionService(AppDbContext db, SchemaService scS)
     {
+        private readonly AppDbContext _db = db;
         private readonly SchemaService _scS = scS;
 
         public async Task<uint> HashSolution(string query)
@@ -36,27 +39,46 @@ namespace SQLDropbox.Services
             return (true, "The query is correct.");
         }
 
-        public async Task<string> CreateUserExerciseAndSolutionBasedIfWrongOrRight(string formattedQuery, Exercise exercise, User user)
+        public async Task RegisterUserSolution(string formattedQuery, Exercise exercise, User user, string? errorMessage)
         {
-            //create a user exercise and usersolution based on if the solution given was correct and the errormessage
+            UserExercise? userExercise = await _db.UserExercises.FirstOrDefaultAsync(ue => ue.DeletedAt == null && ue.Exercise == exercise && ue.User == user);
+            if (userExercise == null)
+            {
+                userExercise = new UserExercise()
+                {
+                    IsCompleted = errorMessage == null,
+                    Exercise = exercise,
+                    User = user,
+                    CreatedAt = DateTime.Now,
+                };
+            }
+            else
+            {
+                if (userExercise.IsCompleted) return;
+                userExercise.UpdatedAt = DateTime.UtcNow;
+            }
+
             UserSolution userSolution = new()
             {
                 Query = formattedQuery,
-                IsCorrect = false, //true
-                ErrorMessage = "",
+                IsCorrect = errorMessage == null,
+                ErrorMessage = errorMessage,
                 CreatedAt = DateTime.UtcNow,
             };
 
-            UserExercise userExercise = new()
-            {
-                IsCompleted = false, //true
-                Exercise = exercise,
-                User = user,                
-            };
-
             userExercise.UserSolutions.Add(userSolution);
-            //save userexercise and solution          
-            return "";
+
+            if (userExercise.UpdatedAt == null)
+            {
+                _db.UserExercises.Add(userExercise);
+            }
+            else
+            {
+                _db.UserExercises.Update(userExercise);
+            }
+
+            await _db.SaveChangesAsync();
+            return;
         }
     }
 }

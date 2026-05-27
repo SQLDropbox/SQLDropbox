@@ -22,8 +22,8 @@ public class SolutionController(AppDbContext db, SolutionService solutionService
     {
         try
         {
-            var id = GetUserId();
-            if (id == null) return Unauthorized();
+            var userId = GetUserId();
+            if (userId == null) return Unauthorized();
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -34,7 +34,7 @@ public class SolutionController(AppDbContext db, SolutionService solutionService
                 .Include(e => e.Chapter)
                 .ThenInclude(c => c.Schema)
                 .FirstOrDefaultAsync(e => e.DeletedAt == null && e.ExerciseId == dto.ExerciseId);
-            
+
             if (exercise == null)
                 return BadRequest(new { message = "This exercise doesn't exist." });
             if (exercise.Chapter == null)
@@ -50,34 +50,43 @@ public class SolutionController(AppDbContext db, SolutionService solutionService
             if (!Valid)
                 return BadRequest(new { message = Message });
 
+            //Hash the query if requirements are met
             uint queryHash = await _soS.HashSolution(formattedQuery);
 
-            //Check if solution exists
+            //Check if solution exists based on hash
             Solution? knownSolution = exercise.Solutions.FirstOrDefault(s => s.QueryHash == queryHash);
 
-            //If exist return correct
-            if (knownSolution != null)
-                return Ok(new { message = "Well done, this query was correct!" });
+            //Get user, since from this point solution will be added to history regardless.
+            User? user = await _db.Users.FirstOrDefaultAsync(u => u.DeletedAt == null && u.UserId == userId);
+            if (user == null)
+                return BadRequest(new { message = "User doesn't exist" });
 
-            //Save solution for user
-            await _soS.CreateUserExerciseAndSolutionBasedIfWrongOrRight(formattedQuery, exercise, user);
+            //If exist save and return correct
+            if (knownSolution != null)
+            {
+                await _soS.RegisterUserSolution(formattedQuery, exercise, user, null);
+                return Ok(new { message = "Well done, this query was correct!" });
+            }
 
             //If not check if correct
-            string queryOutput = await _scS.ExecuteSelectOnSchemaAsync(exercise.Chapter.Schema.SchemaName, formattedQuery);         
-            
-            //If not return error
-            //A specific error should be returned here
-            if(exercise.QueryOutput != queryOutput)
-                return BadRequest(new { message = "This is wrong, an error should be returnd (work in progress)!" });
+            string queryOutput = await _scS.ExecuteSelectOnSchemaAsync(exercise.Chapter.Schema.SchemaName, formattedQuery);
 
-            //If yes save solution
+            // TODO -> If the query above fails, or the output doesn't match, a specific error should be returned here
+            // TODO -> ask if teammember's function returns a specific error? SHould it be caught in the catch? Return the output regardless?
+            if (exercise.QueryOutput != queryOutput)
+            {
+                await _soS.RegisterUserSolution(formattedQuery, exercise, user, "This is wrong, an error should be saved (work in progress)!");
+                return Ok(new { message = "This is wrong, an error should be returned (work in progress)!" });
+            }
+
+            //If correct, save solution
             Solution solution = new()
             {
                 Query = queryOutput,
                 QueryHash = queryHash,
                 CreatedAt = DateTime.UtcNow,
                 Exercise = exercise,
-            };            
+            };
 
             _db.Solutions.Add(solution);
             await _db.SaveChangesAsync();
