@@ -27,7 +27,8 @@
 
 @layer base {
     body {
-        background-color: #f5f3fe;
+        background-color: var(--color-paper);
+        color: var(--color-ink);
         overflow-x: hidden;
     }
 

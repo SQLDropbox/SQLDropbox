@@ -4,12 +4,13 @@ import { useParams } from "next/navigation";
 import { useState } from "react";
 import Header from "@/components/header";
 import { Course } from "@/types/types";
-import AdminCourseDetailsHeader from "@/components/admin/course/adminCourseDetailsHeader";
 import { useQuery } from "@tanstack/react-query";
 import { courseService } from "@/services/courseService";
-import { FaSearch, FaUserPlus, FaUpload } from "react-icons/fa";
+import { FaSearch, FaUserPlus, FaUpload, FaArrowLeft } from "react-icons/fa";
 import AddStudentModal from "@/components/student/addStudentModal";
 import ImportStudentsModal from "@/components/student/importStudentsModal";
+import AdminCourseNav from "@/components/admin/course/adminCourseNav";
+import Link from "next/link";
 
 interface StudentImport {
     userCode: string;
@@ -43,12 +44,6 @@ export default function Page() {
             student.userCode.toLowerCase().includes(search.toLowerCase()),
     );
 
-    function handleImport(students: StudentImport[]) {
-        // TODO: call your API / mutation here, e.g.:
-        // await courseService.addStudents(courseId, students);
-        console.log("Importing students:", students);
-    }
-
     if (isLoading) {
         return (
             <div className="min-h-screen flex flex-col">
@@ -65,7 +60,15 @@ export default function Page() {
         <div>
             <Header />
             <div className="max-w-350 mx-auto p-6">
-                <AdminCourseDetailsHeader course={course!} />
+                <Link
+                    href="/admin"
+                    className="flex items-center text-blue-500 hover:text-blue-700 gap-1"
+                >
+                    <FaArrowLeft />
+                    Back to courses
+                </Link>
+
+                <AdminCourseNav course={course!} />
 
                 <div className="mt-8 flex flex-col gap-6">
                     <div className="flex justify-between">

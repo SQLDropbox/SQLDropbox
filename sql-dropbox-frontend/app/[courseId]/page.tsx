@@ -50,9 +50,9 @@ export default function Page() {
                     </Link>
                 )}
 
-                <div className="relative z-10 bg-surface-2 border-2 border-border shadow-[6px_6px_0px_0px_var(--color-border)]">
+                <div className="relative z-10 bg-[linear-gradient(to_bottom,var(--color-surface-1),var(--color-surface-2))] border-2 border-border shadow-[6px_6px_0px_0px_var(--color-border)]">
                     {/* Top tab */}
-                    <div className="absolute -top-6 -left-px min-w-[30%] bg-surface-2 px-4 py-1 border border-border border-b-0">
+                    <div className="absolute -top-6 -left-0.5 min-w-[30%] bg-surface-1 px-4 py-1 border-2 border-border border-b-0">
                         <span className="font-mono text-xs uppercase tracking-wider text-muted">
                             ID: {courseId?.toUpperCase() ?? "—"}
                         </span>
@@ -104,9 +104,9 @@ export default function Page() {
                     </div>
 
                     {/* Footer */}
-                    <div className="relative z-20 border-t border-border bg-surface-2 px-8 py-6 flex justify-between items-center">
+                    <div className="relative z-20 border-t border-border bg-[linear-gradient(to_bottom,var(--color-surface-1),var(--color-surface-2))] px-8 py-6 flex justify-between items-center">
                         {/* Bottom-right tab */}
-                        <div className="absolute -top-6 -right-px min-w-[30%] bg-surface-2 px-4 h-8 border border-border border-b-0" />
+                        <div className="absolute -top-6 -right-px min-w-[30%] bg-surface-1 px-4 h-8 border border-border border-b-0" />
 
                         <span className="font-mono text-[10px] uppercase tracking-widest text-muted">
                             {courseId?.toUpperCase()}
