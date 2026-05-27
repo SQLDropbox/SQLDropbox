@@ -1,3 +1,4 @@
+import { User } from "@/types/types";
 import { api } from "./apiClient";
 
 interface StudentDTO {
@@ -14,12 +15,12 @@ const addStudent = async (courseId: string, dto: StudentDTO) => {
     });
 };
 
-const importStudents = async (courseId: string, file: File) => {
+const previewImportStudents = async (courseId: string, file: File) => {
     const formData = new FormData();
     formData.append("file", file);
 
     return api.privateFetch(
-        `/User/studentCourse/${courseId}/import`,
+        `/User/studentCourse/${courseId}/import/preview`,
         {
             method: "POST",
             body: formData,
@@ -28,7 +29,18 @@ const importStudents = async (courseId: string, file: File) => {
     );
 };
 
+const importStudents = async (courseId: string, students: User[]) => {
+    return api.privateFetch(
+        `/User/studentCourse/${courseId}/import`,
+        {
+            method: "POST",
+            body: JSON.stringify(students),
+        },
+    );
+};
+
 export const userService = {
     addStudent,
+    previewImportStudents,
     importStudents,
 };

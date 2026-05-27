@@ -74,22 +74,33 @@ export default function Page() {
                             {t("chaptersLabel") ?? "Chapters"}
                         </p>
 
-                        {data?.chapters?.length === 0 && (
-                            <p className="font-mono text-sm text-muted italic">
-                                {t("noChapters")}
-                            </p>
+                        {data?.chapters?.length === 0 ? (
+                            <div className="relative">
+                                <div
+                                    className="
+                                        relative bg-ruled bg-paper border border-border
+                                        px-6 shadow-[0px_-3px_0px_0px_var(--color-border)]
+                                        h-40
+                                        flex items-center justify-center pb-8
+                                    "
+                                >
+                                    <p className="font-mono text-sm text-muted text-center max-w-md">
+                                        {t("noChapters")}
+                                    </p>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="relative">
+                                {data?.chapters?.map((chapter, index) => (
+                                    <ChapterCard
+                                        key={chapter.chapterId}
+                                        chapter={chapter}
+                                        index={index}
+                                        courseId={courseId!}
+                                    />
+                                ))}
+                            </div>
                         )}
-
-                        <div className="relative">
-                            {data?.chapters?.map((chapter, index) => (
-                                <ChapterCard
-                                    key={chapter.chapterId}
-                                    chapter={chapter}
-                                    index={index}
-                                    courseId={courseId!}
-                                />
-                            ))}
-                        </div>
                     </div>
 
                     {/* Footer */}
