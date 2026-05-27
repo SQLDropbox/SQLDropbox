@@ -82,6 +82,17 @@ namespace SQLDropbox.Repositories
              ");
 
             await context.Database.ExecuteSqlRawAsync(@"
+                 DO $$
+                 BEGIN
+                     IF NOT EXISTS (
+                         SELECT FROM pg_catalog.pg_roles
+                         WHERE rolname = 'sqldropbox_admin'
+                     ) THEN
+                         CREATE ROLE sqldropbox_admin
+                         WITH LOGIN PASSWORD 'r0H8X2Z0XRsA7C9L';
+                     END IF;
+                 END
+                 $$;
                  GRANT USAGE, CREATE ON SCHEMA util TO sqldropbox_admin;
                  GRANT USAGE ON LANGUAGE plpgsql TO sqldropbox_admin;
                  GRANT SELECT ON ALL TABLES IN SCHEMA util TO sqldropbox_admin;
@@ -370,150 +381,161 @@ namespace SQLDropbox.Repositories
         public static async Task SeedAsyncProd(AppDbContext context, PasswordService ps)
         {
             /* UTIL SCHEMA + PROCEDURES + PRIVILEGES */
-            //await context.Database.ExecuteSqlRawAsync(@"
-            //     CREATE SCHEMA IF NOT EXISTS util;
-            // ");
+            await context.Database.ExecuteSqlRawAsync(@"
+                 CREATE SCHEMA IF NOT EXISTS util;
+             ");
 
-            //await context.Database.ExecuteSqlRawAsync(@"
-            //     CREATE OR REPLACE PROCEDURE util.sp_clone_schema(
-            //         source_schema TEXT,
-            //         target_schema TEXT
-            //     )
-            //     LANGUAGE plpgsql
-            //     AS $$
-            //     DECLARE
-            //         table_record RECORD;
-            //     BEGIN
-            //         EXECUTE format('CREATE SCHEMA IF NOT EXISTS %I', target_schema);
+            await context.Database.ExecuteSqlRawAsync(@"
+                 CREATE OR REPLACE PROCEDURE util.sp_clone_schema(
+                     source_schema TEXT,
+                     target_schema TEXT
+                 )
+                 LANGUAGE plpgsql
+                 AS $$
+                 DECLARE
+                     table_record RECORD;
+                 BEGIN
+                     EXECUTE format('CREATE SCHEMA IF NOT EXISTS %I', target_schema);
 
-            //         FOR table_record IN
-            //             SELECT tablename
-            //             FROM pg_tables
-            //             WHERE schemaname = source_schema
-            //         LOOP
-            //             EXECUTE format(
-            //                 'CREATE TABLE %I.%I (LIKE %I.%I INCLUDING ALL)',
-            //                 target_schema,
-            //                 table_record.tablename,
-            //                 source_schema,
-            //                 table_record.tablename
-            //             );
+                     FOR table_record IN
+                         SELECT tablename
+                         FROM pg_tables
+                         WHERE schemaname = source_schema
+                     LOOP
+                         EXECUTE format(
+                             'CREATE TABLE %I.%I (LIKE %I.%I INCLUDING ALL)',
+                             target_schema,
+                             table_record.tablename,
+                             source_schema,
+                             table_record.tablename
+                         );
 
-            //             EXECUTE format(
-            //                 'INSERT INTO %I.%I SELECT * FROM %I.%I',
-            //                 target_schema,
-            //                 table_record.tablename,
-            //                 source_schema,
-            //                 table_record.tablename
-            //             );
-            //         END LOOP;
-            //     END;
-            //     $$;
-            // ");
+                         EXECUTE format(
+                             'INSERT INTO %I.%I SELECT * FROM %I.%I',
+                             target_schema,
+                             table_record.tablename,
+                             source_schema,
+                             table_record.tablename
+                         );
+                     END LOOP;
+                 END;
+                 $$;
+             ");
 
-            //await context.Database.ExecuteSqlRawAsync(@"
-            //     CREATE OR REPLACE PROCEDURE util.sp_delete_schema(
-            //         schema_name TEXT
-            //     )
-            //     LANGUAGE plpgsql
-            //     AS $$
-            //     BEGIN
-            //         EXECUTE format(
-            //             'DROP SCHEMA IF EXISTS %I CASCADE',
-            //             schema_name
-            //         );
-            //     END;
-            //     $$;
-            // ");
+            await context.Database.ExecuteSqlRawAsync(@"
+                 CREATE OR REPLACE PROCEDURE util.sp_delete_schema(
+                     schema_name TEXT
+                 )
+                 LANGUAGE plpgsql
+                 AS $$
+                 BEGIN
+                     EXECUTE format(
+                         'DROP SCHEMA IF EXISTS %I CASCADE',
+                         schema_name
+                     );
+                 END;
+                 $$;
+             ");
 
-            //await context.Database.ExecuteSqlRawAsync(@"
-            //     GRANT USAGE, CREATE ON SCHEMA util TO sqldropbox_admin;
-            //     GRANT USAGE ON LANGUAGE plpgsql TO sqldropbox_admin;
-            //     GRANT SELECT ON ALL TABLES IN SCHEMA util TO sqldropbox_admin;
-            //     GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA util TO sqldropbox_admin;
-            //     GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA util TO sqldropbox_admin;
-            //");
+            await context.Database.ExecuteSqlRawAsync(@"
+                 DO $$
+                 BEGIN
+                     IF NOT EXISTS (
+                         SELECT FROM pg_catalog.pg_roles
+                         WHERE rolname = 'sqldropbox_admin'
+                     ) THEN
+                         CREATE ROLE sqldropbox_admin
+                         WITH LOGIN PASSWORD 'r0H8X2Z0XRsA7C9L';
+                     END IF;
+                 END
+                 $$;
+                 GRANT USAGE, CREATE ON SCHEMA util TO sqldropbox_admin;
+                 GRANT USAGE ON LANGUAGE plpgsql TO sqldropbox_admin;
+                 GRANT SELECT ON ALL TABLES IN SCHEMA util TO sqldropbox_admin;
+                 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA util TO sqldropbox_admin;
+                 GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA util TO sqldropbox_admin;
+            ");
 
-            //await context.Database.ExecuteSqlRawAsync(@"
-            //    CREATE OR REPLACE PROCEDURE util.sp_clone_schema(
-            //        source_schema TEXT,
-            //        target_schema TEXT
-            //    )
-            //    LANGUAGE plpgsql
-            //    AS $$
-            //    DECLARE
-            //        table_record RECORD;
-            //    BEGIN
-            //        EXECUTE format('CREATE SCHEMA IF NOT EXISTS %I', target_schema);
+            await context.Database.ExecuteSqlRawAsync(@"
+                CREATE OR REPLACE PROCEDURE util.sp_clone_schema(
+                    source_schema TEXT,
+                    target_schema TEXT
+                )
+                LANGUAGE plpgsql
+                AS $$
+                DECLARE
+                    table_record RECORD;
+                BEGIN
+                    EXECUTE format('CREATE SCHEMA IF NOT EXISTS %I', target_schema);
 
-            //        FOR table_record IN
-            //            SELECT tablename
-            //            FROM pg_tables
-            //            WHERE schemaname = source_schema
-            //        LOOP
-            //            EXECUTE format(
-            //                'CREATE TABLE %I.%I (LIKE %I.%I INCLUDING ALL)',
-            //                target_schema,
-            //                table_record.tablename,
-            //                source_schema,
-            //                table_record.tablename
-            //            );
+                    FOR table_record IN
+                        SELECT tablename
+                        FROM pg_tables
+                        WHERE schemaname = source_schema
+                    LOOP
+                        EXECUTE format(
+                            'CREATE TABLE %I.%I (LIKE %I.%I INCLUDING ALL)',
+                            target_schema,
+                            table_record.tablename,
+                            source_schema,
+                            table_record.tablename
+                        );
 
-            //            EXECUTE format(
-            //                'INSERT INTO %I.%I SELECT * FROM %I.%I',
-            //                target_schema,
-            //                table_record.tablename,
-            //                source_schema,
-            //                table_record.tablename
-            //            );
-            //        END LOOP;
-            //    END;
-            //    $$;
-            //");
+                        EXECUTE format(
+                            'INSERT INTO %I.%I SELECT * FROM %I.%I',
+                            target_schema,
+                            table_record.tablename,
+                            source_schema,
+                            table_record.tablename
+                        );
+                    END LOOP;
+                END;
+                $$;
+            ");
 
-            //await context.Database.ExecuteSqlRawAsync(@"
-            //    CREATE OR REPLACE PROCEDURE util.sp_delete_schema(
-            //        schema_name TEXT
-            //    )
-            //    LANGUAGE plpgsql
-            //    AS $$
-            //    BEGIN
-            //        EXECUTE format(
-            //            'DROP SCHEMA IF EXISTS %I CASCADE',
-            //            schema_name
-            //        );
-            //    END;
-            //    $$;
-            //");
+            await context.Database.ExecuteSqlRawAsync(@"
+                CREATE OR REPLACE PROCEDURE util.sp_delete_schema(
+                    schema_name TEXT
+                )
+                LANGUAGE plpgsql
+                AS $$
+                BEGIN
+                    EXECUTE format(
+                        'DROP SCHEMA IF EXISTS %I CASCADE',
+                        schema_name
+                    );
+                END;
+                $$;
+            ");
 
-            //await context.Database.ExecuteSqlRawAsync(@"
-            //    GRANT USAGE, CREATE ON SCHEMA util TO sqldropbox_admin;
-            //    GRANT USAGE ON LANGUAGE plpgsql TO sqldropbox_admin;
-            //    GRANT SELECT ON ALL TABLES IN SCHEMA util TO sqldropbox_admin;
-            //    GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA util TO sqldropbox_admin;
-            //    GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA util TO sqldropbox_admin;
-            //");
+            await context.Database.ExecuteSqlRawAsync(@"
+                GRANT USAGE, CREATE ON SCHEMA util TO sqldropbox_admin;
+                GRANT USAGE ON LANGUAGE plpgsql TO sqldropbox_admin;
+                GRANT SELECT ON ALL TABLES IN SCHEMA util TO sqldropbox_admin;
+                GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA util TO sqldropbox_admin;
+                GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA util TO sqldropbox_admin;
+            ");
 
-            ///* ANIMALS SCHEMA + TABLE */
-            //await context.Database.ExecuteSqlRawAsync(@"
-            //    CREATE SCHEMA IF NOT EXISTS animals;
+            /* ANIMALS SCHEMA + TABLE */
+            await context.Database.ExecuteSqlRawAsync(@"
+                CREATE SCHEMA IF NOT EXISTS animals;
 
-            //    CREATE TABLE IF NOT EXISTS animals.mammals (
-            //        id SERIAL PRIMARY KEY,
-            //        name TEXT NOT NULL,
-            //        habitat TEXT NOT NULL
-            //    );
-            //");
+                CREATE TABLE IF NOT EXISTS animals.mammals (
+                    id SERIAL PRIMARY KEY,
+                    name TEXT NOT NULL,
+                    habitat TEXT NOT NULL
+                );
+            ");
 
-            //await context.Database.ExecuteSqlRawAsync(@"
-            //    INSERT INTO animals.mammals (name, habitat) VALUES
-            //    ('Elephant', 'Savannah'),
-            //    ('Tiger', 'Jungle'),
-            //    ('Polar Bear', 'Arctic'),
-            //    ('Dolphin', 'Ocean'),
-            //    ('Bat', 'Caves'),
-            //    ('Kangaroo', 'Grasslands');
-            //");
+            await context.Database.ExecuteSqlRawAsync(@"
+                INSERT INTO animals.mammals (name, habitat) VALUES
+                ('Elephant', 'Savannah'),
+                ('Tiger', 'Jungle'),
+                ('Polar Bear', 'Arctic'),
+                ('Dolphin', 'Ocean'),
+                ('Bat', 'Caves'),
+                ('Kangaroo', 'Grasslands');
+            ");
 
             /* ADMINS */
             var admin = new User
