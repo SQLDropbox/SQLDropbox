@@ -81,6 +81,11 @@
         "questions": "Vragen",
         "edit": "Bewerken"
     },
+    "ExerciseCard": {
+        "noQuestion": "Geen vraag ingevuld.",
+        "edit": "Bewerk oefening",
+        "hintPrefix": "Hint"
+    },
     "AdminCourseDetailsHeader": {
         "backToCourses": "Terug naar cursussen",
         "lecturer": "Lector",

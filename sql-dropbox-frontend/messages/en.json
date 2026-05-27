@@ -81,6 +81,11 @@
         "questions": "Questions",
         "edit": "Edit"
     },
+    "ExerciseCard": {
+        "noQuestion": "No question provided.",
+        "edit": "Edit exercise",
+        "hintPrefix": "Hint"
+    },
     "AdminCourseDetailsHeader": {
         "backToCourses": "Back to courses",
         "lecturer": "Lecturer",
