@@ -92,6 +92,7 @@ public class CourseController(AppDbContext db) : BaseController
             lecturers = course.Lecturers.Select(l => new 
             { 
                 l.UserId, 
+                l.UserCode,
                 l.FirstName, 
                 l.LastName 
             }),
@@ -334,5 +335,31 @@ public class CourseController(AppDbContext db) : BaseController
         await _db.SaveChangesAsync();
 
         return Ok(new { message = "Lecturer successfully added to the course." });
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpDelete("{courseId}/lecturers/{userId}")]
+    public async Task<IActionResult> RemoveLecturerFromCourse(string courseId, Guid userId)
+    {
+        var course = await _db.Courses
+            .Include(c => c.Lecturers)
+            .FirstOrDefaultAsync(c => c.CourseId == courseId && c.DeletedAt == null);
+
+        if (course == null)
+            return NotFound("Course not found");
+        
+        var user = await _db.Users
+            .FirstOrDefaultAsync(u => u.UserId == userId && u.DeletedAt == null);
+
+        if (user == null)
+            return NotFound("User not found");
+        
+        if (!course.Lecturers.Any(l => l.UserId == userId))
+            return BadRequest("This lecturer is not assigned to this course.");
+        
+        course.Lecturers.Remove(user);
+        await _db.SaveChangesAsync();
+
+        return Ok(new { message = "Lecturer successfully removed from the course." });
     }
 }
