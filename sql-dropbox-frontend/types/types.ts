@@ -71,6 +71,8 @@ export interface User {
     firstName: string;
     lastName: string;
     email: string;
+
+    chapters?: Chapter[];
 }
 
 export interface QueryResponse {

@@ -5,23 +5,20 @@ import { useState } from "react";
 import Header from "@/components/header";
 import { Course } from "@/types/types";
 import { useQuery } from "@tanstack/react-query";
-import { courseService } from "@/services/courseService";
-import { FaSearch, FaUserPlus, FaUpload, FaArrowLeft } from "react-icons/fa";
 import AddStudentModal from "@/components/student/addStudentModal";
 import ImportStudentsModal from "@/components/student/importStudentsModal";
 import AdminCourseNav from "@/components/admin/course/adminCourseNav";
+import { userService } from "@/services/userService";
+import StudentTable from "@/components/admin/student/studentTable";
+import Loading from "@/components/loading";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
-
-interface StudentImport {
-    userCode: string;
-    firstName: string;
-    lastName: string;
-}
+import { FaArrowLeft } from "react-icons/fa6";
 
 export default function Page() {
     const params = useParams();
-    const [search, setSearch] = useState("");
     const [modalTab, setModalTab] = useState<"upload" | "manual" | null>(null);
+    const t = useTranslations("Course");
 
     const courseId = (params.courseId as string) ?? undefined;
 
@@ -31,111 +28,39 @@ export default function Page() {
         refetch,
     } = useQuery<Course>({
         queryKey: ["course", courseId],
-        queryFn: () => courseService.getCourseByCourseId(courseId),
+        queryFn: () => userService.getStudents(courseId),
         enabled: !!courseId,
         retry: false,
     });
 
-    const filteredStudents = course?.students?.filter(
-        (student) =>
-            `${student.firstName} ${student.lastName}`
-                .toLowerCase()
-                .includes(search.toLowerCase()) ||
-            student.userCode.toLowerCase().includes(search.toLowerCase()),
-    );
-
     if (isLoading) {
-        return (
-            <div className="min-h-screen flex flex-col">
-                <Header />
-                <div className="flex-1 flex flex-col items-center justify-center gap-3">
-                    <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-300 border-t-blue-600" />
-                    <p className="text-sm text-gray-600">Loading...</p>
-                </div>
-            </div>
-        );
+        return <Loading />;
     }
 
     return (
-        <div>
+        <div className="min-h-screen flex flex-col">
             <Header />
-            <div className="max-w-350 mx-auto p-6">
-                <Link
-                    href="/admin"
-                    className="flex items-center text-blue-500 hover:text-blue-700 gap-1"
-                >
-                    <FaArrowLeft />
-                    Back to courses
-                </Link>
 
-                <AdminCourseNav course={course!} />
-
-                <div className="mt-8 flex flex-col gap-6">
-                    <div className="flex justify-between">
-                        <div className="relative w-full max-w-80">
-                            <input
-                                type="text"
-                                placeholder="search ..."
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                className="w-full bg-white pl-3 pr-8 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
-                            <FaSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                            <button
-                                className="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-50 transition-colors flex items-center gap-2"
-                                onClick={() => setModalTab("manual")}
-                            >
-                                <FaUserPlus />
-                                Manual input
-                            </button>
-                            <button
-                                className="bg-black text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-800 transition-colors flex items-center gap-2"
-                                onClick={() => setModalTab("upload")}
-                            >
-                                <FaUpload />
-                                Upload file
-                            </button>
-                        </div>
-                    </div>
-
-                    <div className="bg-white rounded-lg border border-gray-200 shadow-lg">
-                        {filteredStudents && filteredStudents.length > 0 ? (
-                            <table className="w-full text-sm">
-                                <thead>
-                                    <tr className="border-b border-gray-200 text-left text-gray-500 font-medium">
-                                        <th className="px-4 py-3">
-                                            Student Code
-                                        </th>
-                                        <th className="px-4 py-3">Name</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-200">
-                                    {filteredStudents.map((student) => (
-                                        <tr
-                                            key={student.userCode}
-                                            className="hover:bg-gray-50"
-                                        >
-                                            <td className="px-4 py-3">
-                                                {student.userCode}
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                {student.firstName}{" "}
-                                                {student.lastName}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        ) : (
-                            <p className="text-sm text-gray-500 m-2 p-2">
-                                No students found.
-                            </p>
-                        )}
-                    </div>
+            {/* Below header: sidebar + content side by side, flush */}
+            <div className="flex flex-1 relative">
+                <div className="sticky top-0 h-screen overflow-y-auto">
+                    <AdminCourseNav course={course!} />
                 </div>
+
+                <main className="flex-1 flex flex-col gap-6 overflow-y-auto p-8 md:p-12 max-w-7xl mx-auto">
+                    <Link
+                        href="/admin"
+                        className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-muted hover:text-ink"
+                    >
+                        ← {t("backToCourses")}
+                    </Link>
+
+                    <StudentTable
+                        course={course!}
+                        onAddManual={() => setModalTab("manual")}
+                        onUpload={() => setModalTab("upload")}
+                    />
+                </main>
             </div>
 
             {modalTab === "manual" && (

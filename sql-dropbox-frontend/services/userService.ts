@@ -39,8 +39,15 @@ const importStudents = async (courseId: string, students: User[]) => {
     );
 };
 
+const getStudents = async (courseId: string) => {
+    return api.privateFetch(`/User/students/${courseId}`, {
+        method: "GET",
+    });
+};
+
 export const userService = {
     addStudent,
     previewImportStudents,
     importStudents,
+    getStudents,
 };
