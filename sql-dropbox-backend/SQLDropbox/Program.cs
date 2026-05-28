@@ -30,7 +30,6 @@ builder.Services.AddCors(options =>
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<PasswordService>();
 builder.Services.AddScoped<SolutionService>();
-builder.Services.AddScoped<RandomExerciseSelectorService>();
 builder.Services.AddScoped<SchemaService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<SchemaService>();
