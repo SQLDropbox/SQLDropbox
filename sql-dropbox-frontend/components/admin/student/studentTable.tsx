@@ -4,6 +4,9 @@ import { Course } from "@/types/types";
 import StudentTableLegend from "./studentTableLegend";
 import StudentTableHead from "./studentTableHead";
 import StudentTableRow from "./studentTableRow";
+import { useState } from "react";
+import { FaUpload, FaUserPlus } from "react-icons/fa6";
+import { FaSearch } from "react-icons/fa";
 
 const TAPE_CORNERS = [
     "top-2 -left-4 -rotate-45",
@@ -12,11 +15,27 @@ const TAPE_CORNERS = [
     "bottom-2 -right-4 -rotate-45",
 ] as const;
 
-export default function StudentTable({ course }: { course: Course }) {
+type Props = {
+    course: Course;
+    onAddManual: () => void;
+    onUpload: () => void;
+};
+
+export default function StudentTable({ course, onAddManual, onUpload }: Props) {
+    const [search, setSearch] = useState("");
+
     const colCount = (course.chapters?.length ?? 0) + 2;
 
+    const filteredStudents = (course.students ?? []).filter(
+        (s) =>
+            `${s.firstName} ${s.lastName}`
+                .toLowerCase()
+                .includes(search.toLowerCase()) ||
+            s.userCode.toLowerCase().includes(search.toLowerCase()),
+    );
+
     return (
-        <div className="relative bg-paper bg-ruled border-2 border-border p-10">
+        <div className="max-w-7xl relative bg-paper bg-ruled border-2 border-border p-10">
             {/* Tape corners */}
             {TAPE_CORNERS.map((cls, i) => (
                 <div
@@ -26,14 +45,69 @@ export default function StudentTable({ course }: { course: Course }) {
             ))}
 
             {/* Header */}
-            <div className="mb-8 pb-4 relative z-10 border-b-2 border-accent">
-                <h1 className="font-display text-[1.75rem] font-bold text-accent uppercase tracking-tighter -rotate-1 inline-block mb-1">
-                    MASTER STUDENT LEDGER
-                </h1>
-                <p className="font-mono text-[11px] uppercase tracking-widest text-muted mt-1">
-                    VOL. {String(course.courseId ?? "—").toUpperCase()} —{" "}
-                    PROGRESS TRACKING SHEET
-                </p>
+            <div className="mb-8 pb-4 relative z-10 border-b-2 border-accent flex items-end justify-between gap-4 flex-wrap">
+                {/* Title block */}
+                <div>
+                    <h1 className="font-display text-[1.75rem] font-bold text-accent uppercase tracking-tighter -rotate-1 inline-block mb-1">
+                        MASTER STUDENT LEDGER
+                    </h1>
+                    <p className="font-mono text-[11px] uppercase tracking-widest text-muted mt-1">
+                        VOL. {String(course.courseId ?? "—").toUpperCase()} —{" "}
+                        PROGRESS TRACKING SHEET
+                    </p>
+                </div>
+
+                {/* Toolbar */}
+                <div className="flex items-center gap-2 mb-1">
+                    {/* Search */}
+                    <div className="relative">
+                        <input
+                            type="text"
+                            placeholder="SEARCH PERSONNEL..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className="
+                                bg-paper border border-border
+                                pl-3 pr-8 py-1.5
+                                font-mono text-[11px] tracking-wider text-ink
+                                placeholder:text-border
+                                focus:outline-none focus:border-accent
+                                w-52
+                            "
+                        />
+                        <FaSearch className="absolute right-2.5 top-1/2 -translate-y-1/2 text-border text-[10px]" />
+                    </div>
+
+                    {/* Manual add */}
+                    <button
+                        onClick={onAddManual}
+                        className="
+                            flex items-center gap-1.5
+                            border border-border px-3 py-1.5
+                            font-mono text-[11px] uppercase tracking-wider text-muted
+                            hover:border-ink hover:text-ink hover:bg-surface-1
+                            transition-colors
+                        "
+                    >
+                        <FaUserPlus className="text-[10px]" />
+                        Manual
+                    </button>
+
+                    {/* Upload */}
+                    <button
+                        onClick={onUpload}
+                        className="
+                            flex items-center gap-1.5
+                            border-2 border-accent px-3 py-1.5
+                            font-mono text-[11px] uppercase tracking-wider text-accent
+                            hover:bg-accent hover:text-paper
+                            transition-colors
+                        "
+                    >
+                        <FaUpload className="text-[10px]" />
+                        Upload
+                    </button>
+                </div>
             </div>
 
             {/* Table */}
@@ -45,8 +119,8 @@ export default function StudentTable({ course }: { course: Course }) {
             >
                 <StudentTableHead course={course} />
                 <tbody>
-                    {course?.students?.length ?? 0 > 0 ? (
-                        course?.students?.map((student, rowIndex) => {
+                    {filteredStudents.length > 0 ? (
+                        filteredStudents.map((student, rowIndex) => {
                             return (
                                 <StudentTableRow
                                     key={student.userCode}
