@@ -18,7 +18,7 @@ export default function ProgressIcon({
     }
 
     if (completed < total) {
-        return <FaMedal className={`text-xl text-muted ${className}`} />;
+        return <FaMedal className={`text-xl text-gray-500 ${className}`} />;
     }
 
     return <FaMedal className={`text-xl text-yellow-500 ${className}`} />;

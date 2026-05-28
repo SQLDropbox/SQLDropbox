@@ -5,12 +5,13 @@ import { useState } from "react";
 import Header from "@/components/header";
 import { Course } from "@/types/types";
 import { useQuery } from "@tanstack/react-query";
-import { courseService } from "@/services/courseService";
 import { FaSearch, FaUserPlus, FaUpload, FaArrowLeft } from "react-icons/fa";
 import AddStudentModal from "@/components/student/addStudentModal";
 import ImportStudentsModal from "@/components/student/importStudentsModal";
 import AdminCourseNav from "@/components/admin/course/adminCourseNav";
 import Link from "next/link";
+import { userService } from "@/services/userService";
+import StudentTable from "@/components/admin/student/studentTable";
 
 interface StudentImport {
     userCode: string;
@@ -31,7 +32,7 @@ export default function Page() {
         refetch,
     } = useQuery<Course>({
         queryKey: ["course", courseId],
-        queryFn: () => courseService.getCourseByCourseId(courseId),
+        queryFn: () => userService.getStudents(courseId),
         enabled: !!courseId,
         retry: false,
     });
@@ -101,40 +102,7 @@ export default function Page() {
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-lg border border-gray-200 shadow-lg">
-                        {filteredStudents && filteredStudents.length > 0 ? (
-                            <table className="w-full text-sm">
-                                <thead>
-                                    <tr className="border-b border-gray-200 text-left text-gray-500 font-medium">
-                                        <th className="px-4 py-3">
-                                            Student Code
-                                        </th>
-                                        <th className="px-4 py-3">Name</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-200">
-                                    {filteredStudents.map((student) => (
-                                        <tr
-                                            key={student.userCode}
-                                            className="hover:bg-gray-50"
-                                        >
-                                            <td className="px-4 py-3">
-                                                {student.userCode}
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                {student.firstName}{" "}
-                                                {student.lastName}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        ) : (
-                            <p className="text-sm text-gray-500 m-2 p-2">
-                                No students found.
-                            </p>
-                        )}
-                    </div>
+                    <StudentTable course={course!} />
                 </div>
             </div>
 
