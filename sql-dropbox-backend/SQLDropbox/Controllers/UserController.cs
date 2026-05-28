@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SQLDropbox.Data;
 using SQLDropbox.DTO;
+using SQLDropbox.Enums;
 using SQLDropbox.Models;
 using SQLDropbox.Services;
 
@@ -197,8 +198,23 @@ namespace SQLDropbox.Controllers
                 students
             });
         }
+        [Authorize(Roles = "Admin")]
+        [HttpGet("lecturers")]
+        public async Task<IActionResult> GetAllLecturers()
+        {
+            var lecturers = await _db.Users
+                .Where(u => u.Role == Role.Lecturer && u.DeletedAt == null)
+                .Select(u => new 
+                { 
+                    u.UserId, 
+                    u.UserCode, 
+                    u.FirstName, 
+                    u.LastName 
+                })
+                .ToListAsync();
 
-
+            return Ok(lecturers);
+        }
 
 
     }
