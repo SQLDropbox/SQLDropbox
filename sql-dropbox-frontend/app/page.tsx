@@ -33,7 +33,7 @@ export default function Page() {
     }
 
     return (
-        <div className="bg-paper text-ink min-h-screen flex flex-col">
+        <div className="min-h-screen flex flex-col">
             <Header />
 
             <main className="grow max-w-7xl mx-auto w-full px-6 py-12 relative">
