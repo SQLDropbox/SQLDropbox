@@ -244,7 +244,6 @@ public class ChapterController(AppDbContext db, IConfiguration config) : BaseCon
                 .Where(c => c.DeletedAt == null && c.ChapterId == chapterId)
                 .Include(c => c.Exercises.Where(e => e.DeletedAt == null))
                     .ThenInclude(e => e.Requirements.Where(r => r.DeletedAt == null))
-                    .OrderBy(e => e.ExerciseId)
                 .FirstOrDefaultAsync();
 
             if (chapter == null)
