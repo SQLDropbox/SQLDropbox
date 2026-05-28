@@ -69,7 +69,7 @@ export default function CourseCard({
                     -translate-x-1/2 -rotate-2
                     w-20 h-6
                     bg-white/40
-                    border border-black/10
+                    border border-border/20
                     shadow-[0_1px_2px_rgba(0,0,0,0.05)]
                     z-10
                 `}

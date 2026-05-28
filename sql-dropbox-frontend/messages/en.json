@@ -121,11 +121,10 @@
             "description": "Are you sure you want to delete this exercise? All related solutions will be removed."
         }
     },
-    "AdminCourseDetailsHeader": {
-        "backToCourses": "Back to courses",
-        "lecturer": "Lecturer",
+    "AdminCourseNav": {
         "chapters": "Chapters",
-        "students": "Students"
+        "students": "Students",
+        "lecturers": "Lecturers"
     },
     "DuplicateCourseModal": {
         "title": "Duplicate Course",

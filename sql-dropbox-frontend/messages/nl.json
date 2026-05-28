@@ -121,11 +121,10 @@
             "description": "Weet je zeker dat je deze oefening wilt verwijderen? Alle gekoppelde oplossingen worden verwijderd."
         }
     },
-    "AdminCourseDetailsHeader": {
-        "backToCourses": "Terug naar cursussen",
-        "lecturer": "Lector",
+    "AdminCourseNav": {
         "chapters": "Hoofdstukken",
-        "students": "Studenten"
+        "students": "Studenten",
+        "lecturers": "Lectoren"
     },
     "DuplicateCourseModal": {
         "title": "Cursus dupliceren",

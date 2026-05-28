@@ -20,6 +20,11 @@ namespace SQLDropbox.Repositories
             await context.Chapters.ExecuteDeleteAsync();
             await context.Courses.ExecuteDeleteAsync();
             await context.Users.ExecuteDeleteAsync();
+
+            await context.Database.ExecuteSqlRawAsync(@"
+                DROP TABLE IF EXISTS animals.mammals;
+                DROP TABLE IF EXISTS animals.food;
+            ");
         }
 
         public static async Task SeedAsyncDev(AppDbContext context, PasswordService ps)
@@ -104,21 +109,47 @@ namespace SQLDropbox.Repositories
             await context.Database.ExecuteSqlRawAsync(@"
                  CREATE SCHEMA IF NOT EXISTS animals;
 
-                 CREATE TABLE IF NOT EXISTS animals.mammals (
+                CREATE TABLE IF NOT EXISTS animals.food (
                      id SERIAL PRIMARY KEY,
-                     name TEXT NOT NULL,
-                     habitat TEXT NOT NULL
+                     name TEXT NOT NULL                 
+                 );
+
+                 CREATE TABLE IF NOT EXISTS animals.mammals (
+                    id SERIAL PRIMARY KEY,
+                    name TEXT NOT NULL,
+                    habitat TEXT NOT NULL,
+
+                    food_id INT NOT NULL,
+
+                    CONSTRAINT fk_mammal_food
+                    FOREIGN KEY (food_id)
+                    REFERENCES animals.food(id)
+                    ON DELETE RESTRICT
                  );
              ");
 
             await context.Database.ExecuteSqlRawAsync(@"
-                 INSERT INTO animals.mammals (name, habitat) VALUES
-                 ('Elephant', 'Savannah'),
-                 ('Tiger', 'Jungle'),
-                 ('Polar Bear', 'Arctic'),
-                 ('Dolphin', 'Ocean'),
-                 ('Bat', 'Caves'),
-                 ('Kangaroo', 'Grasslands');
+                 INSERT INTO animals.food (name) VALUES
+                 ('Nuts'),
+                 ('Meat'),
+                 ('Fish'),
+                 ('Plants');
+
+                 INSERT INTO animals.mammals (name, habitat, food_id) VALUES
+                 ('Elephant', 'Savannah', 1),
+                 ('Lion', 'Savannah', 2),
+                 ('Zebra', 'Savannah', 4),
+                 ('Tiger', 'Jungle', 2),
+                 ('Orangutan', 'Jungle', 4),
+                 ('Jaguar', 'Jungle', 2),
+                 ('Polar Bear', 'Arctic', 3),
+                 ('Artic Fox', 'Arctic', 2),
+                 ('Blue Whale', 'Arctic', 3),
+                 ('Dolphin', 'Ocean', 3),
+                 ('Bat', 'Caves', 4),
+                 ('Cave Bear', 'Caves', 2),
+                 ('Kangaroo', 'Grasslands', 4),
+                 ('Squirrel', 'Woods', 1);                
              ");
 
             /* ADMINS */
@@ -174,11 +205,11 @@ namespace SQLDropbox.Repositories
             /* CHAPTERS */
             var chapter1 = new Chapter
             {
-                ChapterNameNL = "JOINS Gevorderd",
-                ChapterNameEN = "JOINS Advanced",
-                ChapterDescriptionNL = "Leer werken met verschillende soorten JOINS.",
-                ChapterDescriptionEN = "Learn to use different types of JOINS.",
-                AmountOfExercises = 10,
+                ChapterNameNL = "SELECT",
+                ChapterNameEN = "SELECT",
+                ChapterDescriptionNL = "Leer werken met SELECT.",
+                ChapterDescriptionEN = "Learn to use SELECT.",
+                AmountOfExercises = 3,
                 Order = 1,
                 Deadline = DateTime.UtcNow.AddDays(7),
                 Course = course1,
@@ -215,73 +246,57 @@ namespace SQLDropbox.Repositories
             /* EXERCISES */
             var exercise1 = new Exercise
             {
-                QuestionNL = "Toon alle dieren en hun lengte.",
-                QuestionEN = "Show all animals and their size.",
-                HintNL = "Gebruik een JOIN.",
-                HintEN = "Use a JOIN.",
-                QueryOutput = "This would be the query output",
+                QuestionNL = "Toon alle dieren wiens habitat \"Jungle\" is.",
+                QuestionEN = "Show all animals whose habitat is \"Jungle\".",
+                QueryOutput = "id,name,habitat,food_id\r\n4,Tiger,Jungle,2\r\n5,Orangutan,Jungle,4\r\n6,Jaguar,Jungle,2\r\n",
                 Chapter = chapter1,
                 CreatedAt = DateTime.UtcNow,
             };
             var exercise2 = new Exercise
             {
-                QuestionNL = "Toon alle dieren en hun snelheid.",
-                QuestionEN = "Show all animals and their speed.",
-                HintNL = "Gebruik een JOIN.",
-                HintEN = "Use a JOIN.",
-                QueryOutput = "This would be the query output",
+                QuestionNL = "Toon alle dieren die \"Nuts\" eten.",
+                QuestionEN = "Show all animals who eat \"Nuts\".",
+                QueryOutput = "id,name,habitat,food_id,id,name\r\n1,Elephant,Savannah,1,1,Nuts\r\n14,Squirrel,Woods,1,1,Nuts\r\n",
                 Chapter = chapter1,
                 CreatedAt = DateTime.UtcNow,
             };
             var exercise3 = new Exercise
             {
-                QuestionNL = "Toon alle dieren en hun gewicht.",
-                QuestionEN = "Show all animals and their weight.",
-                HintNL = "Gebruik een JOIN.",
-                HintEN = "Use a JOIN.",
-                QueryOutput = "This would be the query output",
+                QuestionNL = "Toon een dier dat in de \"Savannah\" leeft en de letter \"e\" heeft.",
+                QuestionEN = "Show an animal that lives in the \"Savannah\" and contains the letter \"e\".",
+                HintNL = "Gebruik een wildcard.",
+                HintEN = "Use a wildcard.",
+                QueryOutput = "id,name,habitat,food_id\r\n1,Elephant,Savannah,1\r\n3,Zebra,Savannah,4\r\n",
                 Chapter = chapter1,
                 CreatedAt = DateTime.UtcNow,
             };
             var exercise4 = new Exercise
             {
-                QuestionNL = "Toon alle dieren en hun haar.",
-                QuestionEN = "Show all animals and their hair.",
+                QuestionNL = "Toon alle dieren die in de \"Arctic\" leven en \"Fish\" eten.",
+                QuestionEN = "Show all animals that live in the \"Arctic\" and eat \"Fish\".",
                 HintNL = "Gebruik een JOIN.",
                 HintEN = "Use a JOIN.",
-                QueryOutput = "This would be the query output",
-                Chapter = chapter2,
+                QueryOutput = "id,name,habitat,food_id,id,name\r\n7,Polar Bear,Arctic,3,3,Fish\r\n9,Blue Whale,Arctic,3,3,Fish\r\n",
+                Chapter = chapter1,
                 CreatedAt = DateTime.UtcNow,
             };
             var exercise5 = new Exercise
             {
-                QuestionNL = "Toon alle dieren en hun kleur.",
-                QuestionEN = "Show all animals and their speed.",
+                QuestionNL = "Toon alle dieren wiens \"food\" de letter \"a\" bevat.",
+                QuestionEN = "Show all animals whose \"food\" contains the letter \"a\".",
                 HintNL = "Gebruik een JOIN.",
                 HintEN = "Use a JOIN.",
-                QueryOutput = "This would be the query output",
-                Chapter = chapter2,
-                CreatedAt = DateTime.UtcNow,
-            };
-            var exercise6 = new Exercise
-            {
-                QuestionNL = "Toon alle dieren en hun baby.",
-                QuestionEN = "Show all animals and their weight.",
-                HintNL = "Gebruik een JOIN.",
-                HintEN = "Use a JOIN.",
-                QueryOutput = "This would be the query output",
-                Chapter = chapter3,
+                QueryOutput = "id,name,habitat,food_id,id,name\r\n2,Lion,Savannah,2,2,Meat\r\n3,Zebra,Savannah,4,4,Plants\r\n4,Tiger,Jungle,2,2,Meat\r\n5,Orangutan,Jungle,4,4,Plants\r\n6,Jaguar,Jungle,2,2,Meat\r\n8,Artic Fox,Arctic,2,2,Meat\r\n11,Bat,Caves,4,4,Plants\r\n12,Cave Bear,Caves,2,2,Meat\r\n13,Kangaroo,Grasslands,4,4,Plants\r\n",
+                Chapter = chapter1,
                 CreatedAt = DateTime.UtcNow,
             };
 
             /* SOLUTIONS */
-            const string joinQuery = "SELECT * FROM animal INNER JOIN animal_specs ON animal.id = animel_specs.animal_id";
-            var solution1 = new Solution { Query = joinQuery, QueryHash = 3129876543, Exercise = exercise1, CreatedAt = DateTime.UtcNow };
-            var solution2 = new Solution { Query = joinQuery, QueryHash = 3129876543, Exercise = exercise2, CreatedAt = DateTime.UtcNow };
-            var solution3 = new Solution { Query = joinQuery, QueryHash = 3129876543, Exercise = exercise3, CreatedAt = DateTime.UtcNow };
-            var solution4 = new Solution { Query = joinQuery, QueryHash = 3129876543, Exercise = exercise4, CreatedAt = DateTime.UtcNow };
-            var solution5 = new Solution { Query = joinQuery, QueryHash = 3129876543, Exercise = exercise5, CreatedAt = DateTime.UtcNow };
-            var solution6 = new Solution { Query = joinQuery, QueryHash = 3129876543, Exercise = exercise6, CreatedAt = DateTime.UtcNow };
+            var solution1 = new Solution { Query = "SELECT * FROM mammals AS m WHERE m.habitat = 'Jungle'", QueryHash = 3684803095, Exercise = exercise1, CreatedAt = DateTime.UtcNow };
+            var solution2 = new Solution { Query = "SELECT * FROM mammals AS m JOIN food AS f ON m.food_id = f.id WHERE f.name = 'Nuts'", QueryHash = 2227733060, Exercise = exercise2, CreatedAt = DateTime.UtcNow };
+            var solution3 = new Solution { Query = "SELECT * FROM mammals AS m WHERE m.habitat = 'Savannah' AND m.name LIKE '%e%'", QueryHash = 2303149545, Exercise = exercise3, CreatedAt = DateTime.UtcNow };
+            var solution4 = new Solution { Query = "SELECT * FROM mammals AS m JOIN food AS f ON m.food_id = f.id WHERE m.habitat = 'Arctic' AND f.name = 'Fish'", QueryHash = 1677832380, Exercise = exercise4, CreatedAt = DateTime.UtcNow };
+            var solution5 = new Solution { Query = "SELECT * FROM mammals AS m JOIN food AS f ON m.food_id = f.id WHERE f.name LIKE '%a%'", QueryHash = 1059124326, Exercise = exercise5, CreatedAt = DateTime.UtcNow };
 
             /* LECTURERS */
             var lecturer1 = new User
@@ -345,21 +360,36 @@ namespace SQLDropbox.Repositories
                 User = student1,
                 CreatedAt = DateTime.UtcNow,
             };
+            var studentExercise3 = new UserExercise
+            {
+                IsCompleted = false,
+                Exercise = exercise3,
+                User = student1,
+                CreatedAt = DateTime.UtcNow,
+            };
 
             /* STUDENT SOLUTIONS */
             var studentSolution1 = new UserSolution
             {
-                Query = "SELECT * FROM animal",
+                Query = "SELECT * FROM mammals AS m WHERE m.habitat = 'Jungle'",
                 IsCorrect = true,
                 UserExercise = studentExercise1,
                 CreatedAt = DateTime.UtcNow,
             };
             var studentSolution2 = new UserSolution
             {
-                Query = "SELECT * FROM animals",
+                Query = "SELECT * FROM mammals",
                 IsCorrect = false,
-                ErrorMessage = "Table name does not exist. Did you mean \"animal\"?",
+                ErrorMessage = "Need to use a JOIN, query doesn't contain \"Nuts\"",
                 UserExercise = studentExercise2,
+                CreatedAt = DateTime.UtcNow,
+            };
+            var studentSolution3 = new UserSolution
+            {
+                Query = "SELECT * FROM mammals",
+                IsCorrect = false,
+                ErrorMessage = "Query doesn't contain \"Savannah\" or \"e\"",
+                UserExercise = studentExercise3,
                 CreatedAt = DateTime.UtcNow,
             };
 
@@ -367,13 +397,13 @@ namespace SQLDropbox.Repositories
             context.Courses.AddRange(course1, course2);
             context.Schemas.AddRange(schema1, schema2);
             context.Chapters.AddRange(chapter1, chapter2, chapter3);
-            context.Exercises.AddRange(exercise1, exercise2, exercise3, exercise4, exercise5, exercise6);
-            context.Solutions.AddRange(solution1, solution2, solution3, solution4, solution5, solution6);
+            context.Exercises.AddRange(exercise1, exercise2, exercise3, exercise4, exercise5);
+            context.Solutions.AddRange(solution1, solution2, solution3, solution4, solution5);
             context.Users.Add(admin);
             context.Users.AddRange(lecturer1, lecturer2);
             context.Users.AddRange(student1, student2);
-            context.UserExercises.AddRange(studentExercise1, studentExercise2);
-            context.UserSolutions.AddRange(studentSolution1, studentSolution2);
+            context.UserExercises.AddRange(studentExercise1, studentExercise2, studentExercise3);
+            context.UserSolutions.AddRange(studentSolution1, studentSolution2, studentSolution3);
 
             await context.SaveChangesAsync();
         }
@@ -518,24 +548,50 @@ namespace SQLDropbox.Repositories
 
             /* ANIMALS SCHEMA + TABLE */
             await context.Database.ExecuteSqlRawAsync(@"
-                CREATE SCHEMA IF NOT EXISTS animals;
+                 CREATE SCHEMA IF NOT EXISTS animals;
 
-                CREATE TABLE IF NOT EXISTS animals.mammals (
+                CREATE TABLE IF NOT EXISTS animals.food (
+                     id SERIAL PRIMARY KEY,
+                     name TEXT NOT NULL                 
+                 );
+
+                 CREATE TABLE IF NOT EXISTS animals.mammals (
                     id SERIAL PRIMARY KEY,
                     name TEXT NOT NULL,
-                    habitat TEXT NOT NULL
-                );
-            ");
+                    habitat TEXT NOT NULL,
+
+                    food_id INT NOT NULL,
+
+                    CONSTRAINT fk_mammal_food
+                    FOREIGN KEY (food_id)
+                    REFERENCES animals.food(id)
+                    ON DELETE RESTRICT
+                 );
+             ");
 
             await context.Database.ExecuteSqlRawAsync(@"
-                INSERT INTO animals.mammals (name, habitat) VALUES
-                ('Elephant', 'Savannah'),
-                ('Tiger', 'Jungle'),
-                ('Polar Bear', 'Arctic'),
-                ('Dolphin', 'Ocean'),
-                ('Bat', 'Caves'),
-                ('Kangaroo', 'Grasslands');
-            ");
+                 INSERT INTO animals.food (name) VALUES
+                 ('Nuts'),
+                 ('Meat'),
+                 ('Fish'),
+                 ('Plants');
+
+                 INSERT INTO animals.mammals (name, habitat, food_id) VALUES
+                 ('Elephant', 'Savannah', 1),
+                 ('Lion', 'Savannah', 2),
+                 ('Zebra', 'Savannah', 4),
+                 ('Tiger', 'Jungle', 2),
+                 ('Orangutan', 'Jungle', 4),
+                 ('Jaguar', 'Jungle', 2),
+                 ('Polar Bear', 'Arctic', 3),
+                 ('Artic Fox', 'Arctic', 2),
+                 ('Blue Whale', 'Arctic', 3),
+                 ('Dolphin', 'Ocean', 3),
+                 ('Bat', 'Caves', 4),
+                 ('Cave Bear', 'Caves', 2),
+                 ('Kangaroo', 'Grasslands', 4),
+                 ('Squirrel', 'Woods', 1);                
+             ");
 
             /* ADMINS */
             var admin = new User
@@ -631,73 +687,57 @@ namespace SQLDropbox.Repositories
             /* EXERCISES */
             var exercise1 = new Exercise
             {
-                QuestionNL = "Toon alle dieren en hun lengte.",
-                QuestionEN = "Show all animals and their size.",
-                HintNL = "Gebruik een JOIN.",
-                HintEN = "Use a JOIN.",
-                QueryOutput = "This would be the query output",
+                QuestionNL = "Toon alle dieren wiens habitat \"Jungle\" is.",
+                QuestionEN = "Show all animals whose habitat is \"Jungle\".",
+                QueryOutput = "id,name,habitat,food_id\r\n4,Tiger,Jungle,2\r\n5,Orangutan,Jungle,4\r\n6,Jaguar,Jungle,2\r\n",
                 Chapter = chapter1,
                 CreatedAt = DateTime.UtcNow,
             };
             var exercise2 = new Exercise
             {
-                QuestionNL = "Toon alle dieren en hun snelheid.",
-                QuestionEN = "Show all animals and their speed.",
-                HintNL = "Gebruik een JOIN.",
-                HintEN = "Use a JOIN.",
-                QueryOutput = "This would be the query output",
+                QuestionNL = "Toon alle dieren die \"Nuts\" eten.",
+                QuestionEN = "Show all animals who eat \"Nuts\".",
+                QueryOutput = "id,name,habitat,food_id,id,name\r\n1,Elephant,Savannah,1,1,Nuts\r\n14,Squirrel,Woods,1,1,Nuts\r\n",
                 Chapter = chapter1,
                 CreatedAt = DateTime.UtcNow,
             };
             var exercise3 = new Exercise
             {
-                QuestionNL = "Toon alle dieren en hun gewicht.",
-                QuestionEN = "Show all animals and their weight.",
-                HintNL = "Gebruik een JOIN.",
-                HintEN = "Use a JOIN.",
-                QueryOutput = "This would be the query output",
+                QuestionNL = "Toon een dier dat in de \"Savannah\" leeft en de letter \"e\" heeft.",
+                QuestionEN = "Show an animal that lives in the \"Savannah\" and contains the letter \"e\".",
+                HintNL = "Gebruik een wildcard.",
+                HintEN = "Use a wildcard.",
+                QueryOutput = "id,name,habitat,food_id\r\n1,Elephant,Savannah,1\r\n3,Zebra,Savannah,4\r\n",
                 Chapter = chapter1,
                 CreatedAt = DateTime.UtcNow,
             };
             var exercise4 = new Exercise
             {
-                QuestionNL = "Toon alle dieren en hun haar.",
-                QuestionEN = "Show all animals and their hair.",
+                QuestionNL = "Toon alle dieren die in de \"Arctic\" leven en \"Fish\" eten.",
+                QuestionEN = "Show all animals that live in the \"Arctic\" and eat \"Fish\".",
                 HintNL = "Gebruik een JOIN.",
                 HintEN = "Use a JOIN.",
-                QueryOutput = "This would be the query output",
-                Chapter = chapter2,
+                QueryOutput = "id,name,habitat,food_id,id,name\r\n7,Polar Bear,Arctic,3,3,Fish\r\n9,Blue Whale,Arctic,3,3,Fish\r\n",
+                Chapter = chapter1,
                 CreatedAt = DateTime.UtcNow,
             };
             var exercise5 = new Exercise
             {
-                QuestionNL = "Toon alle dieren en hun kleur.",
-                QuestionEN = "Show all animals and their speed.",
+                QuestionNL = "Toon alle dieren wiens \"food\" de letter \"a\" bevat.",
+                QuestionEN = "Show all animals whose \"food\" contains the letter \"a\".",
                 HintNL = "Gebruik een JOIN.",
                 HintEN = "Use a JOIN.",
-                QueryOutput = "This would be the query output",
-                Chapter = chapter2,
-                CreatedAt = DateTime.UtcNow,
-            };
-            var exercise6 = new Exercise
-            {
-                QuestionNL = "Toon alle dieren en hun baby.",
-                QuestionEN = "Show all animals and their weight.",
-                HintNL = "Gebruik een JOIN.",
-                HintEN = "Use a JOIN.",
-                QueryOutput = "This would be the query output",
-                Chapter = chapter3,
+                QueryOutput = "id,name,habitat,food_id,id,name\r\n2,Lion,Savannah,2,2,Meat\r\n3,Zebra,Savannah,4,4,Plants\r\n4,Tiger,Jungle,2,2,Meat\r\n5,Orangutan,Jungle,4,4,Plants\r\n6,Jaguar,Jungle,2,2,Meat\r\n8,Artic Fox,Arctic,2,2,Meat\r\n11,Bat,Caves,4,4,Plants\r\n12,Cave Bear,Caves,2,2,Meat\r\n13,Kangaroo,Grasslands,4,4,Plants\r\n",
+                Chapter = chapter1,
                 CreatedAt = DateTime.UtcNow,
             };
 
             /* SOLUTIONS */
-            const string joinQuery = "SELECT * FROM animal INNER JOIN animal_specs ON animal.id = animel_specs.animal_id";
-            var solution1 = new Solution { Query = joinQuery, QueryHash = 3129876543, Exercise = exercise1, CreatedAt = DateTime.UtcNow };
-            var solution2 = new Solution { Query = joinQuery, QueryHash = 3129876543, Exercise = exercise2, CreatedAt = DateTime.UtcNow };
-            var solution3 = new Solution { Query = joinQuery, QueryHash = 3129876543, Exercise = exercise3, CreatedAt = DateTime.UtcNow };
-            var solution4 = new Solution { Query = joinQuery, QueryHash = 3129876543, Exercise = exercise4, CreatedAt = DateTime.UtcNow };
-            var solution5 = new Solution { Query = joinQuery, QueryHash = 3129876543, Exercise = exercise5, CreatedAt = DateTime.UtcNow };
-            var solution6 = new Solution { Query = joinQuery, QueryHash = 3129876543, Exercise = exercise6, CreatedAt = DateTime.UtcNow };
+            var solution1 = new Solution { Query = "SELECT * FROM mammals AS m WHERE m.habitat = 'Jungle'", QueryHash = 3684803095, Exercise = exercise1, CreatedAt = DateTime.UtcNow };
+            var solution2 = new Solution { Query = "SELECT * FROM mammals AS m JOIN food AS f ON m.food_id = f.id WHERE f.name = 'Nuts'", QueryHash = 2227733060, Exercise = exercise2, CreatedAt = DateTime.UtcNow };
+            var solution3 = new Solution { Query = "SELECT * FROM mammals AS m WHERE m.habitat = 'Savannah' AND m.name LIKE '%e%'", QueryHash = 2303149545, Exercise = exercise3, CreatedAt = DateTime.UtcNow };
+            var solution4 = new Solution { Query = "SELECT * FROM mammals AS m JOIN food AS f ON m.food_id = f.id WHERE m.habitat = 'Arctic' AND f.name = 'Fish'", QueryHash = 1677832380, Exercise = exercise4, CreatedAt = DateTime.UtcNow };
+            var solution5 = new Solution { Query = "SELECT * FROM mammals AS m JOIN food AS f ON m.food_id = f.id WHERE f.name LIKE '%a%'", QueryHash = 1059124326, Exercise = exercise5, CreatedAt = DateTime.UtcNow };
 
             /* LECTURERS */
             var lecturer1 = new User
@@ -761,21 +801,36 @@ namespace SQLDropbox.Repositories
                 User = student1,
                 CreatedAt = DateTime.UtcNow,
             };
+            var studentExercise3 = new UserExercise
+            {
+                IsCompleted = false,
+                Exercise = exercise3,
+                User = student1,
+                CreatedAt = DateTime.UtcNow,
+            };
 
             /* STUDENT SOLUTIONS */
             var studentSolution1 = new UserSolution
             {
-                Query = "SELECT * FROM animal",
+                Query = "SELECT * FROM mammals AS m WHERE m.habitat = 'Jungle'",
                 IsCorrect = true,
                 UserExercise = studentExercise1,
                 CreatedAt = DateTime.UtcNow,
             };
             var studentSolution2 = new UserSolution
             {
-                Query = "SELECT * FROM animals",
+                Query = "SELECT * FROM mammals",
                 IsCorrect = false,
-                ErrorMessage = "Table name does not exist. Did you mean \"animal\"?",
+                ErrorMessage = "Need to use a JOIN, query doesn't contain \"Nuts\"",
                 UserExercise = studentExercise2,
+                CreatedAt = DateTime.UtcNow,
+            };
+            var studentSolution3 = new UserSolution
+            {
+                Query = "SELECT * FROM mammals",
+                IsCorrect = false,
+                ErrorMessage = "Query doesn't contain \"Savannah\" or \"e\"",
+                UserExercise = studentExercise3,
                 CreatedAt = DateTime.UtcNow,
             };
 
@@ -783,13 +838,13 @@ namespace SQLDropbox.Repositories
             context.Courses.AddRange(course1, course2);
             context.Schemas.AddRange(schema1, schema2);
             context.Chapters.AddRange(chapter1, chapter2, chapter3);
-            context.Exercises.AddRange(exercise1, exercise2, exercise3, exercise4, exercise5, exercise6);
-            context.Solutions.AddRange(solution1, solution2, solution3, solution4, solution5, solution6);
+            context.Exercises.AddRange(exercise1, exercise2, exercise3, exercise4, exercise5);
+            context.Solutions.AddRange(solution1, solution2, solution3, solution4, solution5);
             context.Users.Add(admin);
             context.Users.AddRange(lecturer1, lecturer2);
             context.Users.AddRange(student1, student2);
-            context.UserExercises.AddRange(studentExercise1, studentExercise2);
-            context.UserSolutions.AddRange(studentSolution1, studentSolution2);
+            context.UserExercises.AddRange(studentExercise1, studentExercise2, studentExercise3);
+            context.UserSolutions.AddRange(studentSolution1, studentSolution2, studentSolution3);
 
             await context.SaveChangesAsync();
         }
