@@ -29,7 +29,7 @@ export default function StudentTableRow({
 
     return (
         <tr
-            className={`group border-b border-border divide-x divide-border ${rowBg}`}
+            className={`group border-b border-border divide-x divide-border ${rowBg} transition-colors`}
         >
             {/* Code */}
             <td
@@ -46,7 +46,7 @@ export default function StudentTableRow({
                 {student.firstName} {student.lastName}
             </td>
 
-            {/* Chapters */}        
+            {/* Chapters */}
             {course.chapters?.map((chapter, colIndex) => {
                 const completedChapter = student.chapters?.find(
                     (c) => c.chapterId === chapter.chapterId,
@@ -56,12 +56,16 @@ export default function StudentTableRow({
                 return (
                     <td
                         key={chapter.chapterId}
-                        className={`p-2 text-center ${colStripe}`}
+                        className={colStripe}
                     >
-                        <ProgressIcon
-                            completed={completedChapter?.completedAmount ?? 0}
-                            total={chapter.amountOfExercises ?? 0}
-                        />
+                        <div className="flex justify-center items-center w-full">
+                            <ProgressIcon
+                                completed={
+                                    completedChapter?.completedAmount ?? 0
+                                }
+                                total={chapter.amountOfExercises ?? 0}
+                            />
+                        </div>
                     </td>
                 );
             })}
