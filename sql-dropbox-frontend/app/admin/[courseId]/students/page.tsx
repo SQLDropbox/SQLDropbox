@@ -42,8 +42,10 @@ export default function Page() {
             <Header />
 
             {/* Below header: sidebar + content side by side, flush */}
-            <div className="flex flex-1 relative overflow-hidden">
-                <AdminCourseNav course={course!} />
+            <div className="flex flex-1 relative">
+                <div className="sticky top-0 h-screen overflow-y-auto">
+                    <AdminCourseNav course={course!} />
+                </div>
 
                 <main className="flex-1 flex flex-col gap-6 overflow-y-auto p-8 md:p-12 max-w-7xl mx-auto">
                     <Link
