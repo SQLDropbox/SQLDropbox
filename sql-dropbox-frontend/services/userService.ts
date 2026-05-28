@@ -44,10 +44,16 @@ const getStudents = async (courseId: string) => {
         method: "GET",
     });
 };
+const getAllLecturers = async () => {
+    return api.privateFetch("/User/lecturers", {
+        method: "GET",
+    });
+};
 
 export const userService = {
     addStudent,
     previewImportStudents,
     importStudents,
     getStudents,
+    getAllLecturers,
 };
