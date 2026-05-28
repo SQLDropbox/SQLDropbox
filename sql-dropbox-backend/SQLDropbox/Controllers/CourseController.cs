@@ -313,7 +313,7 @@ public class CourseController(AppDbContext db) : BaseController
 
     [Authorize(Roles = "Admin")]
     [HttpPost("{courseId}/Lecturers")]
-    public async Task<IActionResult> AddLecturerToCourse(string courseId, [FromBody] AddLecturerDTO request)
+    public async Task<IActionResult> AddLecturerToCourse(string courseId, [FromBody] AssignLecturerDTO request)
     {
         var course = await _db.Courses
             .Include(c => c.Lecturers)
