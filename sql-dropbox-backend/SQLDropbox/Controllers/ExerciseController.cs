@@ -67,7 +67,10 @@ public class ExerciseController(AppDbContext db, SolutionService solutionService
         }
         catch (Exception ex)
         {
-            return BadRequest(ex);
+            return BadRequest(new
+            {
+                message = ex.Message
+            });
         }
     }
 
