@@ -14,7 +14,7 @@ namespace SQLDropbox.Models
         public string? CourseDescriptionNL { get; set; }
         public string? CourseDescriptionEN { get; set; }
         public bool IsActive { get; set; } = false;
-        //public string? Lecturer { get; set; }
+        public string? Lecturer { get; set; }
 
         public ICollection<Chapter> Chapters { get; set; } = [];
         [JsonIgnore]

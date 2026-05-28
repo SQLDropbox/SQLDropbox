@@ -22,7 +22,7 @@ public class CourseController(AppDbContext db) : BaseController
         var role = GetUserRole();
         if (id == null || role == null) return Unauthorized();
 
-        var query = _db.Courses.Where(x => x.DeletedAt == null).AsQueryable();
+        var query = _db.Courses.AsQueryable();
 
         switch (role)
         {
@@ -61,12 +61,11 @@ public class CourseController(AppDbContext db) : BaseController
         if (id == null || role == null) return Unauthorized();
 
         var query = _db.Courses
-            .Include(x => x.Lecturers.Where(l => l.DeletedAt == null))
-            .Include(x => x.Chapters.Where(c => c.DeletedAt == null))
-            .ThenInclude(c => c.Exercises.Where(e => e.DeletedAt == null))
-            .ThenInclude(e => e.UserExercises.Where(ue => ue.DeletedAt == null))
-            .Include(x => x.Students.Where(s => s.DeletedAt == null))
-            .Where(x => x.DeletedAt == null)
+            .Include(x => x.Lecturers)
+            .Include(x => x.Chapters)
+            .ThenInclude(c => c.Exercises)
+            .ThenInclude(e => e.UserExercises)
+            .Include(x => x.Students)
             .AsQueryable();
 
         if (role == Role.Student)
@@ -99,7 +98,6 @@ public class CourseController(AppDbContext db) : BaseController
             course.IsActive,
             totalCourseCount,
             chapters = course.Chapters
-            .Where(x => x.DeletedAt == null)
             .Select(x => new
             {
                 x.ChapterId,
@@ -147,7 +145,7 @@ public class CourseController(AppDbContext db) : BaseController
         if (course.LecturerIds != null && course.LecturerIds.Any())
         {
             var lecturers = await _db.Users
-                .Where(u => course.LecturerIds.Contains(u.UserId) && u.Role == Role.Lecturer && u.DeletedAt == null)
+                .Where(u => course.LecturerIds.Contains(u.UserId) && u.Role == Role.Lecturer)
                 .ToListAsync();
 
             newCourse.Lecturers = lecturers;
@@ -168,7 +166,7 @@ public class CourseController(AppDbContext db) : BaseController
 
         var existing = await _db.Courses
             .Include(c => c.Lecturers)
-            .FirstOrDefaultAsync(c => c.DeletedAt == null && c.CourseId == courseId);
+            .FirstOrDefaultAsync(c => c.CourseId == courseId);
 
         if (existing == null)
             return NotFound();
@@ -184,7 +182,7 @@ public class CourseController(AppDbContext db) : BaseController
         if (course.LecturerIds != null)
         {
             var newLecturers = await _db.Users
-                .Where(u => course.LecturerIds.Contains(u.UserId) && u.Role == Role.Lecturer && u.DeletedAt == null)
+                .Where(u => course.LecturerIds.Contains(u.UserId) && u.Role == Role.Lecturer)
                 .ToListAsync();
             
             existing.Lecturers.Clear();
@@ -203,7 +201,7 @@ public class CourseController(AppDbContext db) : BaseController
     [HttpDelete("{courseID}")]
     public ActionResult DeleteCourse(string courseID)
     {
-        var course = _db.Courses.FirstOrDefault(x => x.DeletedAt == null && x.CourseId == courseID);
+        var course = _db.Courses.FirstOrDefault(x => x.CourseId == courseID);
 
         if (course == null)
         {
@@ -220,12 +218,12 @@ public class CourseController(AppDbContext db) : BaseController
     public ActionResult DuplicateCourse(string courseId, [FromBody] DuplicateCourseDTO? request = null)
     {
         var existingCourse = _db.Courses
-            .Include(c => c.Lecturers.Where(l => l.DeletedAt == null))
-            .Include(c => c.Chapters.Where(ch => ch.DeletedAt == null))
+            .Include(c => c.Lecturers)
+            .Include(c => c.Chapters)
             .ThenInclude(ch => ch.Schema)
-            .Include(c => c.Chapters.Where(ch => ch.DeletedAt == null))
-            .ThenInclude(ch => ch.Exercises.Where(e => e.DeletedAt == null))
-            .FirstOrDefault(c => c.CourseId == courseId && c.DeletedAt == null);
+            .Include(c => c.Chapters)
+            .ThenInclude(ch => ch.Exercises)
+            .FirstOrDefault(c => c.CourseId == courseId);
 
         if (existingCourse == null)
             return NotFound("Original course not found");
@@ -311,12 +309,12 @@ public class CourseController(AppDbContext db) : BaseController
     {
         var course = await _db.Courses
             .Include(c => c.Lecturers)
-            .FirstOrDefaultAsync(c => c.CourseId == courseId && c.DeletedAt == null);
+            .FirstOrDefaultAsync(c => c.CourseId == courseId);
         if (course == null)
             return NotFound("Course not found");
         
         var user = await _db.Users
-            .FirstOrDefaultAsync(u => u.UserId == request.UserId && u.DeletedAt == null);
+            .FirstOrDefaultAsync(u => u.UserId == request.UserId);
         if (user == null)
             return NotFound("User not found");
         
@@ -337,13 +335,13 @@ public class CourseController(AppDbContext db) : BaseController
     {
         var course = await _db.Courses
             .Include(c => c.Lecturers)
-            .FirstOrDefaultAsync(c => c.CourseId == courseId && c.DeletedAt == null);
+            .FirstOrDefaultAsync(c => c.CourseId == courseId);
 
         if (course == null)
             return NotFound("Course not found");
         
         var user = await _db.Users
-            .FirstOrDefaultAsync(u => u.UserId == userId && u.DeletedAt == null);
+            .FirstOrDefaultAsync(u => u.UserId == userId);
 
         if (user == null)
             return NotFound("User not found");

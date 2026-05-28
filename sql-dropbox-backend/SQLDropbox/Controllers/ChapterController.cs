@@ -5,22 +5,20 @@ using SQLDropbox.Data;
 using SQLDropbox.DTO;
 using SQLDropbox.Enums;
 using SQLDropbox.Models;
-using SQLDropbox.Services;
 
 namespace SQLDropbox.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class ChapterController(AppDbContext db, IConfiguration config) : BaseController
+public class ChapterController(AppDbContext db) : BaseController
 {
     private readonly AppDbContext _db = db;
-    private readonly IConfiguration _config = config;
     private string BaseUrl => $"{Request.Scheme}://{Request.Host}";
 
     [HttpGet]
     public ActionResult GetChapters()
     {
-        var chapters = _db.Chapters.Where(x => x.DeletedAt == null)
+        var chapters = _db.Chapters
             .OrderBy(x => x.Order)
             .Select(x => new
             {
@@ -42,7 +40,7 @@ public class ChapterController(AppDbContext db, IConfiguration config) : BaseCon
     [HttpGet("{id}")]
     public async Task<ActionResult> GetChapterByChapterId(int id)
     {
-        var chapter = await _db.Chapters.Where(x => x.DeletedAt == null && x.ChapterId == id).Select(x => new
+        var chapter = await _db.Chapters.Where(x => x.ChapterId == id).Select(x => new
         {
             x.ChapterId,
             x.ChapterNameNL,
@@ -67,7 +65,7 @@ public class ChapterController(AppDbContext db, IConfiguration config) : BaseCon
     [HttpPost("course/{courseId}")]
     public async Task<ActionResult> CreateChapter(string courseId, [FromBody] ChapterDTO dto)
     {
-        var course = await _db.Courses.FirstOrDefaultAsync(x => x.DeletedAt == null && x.CourseId == courseId);
+        var course = await _db.Courses.FirstOrDefaultAsync(x => x.CourseId == courseId);
 
         if (course == null)
             return BadRequest("Course does not exist");
@@ -77,7 +75,7 @@ public class ChapterController(AppDbContext db, IConfiguration config) : BaseCon
         if (schema == null)
             return BadRequest("Schema does not exist");
 
-        var maxOrder = await _db.Chapters.Where(c => c.DeletedAt == null && c.Course.CourseId == courseId).MaxAsync(c => c.Order);
+        var maxOrder = await _db.Chapters.Where(c => c.Course.CourseId == courseId).MaxAsync(c => c.Order);
 
         int nextOrder = (maxOrder ?? -1) + 1;
 
@@ -103,7 +101,7 @@ public class ChapterController(AppDbContext db, IConfiguration config) : BaseCon
     [HttpPut("{id}")]
     public async Task<ActionResult> UpdateChapter(int id, [FromBody] UpdateChapterDTO dto)
     {
-        var chapter = await _db.Chapters.FirstOrDefaultAsync(x => x.DeletedAt == null && x.ChapterId == id);
+        var chapter = await _db.Chapters.FirstOrDefaultAsync(x => x.ChapterId == id);
 
         if (chapter == null)
         {
@@ -118,7 +116,7 @@ public class ChapterController(AppDbContext db, IConfiguration config) : BaseCon
 
         if (dto.SchemaId.HasValue)
         {
-            var schema = await _db.Schemas.FirstOrDefaultAsync(x => x.DeletedAt == null && x.SchemaId == dto.SchemaId.Value);
+            var schema = await _db.Schemas.FirstOrDefaultAsync(x => x.SchemaId == dto.SchemaId.Value);
 
             if (schema == null)
                 return BadRequest("Schema does not exist");
@@ -134,7 +132,7 @@ public class ChapterController(AppDbContext db, IConfiguration config) : BaseCon
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteChapter(int id)
     {
-        var chapter = await _db.Chapters.FirstOrDefaultAsync(x => x.DeletedAt == null && x.ChapterId == id);
+        var chapter = await _db.Chapters.FirstOrDefaultAsync(x => x.ChapterId == id);
 
         if (chapter == null)
         {
@@ -145,9 +143,7 @@ public class ChapterController(AppDbContext db, IConfiguration config) : BaseCon
         await _db.SaveChangesAsync();
         return Ok(new { message = $"Chapter with ID {id} successfully deleted." });
     }
-
-    // TODO -> finish this (Joran)
-    // TODO -> when getting exercises for chapter, when admin/lecturer, return all, if student randomly generate and return those
+    
     [Authorize]
     [HttpGet("{chapterId}/exercises")]
     public async Task<ActionResult<IEnumerable<Exercise>>> GetExercisesByChapter(int chapterId)
@@ -161,8 +157,14 @@ public class ChapterController(AppDbContext db, IConfiguration config) : BaseCon
 
             if (role == Role.Student)
             {
+                // TODO -> needed? Check if the student has access to the course this chapter is part of
+                //bool studentHasAccess = await _db.Chapters.AnyAsync(c => c.ChapterId == chapterId && c.Course.Students.Any(s => s.UserId == userId));
+
+                //if (!studentHasAccess)
+                //    return Unauthorized("You're not registerd as a student for this course.");
+
                 User? student = await _db.Users
-                    .Where(u => u.DeletedAt == null && u.UserId == userId)
+                    .Where(u => u.UserId == userId)
                     .FirstOrDefaultAsync();
 
                 if (student == null)
@@ -170,13 +172,12 @@ public class ChapterController(AppDbContext db, IConfiguration config) : BaseCon
 
                 // Get a chapter with all exercises and all their user exercises
                 Chapter? chapterForStudent = await _db.Chapters
-                  .Where(c => c.DeletedAt == null && c.ChapterId == chapterId)
+                  .Where(c => c.ChapterId == chapterId)
                   .Include(c => c.Exercises
-                      .Where(e => e.DeletedAt == null)
                       .OrderBy(e => e.ExerciseId)
                   )
                   .ThenInclude(e => e.UserExercises
-                    .Where(ue => ue.DeletedAt == null && ue.User == student)
+                    .Where(ue => ue.User == student)
                   )
                   .FirstOrDefaultAsync();
 
@@ -239,18 +240,22 @@ public class ChapterController(AppDbContext db, IConfiguration config) : BaseCon
                 // return the exercises;
                 return Ok(exercises);
             }
-            var allExercisesForAdmin = await _db.Exercises
-                .Include(e => e.Solutions.Where(s => s.DeletedAt == null))
-                .Where(e => e.Chapter.ChapterId == chapterId && e.DeletedAt == null)
-                .OrderBy(e => e.ExerciseId)
-                .ToListAsync();
 
-            return Ok(allExercisesForAdmin);
+            // TODO -> needed? Check if the lecturer has access to the course this chapter is part of
+            //if (role == Role.Lecturer)
+            //{
+            //    bool lecturerHasAccess = await _db.Chapters.AnyAsync(c => c.ChapterId == chapterId && c.Course.Lecturers.Any(l => l.UserId == userId));
+
+            //    if (!lecturerHasAccess)
+            //        return Unauthorized("You're not registerd as a lecturer for this course.");
+            //}
 
             Chapter? chapter = await _db.Chapters
-                .Where(c => c.DeletedAt == null && c.ChapterId == chapterId)
-                .Include(c => c.Exercises.Where(e => e.DeletedAt == null))
-                    .ThenInclude(e => e.Requirements.Where(r => r.DeletedAt == null))
+                .Where(c => c.ChapterId == chapterId)
+                .Include(c => c.Exercises)
+                    .ThenInclude(e => e.Requirements)                    
+                .Include(c => c.Exercises)
+                    .ThenInclude(e => e.Solutions)
                 .FirstOrDefaultAsync();
 
             if (chapter == null)
@@ -267,7 +272,7 @@ public class ChapterController(AppDbContext db, IConfiguration config) : BaseCon
     [HttpPost("course/{courseId}/reorder")]
     public async Task<ActionResult> ReorderChapter(string courseId, [FromBody] ReorderChaptersDTO dto)
     {
-        var chapters = await _db.Chapters.Where(c => c.DeletedAt == null && c.Course.CourseId == courseId).ToListAsync();
+        var chapters = await _db.Chapters.Where(c => c.Course.CourseId == courseId).ToListAsync();
 
         if (chapters.Count == 0)
         {
@@ -278,7 +283,7 @@ public class ChapterController(AppDbContext db, IConfiguration config) : BaseCon
         {
             if (int.TryParse(dto.OrderedIds[i], out int chapterId))
             {
-                var chapterToUpdate = chapters.FirstOrDefault(c => c.DeletedAt == null && c.ChapterId == chapterId);
+                var chapterToUpdate = chapters.FirstOrDefault(c => c.ChapterId == chapterId);
 
                 if (chapterToUpdate != null)
                 {

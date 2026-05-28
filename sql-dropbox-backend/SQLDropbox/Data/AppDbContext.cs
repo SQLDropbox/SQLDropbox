@@ -61,6 +61,34 @@ namespace SQLDropbox.Data
                         j.ToTable("CourseLecturers");
                     }
                 );
+
+
+            modelBuilder.Entity<Chapter>()
+                .HasQueryFilter(x => x.DeletedAt == null);
+
+            modelBuilder.Entity<Course>()
+                .HasQueryFilter(x => x.DeletedAt == null);
+
+            modelBuilder.Entity<Exercise>()
+                .HasQueryFilter(x => x.DeletedAt == null);
+
+            modelBuilder.Entity<Requirement>()
+                .HasQueryFilter(x => x.DeletedAt == null);
+
+            modelBuilder.Entity<Schema>()
+                .HasQueryFilter(x => x.DeletedAt == null);
+
+            modelBuilder.Entity<Solution>()
+                .HasQueryFilter(x => x.DeletedAt == null);
+
+            modelBuilder.Entity<User>()
+                .HasQueryFilter(x => x.DeletedAt == null);
+
+            modelBuilder.Entity<UserExercise>()
+                .HasQueryFilter(x => x.DeletedAt == null);
+
+            modelBuilder.Entity<UserSolution>()
+                .HasQueryFilter(x => x.DeletedAt == null);
         }
     }
 }

@@ -29,11 +29,11 @@ public class SolutionController(AppDbContext db, SolutionService solutionService
                 return BadRequest(ModelState);
 
             Exercise? exercise = await _db.Exercises
-                .Include(e => e.Solutions.Where(s => s.DeletedAt == null))
-                .Include(e => e.Requirements.Where(r => r.DeletedAt == null))
+                .Include(e => e.Solutions)
+                .Include(e => e.Requirements)
                 .Include(e => e.Chapter)
                 .ThenInclude(c => c.Schema)
-                .FirstOrDefaultAsync(e => e.DeletedAt == null && e.ExerciseId == dto.ExerciseId);
+                .FirstOrDefaultAsync(e => e.ExerciseId == dto.ExerciseId);
 
             if (exercise == null)
                 return BadRequest(new { message = "This exercise doesn't exist." });
@@ -54,10 +54,10 @@ public class SolutionController(AppDbContext db, SolutionService solutionService
             uint queryHash = await _soS.HashSolution(formattedQuery);
 
             //Check if solution exists based on hash
-            Solution? knownSolution = exercise.Solutions.FirstOrDefault(s => s.DeletedAt == null && s.QueryHash == queryHash);
+            Solution? knownSolution = exercise.Solutions.FirstOrDefault(s => s.QueryHash == queryHash);
 
             //Get user, since from this point solution will be added to history regardless.
-            User? user = await _db.Users.FirstOrDefaultAsync(u => u.DeletedAt == null && u.UserId == userId);
+            User? user = await _db.Users.FirstOrDefaultAsync(u => u.UserId == userId);
             if (user == null)
                 return BadRequest(new { message = "User doesn't exist" });
 

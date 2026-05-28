@@ -13,6 +13,6 @@ namespace SQLDropbox.Models
         public bool IsRevoked { get; set; }
 
         [JsonIgnore]
-        public User User { get; set; } = null!;
+        public User? User { get; set; }
     }
 }

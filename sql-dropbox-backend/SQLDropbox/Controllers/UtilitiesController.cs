@@ -93,7 +93,7 @@ public class UtilitiesController(AppDbContext db, PasswordService passwordServic
                 return BadRequest("Not a valid user id.");
 
             User? student = await _db.Users
-                    .Where(u => u.DeletedAt == null && u.UserId == userId)
+                    .Where(u => u.UserId == userId)
                     .FirstOrDefaultAsync();
 
             if (student == null)
@@ -101,13 +101,12 @@ public class UtilitiesController(AppDbContext db, PasswordService passwordServic
 
             // Get a chapter with all exercises and all their user exercises
             Chapter? chapterForStudent = await _db.Chapters
-              .Where(c => c.DeletedAt == null && c.ChapterId == chapterId)
+              .Where(c => c.ChapterId == chapterId)
               .Include(c => c.Exercises
-                  .Where(e => e.DeletedAt == null)
                   .OrderBy(e => e.ExerciseId)
               )
               .ThenInclude(e => e.UserExercises
-                  .Where(ue => ue.DeletedAt == null && ue.User == student)
+                  .Where(ue => ue.User == student)
               )
               .FirstOrDefaultAsync();
 

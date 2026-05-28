@@ -41,7 +41,7 @@ namespace SQLDropbox.Services
 
         public async Task RegisterUserSolution(string formattedQuery, Exercise exercise, User user, string? errorMessage)
         {
-            UserExercise? userExercise = await _db.UserExercises.FirstOrDefaultAsync(ue => ue.DeletedAt == null && ue.Exercise == exercise && ue.User == user);
+            UserExercise? userExercise = await _db.UserExercises.FirstOrDefaultAsync(ue => ue.Exercise == exercise && ue.User == user);
             if (userExercise == null)
             {
                 userExercise = new UserExercise()
