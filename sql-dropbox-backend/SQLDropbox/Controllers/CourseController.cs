@@ -42,7 +42,8 @@ public class CourseController(AppDbContext db) : BaseController
             x.CourseNameNL,
             x.CourseDescriptionEN,
             x.CourseDescriptionNL,
-            x.Lecturer,
+            //x.Lecturer,
+            lecturers = x.Lecturers.Select(l => new { l.UserId, l.FirstName, l.LastName }).ToList(),
             x.IsActive,
             studentCount = x.Students.Count,
             chapterCount = x.Chapters.Count,
@@ -60,6 +61,7 @@ public class CourseController(AppDbContext db) : BaseController
         if (id == null || role == null) return Unauthorized();
 
         var query = _db.Courses
+            .Include(x => x.Lecturers.Where(l => l.DeletedAt == null))
             .Include(x => x.Chapters.Where(c => c.DeletedAt == null))
             .ThenInclude(c => c.Exercises.Where(e => e.DeletedAt == null))
             .ThenInclude(e => e.UserExercises.Where(ue => ue.DeletedAt == null))
@@ -87,7 +89,13 @@ public class CourseController(AppDbContext db) : BaseController
             course.CourseNameNL,
             course.CourseDescriptionEN,
             course.CourseDescriptionNL,
-            course.Lecturer,
+            lecturers = course.Lecturers.Select(l => new 
+            { 
+                l.UserId, 
+                l.UserCode,
+                l.FirstName, 
+                l.LastName 
+            }),
             course.IsActive,
             totalCourseCount,
             chapters = course.Chapters
@@ -102,19 +110,13 @@ public class CourseController(AppDbContext db) : BaseController
                 x.AmountOfExercises,
                 x.Course.CourseId,
                 completedAmount = (role == Role.Student) ? x.Exercises.Sum(e => e.UserExercises.Count(ue => ue.User.UserId == id && ue.IsCompleted)) : 0
-            }),
-            students = (role == Role.Admin || role == Role.Lecturer) ? course.Students.Where(x => x.DeletedAt == null).Select(x => new
-            {
-                x.UserCode,
-                x.FirstName,
-                x.LastName
-            }) : null
+            })
         });
     }
 
     [Authorize(Roles = "Admin")]
     [HttpPost]
-    public ActionResult AddCourse([FromBody] CourseDTO course)
+    public async Task<IActionResult> AddCourse([FromBody] CourseDTO course)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
@@ -136,13 +138,23 @@ public class CourseController(AppDbContext db) : BaseController
             CourseNameNL = course.CourseNameNL,
             CourseDescriptionEN = course.CourseDescriptionEN,
             CourseDescriptionNL = course.CourseDescriptionNL,
-            Lecturer = course.Lecturer,
+            //Lecturer = course.Lecturer,
             IsActive = course.IsActive,
             CreatedAt = DateTime.Now,
+            Lecturers = new List<User>()
         };
+        
+        if (course.LecturerIds != null && course.LecturerIds.Any())
+        {
+            var lecturers = await _db.Users
+                .Where(u => course.LecturerIds.Contains(u.UserId) && u.Role == Role.Lecturer && u.DeletedAt == null)
+                .ToListAsync();
+
+            newCourse.Lecturers = lecturers;
+        }
 
         _db.Courses.Add(newCourse);
-        _db.SaveChanges();
+        _db.SaveChangesAsync();
 
         return Ok(newCourse);
     }
@@ -154,7 +166,9 @@ public class CourseController(AppDbContext db) : BaseController
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var existing = await _db.Courses.FirstOrDefaultAsync(c => c.DeletedAt == null & c.CourseId == courseId);
+        var existing = await _db.Courses
+            .Include(c => c.Lecturers)
+            .FirstOrDefaultAsync(c => c.DeletedAt == null && c.CourseId == courseId);
 
         if (existing == null)
             return NotFound();
@@ -163,11 +177,24 @@ public class CourseController(AppDbContext db) : BaseController
         existing.CourseNameNL = course.CourseNameNL;
         existing.CourseDescriptionEN = course.CourseDescriptionEN;
         existing.CourseDescriptionNL = course.CourseDescriptionNL;
-        existing.Lecturer = course.Lecturer;
+        //existing.Lecturer = course.Lecturer;
         existing.IsActive = course.IsActive;
         existing.UpdatedAt = DateTime.UtcNow;
 
-        _db.SaveChanges();
+        if (course.LecturerIds != null)
+        {
+            var newLecturers = await _db.Users
+                .Where(u => course.LecturerIds.Contains(u.UserId) && u.Role == Role.Lecturer && u.DeletedAt == null)
+                .ToListAsync();
+            
+            existing.Lecturers.Clear();
+            foreach (var lecturer in newLecturers)
+            {
+                existing.Lecturers.Add(lecturer);
+            }
+        }
+        
+        await _db.SaveChangesAsync();
 
         return Ok(existing);
     }
@@ -193,6 +220,7 @@ public class CourseController(AppDbContext db) : BaseController
     public ActionResult DuplicateCourse(string courseId, [FromBody] DuplicateCourseDTO? request = null)
     {
         var existingCourse = _db.Courses
+            .Include(c => c.Lecturers.Where(l => l.DeletedAt == null))
             .Include(c => c.Chapters.Where(ch => ch.DeletedAt == null))
             .ThenInclude(ch => ch.Schema)
             .Include(c => c.Chapters.Where(ch => ch.DeletedAt == null))
@@ -233,10 +261,12 @@ public class CourseController(AppDbContext db) : BaseController
             CourseNameEN = existingCourse.CourseNameEN + " (Copy)",
             CourseDescriptionNL = existingCourse.CourseDescriptionNL,
             CourseDescriptionEN = existingCourse.CourseDescriptionEN,
-            Lecturer = existingCourse.Lecturer,
+            //Lecturer = existingCourse.Lecturer,
+            Lecturers = existingCourse.Lecturers.ToList(),
             IsActive = false,
             CreatedAt = DateTime.Now,
             Chapters = []
+            
         };
 
         foreach (var chapter in existingCourse.Chapters)
@@ -273,5 +303,57 @@ public class CourseController(AppDbContext db) : BaseController
         _db.Courses.Add(duplicateCourse);
         _db.SaveChanges();
         return Ok(duplicateCourse);
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpPost("{courseId}/Lecturers")]
+    public async Task<IActionResult> AddLecturerToCourse(string courseId, [FromBody] AssignLecturerDTO request)
+    {
+        var course = await _db.Courses
+            .Include(c => c.Lecturers)
+            .FirstOrDefaultAsync(c => c.CourseId == courseId && c.DeletedAt == null);
+        if (course == null)
+            return NotFound("Course not found");
+        
+        var user = await _db.Users
+            .FirstOrDefaultAsync(u => u.UserId == request.UserId && u.DeletedAt == null);
+        if (user == null)
+            return NotFound("User not found");
+        
+        if (user.Role != Role.Lecturer)
+            return BadRequest("This user does not have the Lecturer role.");
+        if (course.Lecturers.Any(l => l.UserId == request.UserId))
+            return BadRequest("This lecturer is already assigned to this course.");
+        
+        course.Lecturers.Add(user);
+        await _db.SaveChangesAsync();
+
+        return Ok(new { message = "Lecturer successfully added to the course." });
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpDelete("{courseId}/lecturers/{userId}")]
+    public async Task<IActionResult> RemoveLecturerFromCourse(string courseId, Guid userId)
+    {
+        var course = await _db.Courses
+            .Include(c => c.Lecturers)
+            .FirstOrDefaultAsync(c => c.CourseId == courseId && c.DeletedAt == null);
+
+        if (course == null)
+            return NotFound("Course not found");
+        
+        var user = await _db.Users
+            .FirstOrDefaultAsync(u => u.UserId == userId && u.DeletedAt == null);
+
+        if (user == null)
+            return NotFound("User not found");
+        
+        if (!course.Lecturers.Any(l => l.UserId == userId))
+            return BadRequest("This lecturer is not assigned to this course.");
+        
+        course.Lecturers.Remove(user);
+        await _db.SaveChangesAsync();
+
+        return Ok(new { message = "Lecturer successfully removed from the course." });
     }
 }

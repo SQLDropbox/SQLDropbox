@@ -172,7 +172,7 @@ namespace SQLDropbox.Repositories
                 CourseDescriptionNL = "Beheer data.",
                 CourseDescriptionEN = "Manage data.",
                 IsActive = true,
-                Lecturer = "Lehr Kragt",
+                //Lecturer = "Lehr Kragt",
                 CreatedAt = DateTime.UtcNow,
             };
             var course2 = new Course
@@ -183,7 +183,7 @@ namespace SQLDropbox.Repositories
                 CourseDescriptionNL = "Analyseer data.",
                 CourseDescriptionEN = "Analyze data.",
                 IsActive = false,
-                Lecturer = "Bro Fesser",
+                //Lecturer = "Bro Fesser",
                 CreatedAt = DateTime.UtcNow,
             };
             var course3 = new Course
@@ -194,7 +194,7 @@ namespace SQLDropbox.Repositories
                 CourseDescriptionNL = "Fundeer data.",
                 CourseDescriptionEN = "Foundate data.",
                 IsActive = false,
-                Lecturer = "Lek Tuurer",
+                //Lecturer = "Lek Tuurer",
                 CreatedAt = DateTime.UtcNow,
             };
 
@@ -613,7 +613,7 @@ namespace SQLDropbox.Repositories
                 CourseDescriptionNL = "Beheer data.",
                 CourseDescriptionEN = "Manage data.",
                 IsActive = true,
-                Lecturer = "Lehr Kragt",
+                //Lecturer = "Lehr Kragt",
                 CreatedAt = DateTime.UtcNow,
             };
             var course2 = new Course
@@ -624,7 +624,7 @@ namespace SQLDropbox.Repositories
                 CourseDescriptionNL = "Analyseer data.",
                 CourseDescriptionEN = "Analyze data.",
                 IsActive = false,
-                Lecturer = "Bro Fesser",
+                //Lecturer = "Bro Fesser",
                 CreatedAt = DateTime.UtcNow,
             };
             var course3 = new Course
@@ -635,7 +635,7 @@ namespace SQLDropbox.Repositories
                 CourseDescriptionNL = "Fundeer data.",
                 CourseDescriptionEN = "Foundate data.",
                 IsActive = false,
-                Lecturer = "Lek Tuurer",
+                //Lecturer = "Lek Tuurer",
                 CreatedAt = DateTime.UtcNow,
             };
 

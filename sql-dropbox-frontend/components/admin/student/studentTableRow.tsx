@@ -18,14 +18,9 @@ export default function StudentTableRow({
         course.chapters?.reduce((s, c) => s + (c.amountOfExercises ?? 0), 0) ??
         0;
 
-    const isStalled = totalCompleted === 0 && totalExercises > 0;
     const isEvenRow = rowIndex % 2 === 0;
 
-    const rowBg = isStalled
-        ? "bg-[rgba(108,18,8,0.06)]"
-        : isEvenRow
-          ? "bg-paper"
-          : "bg-surface-3";
+    const rowBg = isEvenRow ? "bg-paper/50" : "bg-surface-3/50";
 
     return (
         <tr
@@ -33,10 +28,7 @@ export default function StudentTableRow({
         >
             {/* Code */}
             <td
-                className={`
-                    p-3 font-mono text-[11px] text-muted tracking-wide uppercase whitespace-nowrap
-                    ${isStalled ? "border-l-[3px] border-l-accent" : ""}
-                `}
+                className="p-3 font-mono text-[11px] text-muted tracking-wide uppercase whitespace-nowrap"
             >
                 {student.userCode}
             </td>
@@ -54,10 +46,7 @@ export default function StudentTableRow({
                 const colStripe = colIndex % 2 === 1 ? "bg-black/[0.035]" : "";
 
                 return (
-                    <td
-                        key={chapter.chapterId}
-                        className={colStripe}
-                    >
+                    <td key={chapter.chapterId} className={colStripe}>
                         <div className="flex justify-center items-center w-full">
                             <ProgressIcon
                                 completed={

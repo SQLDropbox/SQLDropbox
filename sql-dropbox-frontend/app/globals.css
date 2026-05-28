@@ -3,7 +3,7 @@
 @theme {
     /* surface */
     --color-paper: #fff9ea;
-    --color-paper-light: #fffdf6;
+    --color-paper-light: #fffaf3;
     --color-surface-1: #eee8d6;
     --color-surface-2: #e8e2d0;
     --color-surface-3: #faf3e1;
@@ -27,7 +27,7 @@
 
 @layer base {
     body {
-        background-color: var(--color-paper);
+        background-image: linear-gradient(90deg, var(--color-paper), var(--color-surface-1));
         color: var(--color-ink);
         overflow-x: hidden;
     }

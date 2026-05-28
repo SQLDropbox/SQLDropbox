@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SQLDropbox.Data;
 using SQLDropbox.DTO;
+using SQLDropbox.Enums;
 using SQLDropbox.Models;
 using SQLDropbox.Services;
 
@@ -197,8 +198,63 @@ namespace SQLDropbox.Controllers
                 students
             });
         }
+        [Authorize(Roles = "Admin")]
+        [HttpGet("lecturers")]
+        public async Task<IActionResult> GetAllLecturers()
+        {
+            var lecturers = await _db.Users
+                .Where(u => u.Role == Role.Lecturer && u.DeletedAt == null)
+                .Select(u => new 
+                { 
+                    u.UserId, 
+                    u.UserCode, 
+                    u.FirstName, 
+                    u.LastName 
+                })
+                .ToListAsync();
 
+            return Ok(lecturers);
+        }
 
+        [Authorize(Roles = "Admin")]
+        [HttpPost("lecturer")]
+        public async Task<IActionResult> AddLecturer([FromBody] CreateLecturerDTO dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+            
+            var userExists = await _db.Users.AnyAsync(u => 
+                u.UserCode.ToLower() == dto.UserCode.ToLower() || 
+                u.Email.ToLower() == dto.Email.ToLower());
+            
+            if (userExists)
+            {
+                return BadRequest("A user with this UserCode or Email already exists.");
+            }
+            
+            var newLecturer = new User
+            {
+                UserId = Guid.NewGuid(),
+                UserCode = dto.UserCode,
+                FirstName = dto.FirstName,
+                LastName = dto.LastName,
+                Email = dto.Email,
+                Password = null,
+                Role = Role.Lecturer,
+                CreatedAt = DateTime.UtcNow
+            };
+            
+            _db.Users.Add(newLecturer);
+            await _db.SaveChangesAsync();
+            
+            return Ok(new 
+            { 
+                newLecturer.UserId, 
+                newLecturer.UserCode, 
+                newLecturer.FirstName, 
+                newLecturer.LastName 
+            });
+        }
 
 
     }
