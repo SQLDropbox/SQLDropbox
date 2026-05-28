@@ -78,8 +78,11 @@ export default function EditExerciseDialog({
         if (didInit) return;
         if (isEdit && requirementsLoading) return;
 
-        const solutions =
-            exercise?.solutionQueries?.length
+        const mappedSolutions = exercise?.solutions?.map(s => s.query) || [];
+        
+        const solutions = mappedSolutions.length > 0
+            ? mappedSolutions
+            : exercise?.solutionQueries?.length
                 ? exercise.solutionQueries
                 : [""];
 

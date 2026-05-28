@@ -50,6 +50,7 @@ export interface Exercise {
     queryOutput?: string;
     solutionQueries?: string[];
     requirements?: Requirement[];
+    solutions?: { solutionId?: number; query: string }[];
 }
 
 export interface Requirement {
