@@ -158,12 +158,10 @@ public class ChapterController(AppDbContext db, RandomExerciseSelectorService ra
             //if (userId == null || role == null) return Unauthorized();
 
             Chapter? chapter = await _db.Chapters
-               .Where(c => c.DeletedAt == null && c.ChapterId == chapterId)
-               .Include(c => c.Exercises
-                   .Where(e => e.DeletedAt == null)
-                   .OrderBy(e => e.ExerciseId)
-               )
-               .FirstOrDefaultAsync();
+                .Where(c => c.DeletedAt == null && c.ChapterId == chapterId)
+                .Include(c => c.Exercises.Where(e => e.DeletedAt == null))
+                    .ThenInclude(e => e.Requirements.Where(r => r.DeletedAt == null))
+                .FirstOrDefaultAsync();
 
             if (chapter == null)
                 return BadRequest($"Chapter with ID {chapterId} not found.");

@@ -221,6 +221,19 @@ function ExercisePanel({
     const [queryError, setQueryError] = useState<string | null>(null);
     const [isExecuting, setIsExecuting] = useState(false);
 
+    const normalizedQuery = queryValue.toLowerCase();
+
+    const requirements = (exercise.requirements ?? []).filter(
+        (r) => r.use === true,
+    );
+
+    const missingRequirements = requirements.filter(
+        (requirement) =>
+            !normalizedQuery.includes(requirement.statement.toLowerCase()),
+    );
+
+    const queryMeetsRequirements = missingRequirements.length === 0;
+
     useEffect(() => {
         const el = imageContainerRef.current;
         if (!el) return;
@@ -241,6 +254,16 @@ function ExercisePanel({
 
         if (!schemaName) {
             setQueryError("No database schema is linked to this chapter.");
+            return;
+        }
+
+        if (!queryMeetsRequirements) {
+            setQueryError(
+                `Missing required SQL syntax: ${missingRequirements
+                    .map((r) => `"${r.statement}"`)
+                    .join(", ")}`,
+            );
+
             return;
         }
 
@@ -462,6 +485,40 @@ function ExercisePanel({
                     </div>
                 )}
 
+                {requirements.length > 0 && (
+                    <div className="border border-border bg-surface-2 px-4 py-4">
+                        <div className="flex items-center gap-2 mb-3">
+                            <FaCircleInfo className="text-accent text-sm" />
+
+                            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted">
+                                Required SQL syntax
+                            </p>
+                        </div>
+
+                        <div className="flex flex-wrap gap-2">
+                            {requirements.map((requirement) => {
+                                const isSatisfied = normalizedQuery.includes(
+                                    requirement.statement.toLowerCase(),
+                                );
+
+                                return (
+                                    <div
+                                        key={requirement.requirementId}
+                                        className={`border px-3 py-2 font-mono text-xs uppercase tracking-widest transition-colors ${
+                                            isSatisfied
+                                                ? "border-accent bg-accent text-paper"
+                                                : "border-border bg-paper text-muted"
+                                        }`}
+                                    >
+                                        {isSatisfied ? "✓ " : ""}
+                                        {requirement.statement}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
+
                 <textarea
                     value={queryValue}
                     onChange={(event) => setQueryValue(event.target.value)}
@@ -474,8 +531,8 @@ function ExercisePanel({
                 <button
                     type="button"
                     onClick={handleRunQuery}
-                    disabled={isExecuting}
-                    className="inline-flex items-center gap-2 border-2 border-accent text-accent px-6 py-3 font-mono text-xs uppercase tracking-widest hover:bg-accent hover:text-paper transition-colors disabled:opacity-50"
+                    disabled={isExecuting || !queryMeetsRequirements}
+                    className="inline-flex items-center gap-2 border-2 border-accent text-accent px-6 py-3 font-mono text-xs uppercase tracking-widest hover:bg-accent hover:text-paper transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                     <FaPlay />
                     {isExecuting ? "Running..." : "Run Query"}
