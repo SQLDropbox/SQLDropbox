@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { FaTimes } from "react-icons/fa";
-import { Course } from "@/types/types";
+import { FaTimes, FaCheck } from "react-icons/fa";
+import { Course, Lecturer } from "@/types/types";
 import { courseService } from "@/services/courseService";
+import { userService } from "@/services/userService";
+import { useQuery } from "@tanstack/react-query";
 import ConfirmDialog from "@/components/dialog/confirmDialog";
 import AlertDialog from "@/components/dialog/alertDialog";
 import { useAuth } from "@/hooks/useAuth";
@@ -27,7 +29,7 @@ const emptyForm: Course = {
     courseNameEN: "",
     courseDescriptionNL: "",
     courseDescriptionEN: "",
-    lecturer: "",
+    lecturerIds: [],
     isActive: true,
 };
 
@@ -53,6 +55,12 @@ export default function EditCourseDialog({
     const [courseIdLocked, setCourseIdLocked] = useState(!isEdit);
     const [errorDialog, setErrorDialog] = useState<string | null>(null);
 
+    const { data: allLecturers, isLoading: isLoadingLecturers } = useQuery<Lecturer[]>({
+        queryKey: ["all-lecturers"],
+        queryFn: () => userService.getAllLecturers(),
+        enabled: open,
+    });
+
     function validateForm(form: Course): FormErrors {
         const errors: FormErrors = {};
         if (!form.courseId.trim())
@@ -61,8 +69,8 @@ export default function EditCourseDialog({
             errors.courseNameEN = t("errors.nameENRequired");
         if (!form.courseNameNL.trim())
             errors.courseNameNL = t("errors.nameNLRequired");
-        if (!form.lecturer.trim())
-            errors.lecturer = t("errors.lecturerRequired");
+        if (!form.lecturerIds || form.lecturerIds.length === 0)
+            errors.lecturerIds = t("errors.lecturerRequired") || "At least one instructor is required";
         return errors;
     }
 
@@ -74,7 +82,10 @@ export default function EditCourseDialog({
 
         if (isEdit && course) {
             setCourseIdLocked(true);
-            setForm(course);
+            setForm({
+                ...course,
+                lecturerIds: course.lecturers?.map((l) => l.userId) || [],
+            });
         } else {
             setCourseIdLocked(false);
             setForm(emptyForm);
@@ -280,13 +291,67 @@ export default function EditCourseDialog({
                     </Field>
 
                     {/* LECTURER */}
-                    <Field label={t("lecturer")} error={errors.lecturer}>
-                        <input
-                            name="lecturer"
-                            value={form.lecturer}
-                            onChange={handleChange}
-                            className="w-full bg-transparent border-b border-border py-1 text-sm"
-                        />
+                    <Field label={t("lecturer") || "Assign Additional Instructors"} error={errors.lecturerIds}>
+                        {isLoadingLecturers ? (
+                            <div className="bg-surface-1 border border-border p-4">
+                                <p className="text-[11px] text-muted uppercase tracking-widest italic animate-pulse">
+                                    LOADING PERSONNEL LIST...
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="bg-surface-1 border border-border p-2 max-h-[160px] overflow-y-auto flex flex-col gap-1 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]">
+                                {(() => {
+                                    // Filter docenten die al aan de cursus zijn gekoppeld eruit
+                                    const availableLecturers = allLecturers?.filter(
+                                        (l) => !course?.lecturers?.some((cl) => cl.userId === l.userId)
+                                    ) ?? [];
+
+                                    if (availableLecturers.length === 0) {
+                                        return (
+                                            <div className="p-3">
+                                                <p className="text-[10px] text-accent uppercase tracking-widest">
+                                                    * ALL AVAILABLE INSTRUCTORS ARE ALREADY ASSIGNED.
+                                                </p>
+                                            </div>
+                                        );
+                                    }
+
+                                    return availableLecturers.map((l) => (
+                                        <label 
+                                            key={l.userId} 
+                                            className="flex items-center gap-3 p-2 hover:bg-paper cursor-pointer border border-transparent hover:border-border transition-colors group"
+                                        >
+                                            {/* Custom Brutalist Checkbox */}
+                                            <div className="relative flex items-center justify-center w-4 h-4 shrink-0">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={form.lecturerIds?.includes(l.userId) || false}
+                                                    onChange={(e) => {
+                                                        const isChecked = e.target.checked;
+                                                        setForm((prev) => {
+                                                            const currentIds = prev.lecturerIds || [];
+                                                            return {
+                                                                ...prev,
+                                                                lecturerIds: isChecked 
+                                                                    ? [...currentIds, l.userId] 
+                                                                    : currentIds.filter(id => id !== l.userId)
+                                                            };
+                                                        });
+                                                    }}
+                                                    className="peer appearance-none w-4 h-4 border-2 border-border checked:bg-accent checked:border-accent cursor-pointer transition-colors"
+                                                />
+                                                <FaCheck className="absolute text-paper text-[10px] pointer-events-none opacity-0 peer-checked:opacity-100 scale-50 peer-checked:scale-100 transition-transform" />
+                                            </div>
+                                            
+                                            {/* Label Tekst */}
+                                            <span className="font-mono text-[11px] text-ink uppercase tracking-wider group-hover:translate-x-1 transition-transform">
+                                                {l.firstName} {l.lastName} <span className="text-muted">({l.userCode})</span>
+                                            </span>
+                                        </label>
+                                    ));
+                                })()}
+                            </div>
+                        )}
                     </Field>
 
                     {/* ACTIVE */}

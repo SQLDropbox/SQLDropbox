@@ -118,7 +118,9 @@ export default function CourseCard({
 
                 <p className="font-mono text-xs uppercase tracking-wider text-muted">
                     <span className="text-accent mr-2">{t("lecturer")}:</span>
-                    {course.lecturer}
+                    {course.lecturers && course.lecturers.length > 0 
+                        ? course.lecturers.map(l => `${l.firstName} ${l.lastName}`.trim()).join(", ") 
+                        : "—"}
                 </p>
             </header>
 

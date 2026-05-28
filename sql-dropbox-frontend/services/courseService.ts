@@ -41,6 +41,19 @@ const duplicateCourse = async (courseId: string, newCourseId?: string) => {
     });
 };
 
+const addLecturerToCourse = async (courseId: string, userId: string) => {
+    return api.privateFetch(`/Course/${courseId}/lecturers`, {
+        method: "POST",
+        body: JSON.stringify({ userId }),
+    });
+};
+
+const removeLecturerFromCourse = async (courseId: string, userId: string) => {
+    return api.privateFetch(`/Course/${courseId}/lecturers/${userId}`, {
+        method: "DELETE",
+    });
+};
+
 export const courseService = {
     getCourses,
     getCourseByCourseId,
@@ -48,4 +61,6 @@ export const courseService = {
     updateCourse,
     deleteCourse,
     duplicateCourse,
+    addLecturerToCourse,
+    removeLecturerFromCourse,
 };
