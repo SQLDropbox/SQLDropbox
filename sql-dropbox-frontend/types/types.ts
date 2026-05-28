@@ -4,7 +4,6 @@ export interface Course {
     courseNameEN: string;
     courseDescriptionNL: string;
     courseDescriptionEN: string;
-    lecturer: string;
     isActive: boolean;
 
     lecturers?: Lecturer[];
