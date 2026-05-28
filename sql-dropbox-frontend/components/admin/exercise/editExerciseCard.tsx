@@ -1,13 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+    useMutation,
+    useQuery,
+    useQueryClient,
+} from "@tanstack/react-query";
 import { FaTimes, FaPlus } from "react-icons/fa";
 import { FiTrash2 } from "react-icons/fi";
 import { useTranslations } from "next-intl";
 
-import { Exercise } from "@/types/types";
+import { Exercise, Requirement } from "@/types/types";
 import { exerciseService } from "@/services/exerciseService";
+import { requirementService } from "@/services/requirementService";
 import ConfirmDialog from "@/components/dialog/confirmDialog";
 
 interface Props {
@@ -18,7 +23,15 @@ interface Props {
     exercise?: Exercise;
 }
 
-type FormErrors = Partial<Record<keyof Exercise, string>>;
+type FormErrors = Partial<Record<keyof Exercise, string>> & {
+    requirements?: string;
+};
+
+type RequirementFormRow = {
+    requirementId?: number;
+    statement: string;
+    use: boolean;
+};
 
 const emptyForm: Partial<Exercise> = {
     questionNL: "",
@@ -43,21 +56,66 @@ export default function EditExerciseDialog({
     const [form, setForm] = useState<Partial<Exercise>>(emptyForm);
     const [errors, setErrors] = useState<FormErrors>({});
     const [confirmDeleteDialogOpen, setConfirmDeleteDialogOpen] = useState(false);
+    const [requirements, setRequirements] = useState<RequirementFormRow[]>([]);
+    const [didInit, setDidInit] = useState(false);
+
+    const {
+        data: loadedRequirements = [],
+        isLoading: requirementsLoading,
+    } = useQuery<Requirement[]>({
+        queryKey: ["requirements", exercise?.exerciseId],
+        queryFn: () =>
+            requirementService.getRequirementsForExercise(exercise!.exerciseId),
+        enabled: open && isEdit && !!exercise?.exerciseId,
+    });
 
     useEffect(() => {
-        if (!open) return;
+        if (!open) {
+            setDidInit(false);
+            return;
+        }
 
-        if (exercise && isEdit) {
-            const solutions = exercise.solutionQueries?.length
+        if (didInit) return;
+        if (isEdit && requirementsLoading) return;
+
+        const solutions =
+            exercise?.solutionQueries?.length
                 ? exercise.solutionQueries
                 : [""];
-            setForm({ ...exercise, solutionQueries: solutions, chapterId });
+
+        if (exercise && isEdit) {
+            setForm({
+                ...exercise,
+                solutionQueries: solutions,
+                chapterId,
+            });
+
+            setRequirements(
+                loadedRequirements.map((req) => ({
+                    requirementId: req.requirementId,
+                    statement: req.statement ?? "",
+                    use: req.use ?? false,
+                })),
+            );
         } else {
-            setForm({ ...emptyForm, chapterId });
+            setForm({
+                ...emptyForm,
+                chapterId,
+            });
+            setRequirements([]);
         }
 
         setErrors({});
-    }, [open, exercise, isEdit, chapterId]);
+        setDidInit(true);
+    }, [
+        open,
+        didInit,
+        isEdit,
+        requirementsLoading,
+        chapterId,
+        exercise,
+        loadedRequirements,
+    ]);
 
     function validate() {
         const newErrors: FormErrors = {};
@@ -65,6 +123,7 @@ export default function EditExerciseDialog({
         if (!form.questionNL?.trim()) {
             newErrors.questionNL = t("errors.questionNLRequired");
         }
+
         if (!form.questionEN?.trim()) {
             newErrors.questionEN = t("errors.questionENRequired");
         }
@@ -73,10 +132,78 @@ export default function EditExerciseDialog({
             form.solutionQueries?.filter((q) => q.trim() !== "") || [];
 
         if (validSolutions.length === 0) {
-            newErrors.solutionQueries = [t("errors.atLeastOneSolution")] as any;
+            newErrors.solutionQueries = t("errors.atLeastOneSolution") as any;
+        }
+
+        const cleanedRequirementStatements = requirements
+            .map((req) => req.statement.trim())
+            .filter((statement) => statement !== "");
+
+        const hasDuplicateRequirements =
+            new Set(
+                cleanedRequirementStatements.map((statement) =>
+                    statement.toLowerCase(),
+                ),
+            ).size !== cleanedRequirementStatements.length;
+
+        if (hasDuplicateRequirements) {
+            newErrors.requirements = "Requirements must be unique.";
         }
 
         return newErrors;
+    }
+
+    async function syncRequirements(savedExerciseId: number) {
+        const originalRequirements = isEdit ? loadedRequirements : [];
+
+        const cleanedRequirements = requirements
+            .map((req) => ({
+                requirementId: req.requirementId,
+                statement: req.statement.trim(),
+                use: req.use,
+            }))
+            .filter((req) => req.statement !== "");
+
+        const currentIds = new Set(
+            cleanedRequirements
+                .filter((req) => req.requirementId != null)
+                .map((req) => req.requirementId as number),
+        );
+
+        const toCreate = cleanedRequirements.filter(
+            (req) => req.requirementId == null,
+        );
+
+        const toUpdate = cleanedRequirements.filter(
+            (req) => req.requirementId != null,
+        );
+
+        const toDelete = originalRequirements.filter(
+            (req) => !currentIds.has(req.requirementId),
+        );
+
+        await Promise.all([
+            ...toCreate.map((req) =>
+                requirementService.createRequirementForExercise({
+                    statement: req.statement,
+                    use: req.use,
+                    exerciseId: savedExerciseId,
+                }),
+            ),
+            ...toUpdate.map((req) =>
+                requirementService.updateRequirementForExercise(
+                    req.requirementId!,
+                    {
+                        statement: req.statement,
+                        use: req.use,
+                        exerciseId: savedExerciseId,
+                    },
+                ),
+            ),
+            ...toDelete.map((req) =>
+                requirementService.deleteRequirementForExercise(req.requirementId),
+            ),
+        ]);
     }
 
     const mutation = useMutation({
@@ -87,29 +214,48 @@ export default function EditExerciseDialog({
                     form.solutionQueries?.filter((q) => q.trim() !== "") || [],
             };
 
-            if (isEdit && exercise) {
-                return exerciseService.updateExercise(
-                    exercise.exerciseId,
-                    cleanedForm,
-                );
+            const savedExercise =
+                isEdit && exercise
+                    ? await exerciseService.updateExercise(
+                          exercise.exerciseId,
+                          cleanedForm,
+                      )
+                    : await exerciseService.addExercise(cleanedForm);
+
+            const savedExerciseId =
+                savedExercise?.exerciseId ?? exercise?.exerciseId;
+
+            if (!savedExerciseId) {
+                throw new Error("Could not determine saved exercise ID.");
             }
 
-            return exerciseService.addExercise(cleanedForm);
+            await syncRequirements(savedExerciseId);
+
+            return savedExercise;
         },
-        onSuccess: () => {
-            queryClient.invalidateQueries({
-                queryKey: ["exercises", chapterId],
-            });
+        onSuccess: async () => {
+            await Promise.all([
+                queryClient.invalidateQueries({
+                    queryKey: ["exercises", chapterId],
+                }),
+                queryClient.invalidateQueries({
+                    queryKey: ["requirements"],
+                }),
+            ]);
+
             onClose();
         },
     });
 
     function handleSubmit() {
         const newErrors = validate();
+
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
             return;
         }
+
+        setErrors({});
         mutation.mutate();
     }
 
@@ -129,7 +275,34 @@ export default function EditExerciseDialog({
     const removeSolution = (index: number) => {
         const newSolutions = [...(form.solutionQueries || [])];
         newSolutions.splice(index, 1);
-        setForm({ ...form, solutionQueries: newSolutions });
+
+        setForm({
+            ...form,
+            solutionQueries: newSolutions.length ? newSolutions : [""],
+        });
+    };
+
+    const addRequirement = () => {
+        setRequirements((prev) => [
+            ...prev,
+            { statement: "", use: false },
+        ]);
+    };
+
+    const updateRequirement = (
+        index: number,
+        key: keyof RequirementFormRow,
+        value: string | boolean,
+    ) => {
+        setRequirements((prev) =>
+            prev.map((item, i) =>
+                i === index ? { ...item, [key]: value } : item,
+            ),
+        );
+    };
+
+    const removeRequirement = (index: number) => {
+        setRequirements((prev) => prev.filter((_, i) => i !== index));
     };
 
     if (!open) return null;
@@ -153,6 +326,7 @@ export default function EditExerciseDialog({
                     <button
                         onClick={onClose}
                         className="opacity-70 hover:opacity-100 transition"
+                        type="button"
                     >
                         <FaTimes />
                     </button>
@@ -292,6 +466,99 @@ export default function EditExerciseDialog({
                             {t("addSolution")}
                         </button>
                     </Section>
+
+                    <Section title="Requirements">
+                        {errors.requirements && (
+                            <p className="text-[11px] text-error uppercase tracking-wider mb-3">
+                                {errors.requirements}
+                            </p>
+                        )}
+
+                        {requirementsLoading && isEdit && !didInit ? (
+                            <p className="text-[11px] uppercase tracking-wider text-muted">
+                                Loading requirements...
+                            </p>
+                        ) : (
+                            <>
+                                <div className="space-y-3">
+                                    {requirements.length === 0 && (
+                                        <div className="border border-dashed border-border bg-paper p-4">
+                                            <p className="text-[11px] uppercase tracking-widest text-muted">
+                                                No requirements added yet.
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    {requirements.map((requirement, index) => (
+                                        <div
+                                            key={
+                                                requirement.requirementId ??
+                                                `new-${index}`
+                                            }
+                                            className="border border-border bg-paper p-3"
+                                        >
+                                            <div className="flex items-start gap-3">
+                                                <div className="w-8 shrink-0 pt-2 text-[10px] uppercase tracking-widest text-muted">
+                                                    {String(index + 1).padStart(2, "0")}
+                                                </div>
+
+                                                <div className="flex-1 space-y-3">
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Requirement statement"
+                                                        value={requirement.statement}
+                                                        onChange={(e) =>
+                                                            updateRequirement(
+                                                                index,
+                                                                "statement",
+                                                                e.target.value,
+                                                            )
+                                                        }
+                                                        className="w-full bg-transparent border border-border p-3 text-sm outline-none focus:border-accent"
+                                                    />
+
+                                                    <label className="inline-flex items-center gap-2 text-[11px] uppercase tracking-widest text-muted">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={requirement.use}
+                                                            onChange={(e) =>
+                                                                updateRequirement(
+                                                                    index,
+                                                                    "use",
+                                                                    e.target.checked,
+                                                                )
+                                                            }
+                                                        />
+                                                        Required for validation
+                                                    </label>
+                                                </div>
+
+                                                <button
+                                                    onClick={() =>
+                                                        removeRequirement(index)
+                                                    }
+                                                    className="mt-1 flex items-center justify-center w-9 h-9 border border-error text-ink hover:bg-error hover:text-paper transition -rotate-1"
+                                                    title="Remove requirement"
+                                                    type="button"
+                                                >
+                                                    <FiTrash2 className="text-[14px]" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <button
+                                    onClick={addRequirement}
+                                    type="button"
+                                    className="mt-4 inline-flex items-center gap-2 px-4 py-2 border border-accent text-accent hover:bg-accent hover:text-paper transition rotate-[0.5deg]"
+                                >
+                                    <FaPlus className="text-xs" />
+                                    Add requirement
+                                </button>
+                            </>
+                        )}
+                    </Section>
                 </div>
 
                 <div className="flex justify-between gap-3 px-6 py-4 border-t border-border bg-surface-1 shrink-0">
@@ -300,6 +567,7 @@ export default function EditExerciseDialog({
                             <button
                                 onClick={() => setConfirmDeleteDialogOpen(true)}
                                 className="px-4 py-2 border border-error text-ink hover:bg-error hover:text-paper transition -rotate-1"
+                                type="button"
                             >
                                 {t("delete")}
                             </button>
@@ -310,14 +578,16 @@ export default function EditExerciseDialog({
                         <button
                             onClick={onClose}
                             className="px-4 py-2 border border-border text-muted hover:bg-ink hover:text-paper transition"
+                            type="button"
                         >
                             {t("cancel")}
                         </button>
 
                         <button
                             onClick={handleSubmit}
-                            disabled={mutation.isPending}
+                            disabled={mutation.isPending || (isEdit && requirementsLoading && !didInit)}
                             className="px-4 py-2 border-2 border-accent text-accent hover:bg-accent hover:text-paper transition rotate-1 disabled:opacity-50"
+                            type="button"
                         >
                             {mutation.isPending
                                 ? t("saving")
@@ -333,10 +603,18 @@ export default function EditExerciseDialog({
                     onClose={() => setConfirmDeleteDialogOpen(false)}
                     onConfirm={async () => {
                         if (!exercise) return;
+
                         await exerciseService.deleteExercise(exercise.exerciseId);
-                        queryClient.invalidateQueries({
-                            queryKey: ["exercises", chapterId],
-                        });
+
+                        await Promise.all([
+                            queryClient.invalidateQueries({
+                                queryKey: ["exercises", chapterId],
+                            }),
+                            queryClient.invalidateQueries({
+                                queryKey: ["requirements", exercise.exerciseId],
+                            }),
+                        ]);
+
                         setConfirmDeleteDialogOpen(false);
                         onClose();
                     }}
