@@ -16,6 +16,12 @@ export interface Course {
     totalCourseCount?: number;
 }
 
+export interface DBSchema {
+    schemaId: number;
+    schemaName: string;
+    schemaImage?: string | null;
+}
+
 export interface Chapter {
     chapterId: number;
     chapterNameNL: string;
@@ -41,7 +47,25 @@ export interface Exercise {
     hintEN: string;
     queryOutput?: string;
     solutionQueries?: string[];
+    requirements?: Requirement[];
 }
+
+export interface Requirement {
+    requirementId: number;
+    statement: string;
+    use: boolean;
+    exerciseId?: number;
+    createdAt?: string;
+    updatedAt?: string | null;
+    deletedAt?: string | null;
+}
+
+export interface RequirementDTO {
+    statement?: string;
+    use: boolean;
+    exerciseId?: number | null;
+}
+
 export interface User {
     userCode: string;
     firstName: string;

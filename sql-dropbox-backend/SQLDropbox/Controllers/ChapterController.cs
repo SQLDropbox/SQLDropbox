@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SQLDropbox.Data;
 using SQLDropbox.DTO;
+using SQLDropbox.Enums;
 using SQLDropbox.Models;
 using SQLDropbox.Services;
 
@@ -9,10 +11,9 @@ namespace SQLDropbox.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class ChapterController(AppDbContext db, RandomExerciseSelectorService randomExerciseSelectorService, IConfiguration config) : BaseController
+public class ChapterController(AppDbContext db, IConfiguration config) : BaseController
 {
     private readonly AppDbContext _db = db;
-    private readonly RandomExerciseSelectorService _ress = randomExerciseSelectorService;
     private readonly IConfiguration _config = config;
     private string BaseUrl => $"{Request.Scheme}://{Request.Host}";
 
@@ -147,57 +148,108 @@ public class ChapterController(AppDbContext db, RandomExerciseSelectorService ra
 
     // TODO -> finish this (Joran)
     // TODO -> when getting exercises for chapter, when admin/lecturer, return all, if student randomly generate and return those
-    //[Authorize]
+    [Authorize]
     [HttpGet("{chapterId}/exercises")]
     public async Task<ActionResult<IEnumerable<Exercise>>> GetExercisesByChapter(int chapterId)
     {
         try
         {
-            //var userId = GetUserId();
-            //var role = GetUserRole();
-            //if (userId == null || role == null) return Unauthorized();
+            var userId = GetUserId();
+            var role = GetUserRole();
+            if (userId == null || role == null)
+                return Unauthorized();
+
+            if (role == Role.Student)
+            {
+                User? student = await _db.Users
+                    .Where(u => u.DeletedAt == null && u.UserId == userId)
+                    .FirstOrDefaultAsync();
+
+                if (student == null)
+                    return NotFound("Student not found.");
+
+                // Get a chapter with all exercises and all their user exercises
+                Chapter? chapterForStudent = await _db.Chapters
+                  .Where(c => c.DeletedAt == null && c.ChapterId == chapterId)
+                  .Include(c => c.Exercises
+                      .Where(e => e.DeletedAt == null)
+                      .OrderBy(e => e.ExerciseId)
+                  )
+                  .ThenInclude(e => e.UserExercises
+                    .Where(ue => ue.DeletedAt == null && ue.User == student)
+                  )
+                  .FirstOrDefaultAsync();
+
+                if (chapterForStudent == null)
+                    return BadRequest(new { message = $"Chapter with ID {chapterId} not found." });
+
+                int amount = chapterForStudent.AmountOfExercises ?? 0;
+
+                // Get the exercises for which a user exercise for this student already exists
+                List<Exercise> currentExercises = [.. chapterForStudent.Exercises
+                    .Where(e => e.UserExercises.Any(se => se.User == student))
+                    .OrderBy(e => e.ExerciseId)];
+
+                // If there are as much off those as the amount required for a chapter, return those current exercises
+                if(currentExercises.Count == amount)
+                    return Ok(currentExercises);
+
+                // If not, get all possible exercises, for which a user exercise for this student doesn't yet exist
+                List<Exercise> possibleExercises = [.. chapterForStudent.Exercises
+                    .Where(e => !e.UserExercises.Any(se => se.User == student))
+                    .OrderBy(e => e.ExerciseId)];
+
+                // Init the list of exercises to return by adding the current exercises (in case the needed amount gets increased)
+                List<Exercise> exercises = currentExercises;
+                List<UserExercise> userExercises = [];
+
+                // Loop for the amount of exercises needed for a student to make in a chapter
+                for (int i = 0; i < amount; i++)
+                {
+                    // If there are no more possible exercises, but more exercises are required in the chapter than that exist for the chapter (lecturer issue)
+                    // In this case, for now, throw an error, obviously, this scenario should be impossible
+                    if (possibleExercises.Count == 0)
+                        return BadRequest(new { message = "No possible exercise left for this chapter." });
+
+                    // Pick a random exercise for the possible ones left
+                    int random = Random.Shared.Next(possibleExercises.Count);
+                    Exercise randomExercise = possibleExercises[random];
+
+                    // If none left, error
+                    if (randomExercise == null)
+                        return BadRequest(new { message = "Error occured selecting a random exercise." });
+
+                    // Create a user exercise for the current student and the random exercise
+                    userExercises.Add(new UserExercise
+                    {
+                        IsCompleted = false,
+                        Exercise = randomExercise,
+                        User = student,
+                        CreatedAt = DateTime.UtcNow,
+                    });
+
+                    // Remove the randomly selected exercise from the possible exercises
+                    exercises.Add(randomExercise);
+                    possibleExercises.RemoveAll(e => e.ExerciseId == randomExercise.ExerciseId);
+                }
+
+                _db.UserExercises.AddRange(userExercises);
+                await _db.SaveChangesAsync();
+
+                // return the exercises;
+                return Ok(exercises);
+            }
 
             Chapter? chapter = await _db.Chapters
-               .Where(c => c.DeletedAt == null && c.ChapterId == chapterId)
-               .Include(c => c.Exercises
-                   .Where(e => e.DeletedAt == null)
-                   .OrderBy(e => e.ExerciseId)
-               )
-               .FirstOrDefaultAsync();
+              .Where(c => c.DeletedAt == null && c.ChapterId == chapterId)
+              .Include(c => c.Exercises
+                  .Where(e => e.DeletedAt == null)
+                  .OrderBy(e => e.ExerciseId)
+              )
+              .FirstOrDefaultAsync();
 
             if (chapter == null)
                 return BadRequest($"Chapter with ID {chapterId} not found.");
-
-            //if (role == Role.Student)
-            //{
-            //    User? student = await _db.Users
-            //        .Where(u => u.DeletedAt == null && u.UserId == userId)
-            //        .FirstOrDefaultAsync();
-
-            //    if (student == null)
-            //        return BadRequest("Student not found.");
-
-            //    int amount = chapter.AmountOfExercises ?? 0;
-            //    List<Exercise> exercises = [];
-            //    List<UserExercise> userExercises = [];
-
-            //    for (int i = 0; i < amount; i++)
-            //    {
-            //        var res = await _ress.GetRandomExerciseForChapter(chapterId, userId);
-            //        if (res.Exercise == null) return BadRequest(res.Message);
-
-            //        userExercises.Add(new UserExercise
-            //        {
-            //            IsCompleted = false,
-            //            Exercise = res.Exercise,
-            //            Student = student,
-            //            CreatedAt = DateTime.UtcNow,
-            //        });
-            //    }
-
-            //    await _db.StudentExercises.AddRangeAsync(userExercises);
-            //    return Ok(exercises);
-            //}
 
             return Ok(chapter.Exercises);
         }
