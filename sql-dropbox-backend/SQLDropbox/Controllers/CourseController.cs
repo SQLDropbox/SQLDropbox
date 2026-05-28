@@ -102,13 +102,7 @@ public class CourseController(AppDbContext db) : BaseController
                 x.AmountOfExercises,
                 x.Course.CourseId,
                 completedAmount = (role == Role.Student) ? x.Exercises.Sum(e => e.UserExercises.Count(ue => ue.User.UserId == id && ue.IsCompleted)) : 0
-            }),
-            students = (role == Role.Admin || role == Role.Lecturer) ? course.Students.Where(x => x.DeletedAt == null).Select(x => new
-            {
-                x.UserCode,
-                x.FirstName,
-                x.LastName
-            }) : null
+            })
         });
     }
 
