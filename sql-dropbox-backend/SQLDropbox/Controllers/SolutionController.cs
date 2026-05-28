@@ -17,8 +17,8 @@ public class SolutionController(AppDbContext db, SolutionService solutionService
     private readonly SchemaService _scS = schemaService;
 
     [Authorize]
-    [HttpPost("submit")]
-    public async Task<ActionResult> SubmitSolution(SolutionDTO dto)
+    [HttpPost("submit/select")]
+    public async Task<ActionResult> SubmitSelectSolution(SolutionDTO dto)
     {
         try
         {
