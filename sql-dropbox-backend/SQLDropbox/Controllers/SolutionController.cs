@@ -18,7 +18,7 @@ public class SolutionController(AppDbContext db, SolutionService solutionService
 
     [Authorize]
     [HttpPost("submit/select")]
-    public async Task<ActionResult> SubmitSelectSolution(SolutionDTO dto)
+    public async Task<ActionResult> SubmitSelectSolution([FromBody] SolutionDTO dto)
     {
         try
         {
