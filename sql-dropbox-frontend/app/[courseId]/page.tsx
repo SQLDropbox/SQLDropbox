@@ -112,7 +112,9 @@ export default function Page() {
                             {courseId?.toUpperCase()}
                         </span>
                         <span className="font-mono text-[10px] uppercase tracking-widest text-muted">
-                            {data?.lecturer}
+                            {data?.lecturers && data.lecturers.length > 0 
+                            ? data.lecturers.map(l => `${l.firstName} ${l.lastName}`.trim()).join(", ") 
+                            : "—"}
                         </span>
                     </div>
                 </div>

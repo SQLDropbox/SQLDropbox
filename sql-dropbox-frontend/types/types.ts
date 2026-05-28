@@ -4,8 +4,10 @@ export interface Course {
     courseNameEN: string;
     courseDescriptionNL: string;
     courseDescriptionEN: string;
-    lecturer: string;
     isActive: boolean;
+
+    lecturers?: Lecturer[];
+    lecturerIds?: string[];
 
     students?: User[];
     chapters?: Chapter[];
@@ -86,4 +88,11 @@ export interface QueryResponse {
 export interface QueryExecutionResult {
     type: "csv" | "json";
     data: any;
+}
+
+export interface Lecturer {
+    userId: string;
+    userCode: string;
+    firstName: string;
+    lastName: string;
 }
