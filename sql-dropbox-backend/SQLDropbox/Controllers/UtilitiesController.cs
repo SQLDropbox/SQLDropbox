@@ -5,17 +5,19 @@ using SQLDropbox.Helpers;
 using SQLDropbox.Models;
 using SQLDropbox.Repositories;
 using SQLDropbox.Services;
+using static SqlParser.Ast.JsonPathElement;
 
 namespace SQLDropbox.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class UtilitiesController(AppDbContext db, PasswordService passwordService, SolutionService solutionService, RandomExerciseSelectorService randomExerciseSelectorService) : BaseController
+public class UtilitiesController(AppDbContext db, PasswordService passwordService, SolutionService solutionService, RandomExerciseSelectorService randomExerciseSelectorService, SchemaService schemaService) : BaseController
 {
     private readonly AppDbContext _db = db;
     private readonly PasswordService _ps = passwordService;
     private readonly SolutionService _soS = solutionService;
     private readonly RandomExerciseSelectorService _ress = randomExerciseSelectorService;
+    private readonly SchemaService _scS = schemaService;
 
     [HttpGet("seed-db")]
     public async Task<IActionResult> SeedTheDb()
@@ -96,6 +98,23 @@ public class UtilitiesController(AppDbContext db, PasswordService passwordServic
                 return BadRequest(res.Message);
 
             return Ok(res.Exercise.QuestionEN);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex);
+        }
+    }
+
+    [HttpPost("seed-exercise-create-helper")]
+    public async Task<IActionResult> GetExerciseCreateData([FromBody] SolutionDTO dto)
+    {
+        try
+        {           
+            string formattedQuery = _soS.FormatQuery(dto.Query);
+            uint queryHash = await _soS.HashSolution(formattedQuery);
+            string queryOutput = await _scS.ExecuteSelectOnSchemaAsync("animals", formattedQuery);
+
+            return Ok(new { query = formattedQuery, hash = queryHash, output = queryOutput });
         }
         catch (Exception ex)
         {
