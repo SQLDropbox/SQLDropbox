@@ -142,6 +142,63 @@ namespace SQLDropbox.Controllers
             }
         }
 
+        [Authorize(Roles = "Admin,Lecturer")]
+        [HttpGet("students/{courseId}")]
+        public async Task<ActionResult> GetStudents(string courseId)
+        {
+            var course = _db.Courses
+                .Include(c => c.Students)
+                .Include(c => c.Chapters)
+                    .ThenInclude(ch => ch.Exercises)
+                        .ThenInclude(e => e.UserExercises)
+                .Where(c => c.CourseId == courseId && c.DeletedAt == null)
+                .FirstOrDefault();
+
+            if (course == null)
+                return NotFound();
+
+            var chapters = course.Chapters
+                        .Where(ch => ch.DeletedAt == null)
+                        .Select(ch => new
+                        {
+                            ch.ChapterId,
+                            ch.ChapterNameEN,
+                            ch.ChapterNameNL,
+                            ch.AmountOfExercises
+                        });
+
+            var students = course.Students
+                .Where(s => s.DeletedAt == null)
+                .Select(student => new
+                {
+                    student.UserCode,
+                    student.FirstName,
+                    student.LastName,
+
+                    chapters = course.Chapters
+                        .Where(ch => ch.DeletedAt == null)
+                        .Select(ch => new
+                        {
+                            ch.ChapterId,
+                            completedAmount = ch.Exercises
+                                .Where(e => e.DeletedAt == null)
+                                .SelectMany(e => e.UserExercises)
+                                .Count(ue =>
+                                    ue.DeletedAt == null &&
+                                    ue.User.UserId == student.UserId &&
+                                    ue.IsCompleted)
+                        })
+                });
+
+            return Ok(new
+            {
+                courseId = course.CourseId,
+                chapters,
+                students
+            });
+        }
+
+
 
 
     }
