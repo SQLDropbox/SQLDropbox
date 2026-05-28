@@ -3,13 +3,14 @@
 import Header from "@/components/header";
 import { courseService } from "@/services/courseService";
 import { Course } from "@/types/types";
-import { FaPlus } from "react-icons/fa6";
+import { FaPlus, FaUserPlus } from "react-icons/fa6";
 import { useQuery } from "@tanstack/react-query";
 import EditCourseDialog from "@/components/admin/course/editCourseDialog";
 import { useState } from "react";
 import CourseCard from "@/components/admin/course/courseCard";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslations } from "next-intl";
+import AddLecturerDialog from "@/components/admin/lecturer/addLecturerDialog";
 
 export default function Page() {
     const { isAdmin } = useAuth();
@@ -17,6 +18,7 @@ export default function Page() {
 
     const [editDialogOpen, setEditDialogOpen] = useState(false);
     const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+        const [addLecturerDialogOpen, setAddLecturerDialogOpen] = useState(false);
 
     const { data, isLoading, error, refetch } = useQuery<Course[]>({
         queryKey: ["courses"],
@@ -37,23 +39,42 @@ export default function Page() {
                     </div>
 
                     {isAdmin && (
-                        <button
-                            onClick={() => {
-                                setSelectedCourse(null);
-                                setEditDialogOpen(true);
-                            }}
-                            className="
-                                flex items-center gap-2
-                                border-2 border-accent text-accent
-                                px-4 py-2
-                                font-mono text-xs uppercase tracking-widest
-                                hover:bg-accent hover:text-paper
-                                transition-colors
-                            "
-                        >
-                            <FaPlus />
-                            {t("newCourse")}
-                        </button>
+                        <div className="flex items-center gap-4">
+                            {/* NEW LECTURER */}
+                            <button
+                                onClick={() => setAddLecturerDialogOpen(true)}
+                                className="
+                                    flex items-center gap-2
+                                    border-2 border-accent text-accent
+                                    px-4 py-2
+                                    font-mono text-xs uppercase tracking-widest
+                                    hover:bg-accent hover:text-paper
+                                    transition-colors
+                                "
+                            >
+                                <FaUserPlus />
+                                NEW LECTURER
+                            </button>
+
+                            {/* NEW COURSE */}
+                            <button
+                                onClick={() => {
+                                    setSelectedCourse(null);
+                                    setEditDialogOpen(true);
+                                }}
+                                className="
+                                    flex items-center gap-2
+                                    border-2 border-accent text-accent
+                                    px-4 py-2
+                                    font-mono text-xs uppercase tracking-widest
+                                    hover:bg-accent hover:text-paper
+                                    transition-colors
+                                "
+                            >
+                                <FaPlus />
+                                {t("newCourse")}
+                            </button>
+                        </div>
                     )}
                 </div>
 
@@ -102,6 +123,10 @@ export default function Page() {
                 onSuccess={refetch}
                 mode={selectedCourse ? "edit" : "add"}
                 course={selectedCourse ?? undefined}
+            />
+             <AddLecturerDialog
+                open={addLecturerDialogOpen}
+                onClose={() => setAddLecturerDialogOpen(false)}
             />
         </div>
     );
