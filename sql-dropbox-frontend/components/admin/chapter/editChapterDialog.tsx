@@ -1,12 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+    useMutation,
+    useQuery,
+    useQueryClient,
+} from "@tanstack/react-query";
 import { FaTimes } from "react-icons/fa";
 import { useTranslations } from "next-intl";
 
 import { Chapter } from "@/types/types";
 import { chapterService } from "@/services/chapterService";
+import { schemaService } from "@/services/schemaService";
 import ConfirmDialog from "@/components/dialog/confirmDialog";
 
 interface Props {
@@ -17,6 +22,12 @@ interface Props {
     chapter?: Chapter;
 }
 
+interface DBSchema {
+    schemaId: number;
+    schemaName: string;
+    schemaImage?: string | null;
+}
+
 type FormErrors = Partial<Record<keyof Chapter, string>>;
 
 const emptyForm: Partial<Chapter> = {
@@ -25,6 +36,8 @@ const emptyForm: Partial<Chapter> = {
     chapterDescriptionNL: "",
     chapterDescriptionEN: "",
     amountOfExercises: 0,
+    schemaId: null,
+    schemaName: "",
 };
 
 export default function EditChapterDialog({
@@ -36,8 +49,13 @@ export default function EditChapterDialog({
 }: Props) {
     const queryClient = useQueryClient();
     const t = useTranslations("ChapterDialog");
-
     const isEdit = mode === "edit";
+
+    const { data: schemas = [] } = useQuery<DBSchema[]>({
+        queryKey: ["schemas"],
+        queryFn: schemaService.getSchemas,
+        enabled: open,
+    });
 
     const [form, setForm] = useState<Partial<Chapter>>(emptyForm);
     const [errors, setErrors] = useState<FormErrors>({});
@@ -47,7 +65,17 @@ export default function EditChapterDialog({
         if (!open) return;
 
         if (chapter && isEdit) {
-            setForm(chapter);
+            setForm({
+                chapterId: chapter.chapterId,
+                chapterNameNL: chapter.chapterNameNL ?? "",
+                chapterNameEN: chapter.chapterNameEN ?? "",
+                chapterDescriptionNL: chapter.chapterDescriptionNL ?? "",
+                chapterDescriptionEN: chapter.chapterDescriptionEN ?? "",
+                amountOfExercises: chapter.amountOfExercises ?? 0,
+                courseId: chapter.courseId ?? courseId,
+                schemaId: chapter.schemaId ?? null,
+                schemaName: chapter.schemaName ?? "",
+            });
         } else {
             setForm({
                 ...emptyForm,
@@ -69,22 +97,35 @@ export default function EditChapterDialog({
             newErrors.chapterNameEN = t("errors.chapterNameENRequired");
         }
 
+        if (!form.schemaId) {
+            newErrors.schemaId = "schema fout";
+        }
+
         return newErrors;
     }
 
     const mutation = useMutation({
         mutationFn: async () => {
-            if (mode === "edit" && chapter) {
-                return chapterService.updateChapter(chapter.chapterId, form);
+            const payload: Partial<Chapter> = {
+                chapterNameNL: form.chapterNameNL ?? "",
+                chapterNameEN: form.chapterNameEN ?? "",
+                chapterDescriptionNL: form.chapterDescriptionNL ?? "",
+                chapterDescriptionEN: form.chapterDescriptionEN ?? "",
+                amountOfExercises: form.amountOfExercises ?? 0,
+                schemaId: form.schemaId ?? null,
+                schemaName: form.schemaName ?? "",
+            };
+
+            if (isEdit && chapter) {
+                return chapterService.updateChapter(chapter.chapterId, payload);
             }
 
-            return chapterService.addChapter(courseId, form);
+            return chapterService.addChapter(courseId, payload);
         },
         onSuccess: () => {
             queryClient.invalidateQueries({
                 queryKey: ["course", courseId],
             });
-
             onClose();
         },
     });
@@ -94,7 +135,7 @@ export default function EditChapterDialog({
         setConfirmDeleteDialogOpen(true);
     }
 
-    async function handleSubmit() {
+    function handleSubmit() {
         const newErrors = validate();
 
         if (Object.keys(newErrors).length > 0) {
@@ -126,6 +167,7 @@ export default function EditChapterDialog({
                     <button
                         onClick={onClose}
                         className="opacity-70 hover:opacity-100 transition"
+                        type="button"
                     >
                         <FaTimes />
                     </button>
@@ -144,10 +186,10 @@ export default function EditChapterDialog({
                             placeholder={t("chapterNameENPlaceholder")}
                             value={form.chapterNameEN ?? ""}
                             onChange={(e) =>
-                                setForm({
-                                    ...form,
+                                setForm((prev) => ({
+                                    ...prev,
                                     chapterNameEN: e.target.value,
-                                })
+                                }))
                             }
                             className={inputClass(!!errors.chapterNameEN)}
                         />
@@ -161,10 +203,10 @@ export default function EditChapterDialog({
                             placeholder={t("chapterNameNLPlaceholder")}
                             value={form.chapterNameNL ?? ""}
                             onChange={(e) =>
-                                setForm({
-                                    ...form,
+                                setForm((prev) => ({
+                                    ...prev,
                                     chapterNameNL: e.target.value,
-                                })
+                                }))
                             }
                             className={inputClass(!!errors.chapterNameNL)}
                         />
@@ -176,10 +218,10 @@ export default function EditChapterDialog({
                             rows={4}
                             value={form.chapterDescriptionEN ?? ""}
                             onChange={(e) =>
-                                setForm({
-                                    ...form,
+                                setForm((prev) => ({
+                                    ...prev,
                                     chapterDescriptionEN: e.target.value,
-                                })
+                                }))
                             }
                             className="w-full bg-transparent border border-border p-3 text-sm resize-none focus:border-accent outline-none"
                         />
@@ -191,10 +233,10 @@ export default function EditChapterDialog({
                             rows={4}
                             value={form.chapterDescriptionNL ?? ""}
                             onChange={(e) =>
-                                setForm({
-                                    ...form,
+                                setForm((prev) => ({
+                                    ...prev,
                                     chapterDescriptionNL: e.target.value,
-                                })
+                                }))
                             }
                             className="w-full bg-transparent border border-border p-3 text-sm resize-none focus:border-accent outline-none"
                         />
@@ -206,13 +248,56 @@ export default function EditChapterDialog({
                             placeholder={t("amountOfExercises")}
                             value={form.amountOfExercises ?? 0}
                             onChange={(e) =>
-                                setForm({
-                                    ...form,
-                                    amountOfExercises: Number(e.target.value),
-                                })
+                                setForm((prev) => ({
+                                    ...prev,
+                                    amountOfExercises:
+                                        e.target.value === ""
+                                            ? 0
+                                            : Number(e.target.value),
+                                }))
                             }
                             className="w-full bg-transparent border-b border-border py-1 text-sm focus:border-accent outline-none"
                         />
+                    </Field>
+
+                    <Field label={"schema"} error={errors.schemaId}>
+                        <select
+                            value={form.schemaId ?? ""}
+                            onChange={(e) => {
+                                const value = e.target.value;
+
+                                if (value === "") {
+                                    setForm((prev) => ({
+                                        ...prev,
+                                        schemaId: null,
+                                        schemaName: "",
+                                    }));
+                                    return;
+                                }
+
+                                const selectedId = Number(value);
+                                const selectedSchema = schemas.find(
+                                    (schema) => schema.schemaId === selectedId,
+                                );
+
+                                setForm((prev) => ({
+                                    ...prev,
+                                    schemaId: selectedId,
+                                    schemaName: selectedSchema?.schemaName ?? "",
+                                }));
+                            }}
+                            className="w-full bg-transparent border-b border-border py-1 text-sm outline-none focus:border-accent"
+                        >
+                            <option value="">kies schema</option>
+                            {schemas.map((schema) => (
+                                <option
+                                    key={schema.schemaId}
+                                    value={schema.schemaId}
+                                >
+                                    {schema.schemaName}
+                                </option>
+                            ))}
+                        </select>
                     </Field>
                 </div>
 
@@ -221,6 +306,7 @@ export default function EditChapterDialog({
                         {isEdit && (
                             <button
                                 onClick={onDelete}
+                                type="button"
                                 className="px-4 py-2 border border-error text-ink hover:bg-error hover:text-paper transition -rotate-1"
                             >
                                 {t("delete")}
@@ -231,6 +317,7 @@ export default function EditChapterDialog({
                     <div className="flex gap-3 ml-auto">
                         <button
                             onClick={onClose}
+                            type="button"
                             className="px-4 py-2 border border-border text-muted hover:bg-ink hover:text-paper transition"
                         >
                             {t("cancel")}
@@ -238,6 +325,7 @@ export default function EditChapterDialog({
 
                         <button
                             onClick={handleSubmit}
+                            type="button"
                             disabled={mutation.isPending}
                             className="px-4 py-2 border-2 border-accent text-accent hover:bg-accent hover:text-paper transition rotate-1 disabled:opacity-50"
                         >

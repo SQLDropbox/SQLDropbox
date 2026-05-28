@@ -16,6 +16,12 @@ export interface Course {
     totalCourseCount?: number;
 }
 
+export interface DBSchema {
+    schemaId: number;
+    schemaName: string;
+    schemaImage?: string | null;
+}
+
 export interface Chapter {
     chapterId: number;
     chapterNameNL: string;
