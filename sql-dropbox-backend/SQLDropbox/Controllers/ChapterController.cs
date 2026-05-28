@@ -239,6 +239,13 @@ public class ChapterController(AppDbContext db, IConfiguration config) : BaseCon
                 // return the exercises;
                 return Ok(exercises);
             }
+            var allExercisesForAdmin = await _db.Exercises
+                .Include(e => e.Solutions.Where(s => s.DeletedAt == null))
+                .Where(e => e.Chapter.ChapterId == chapterId && e.DeletedAt == null)
+                .OrderBy(e => e.ExerciseId)
+                .ToListAsync();
+
+            return Ok(allExercisesForAdmin);
 
             Chapter? chapter = await _db.Chapters
                 .Where(c => c.DeletedAt == null && c.ChapterId == chapterId)
