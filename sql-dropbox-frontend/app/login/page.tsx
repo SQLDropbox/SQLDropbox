@@ -34,7 +34,7 @@ export default function Page() {
     };
 
     return (
-        <div className="min-h-screen flex flex-col bg-paper text-ink font-mono">
+        <div className="min-h-screen flex flex-col font-mono">
             <Header />
 
             <main className="flex-1 flex items-center justify-center px-6">

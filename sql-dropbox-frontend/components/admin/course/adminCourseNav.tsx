@@ -34,7 +34,7 @@ export default function AdminCourseNav({ course }: { course: Course }) {
             hidden md:flex flex-col
             w-56 shrink-0
             sticky top-0 h-screen
-            bg-surface-1
+            bg-linear-to-b from-surface-3 to-surface-2
             border-r-2 border-border
             py-8 gap-4
             overflow-y-auto

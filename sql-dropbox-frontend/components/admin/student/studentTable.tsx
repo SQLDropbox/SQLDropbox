@@ -35,7 +35,7 @@ export default function StudentTable({ course, onAddManual, onUpload }: Props) {
     );
 
     return (
-        <div className="max-w-7xl relative bg-paper bg-ruled border-2 border-border p-10">
+        <div className="max-w-7xl relative bg-paper bg-ruled border-2 border-border p-10 shadow-lg">
             {/* Tape corners */}
             {TAPE_CORNERS.map((cls, i) => (
                 <div

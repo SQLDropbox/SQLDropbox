@@ -7,12 +7,13 @@ import Link from "next/link";
 import { FaArrowLeft, FaPlus } from "react-icons/fa6";
 
 import Header from "@/components/header";
-import AdminExerciseCard from "@/components/admin/exercise/adminExerciseCard"; 
+import AdminExerciseCard from "@/components/admin/exercise/adminExerciseCard";
 import { Exercise, Chapter } from "@/types/types";
 
 import { exerciseService } from "@/services/exerciseService";
 import { chapterService } from "@/services/chapterService";
 import EditExerciseDialog from "@/components/admin/exercise/editExerciseCard";
+import Loading from "@/components/loading";
 
 export default function ChapterExercisesPage() {
     const params = useParams();
@@ -22,7 +23,9 @@ export default function ChapterExercisesPage() {
 
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [dialogMode, setDialogMode] = useState<"add" | "edit">("add");
-    const [selectedExercise, setSelectedExercise] = useState<Exercise | undefined>(undefined);
+    const [selectedExercise, setSelectedExercise] = useState<
+        Exercise | undefined
+    >(undefined);
 
     const { data: chapter } = useQuery<Chapter>({
         queryKey: ["chapter", chapterId],
@@ -31,7 +34,7 @@ export default function ChapterExercisesPage() {
     });
 
     const {
-        data: exercises = [], 
+        data: exercises = [],
         isLoading,
         error,
     } = useQuery<Exercise[]>({
@@ -53,14 +56,7 @@ export default function ChapterExercisesPage() {
     };
 
     if (isLoading) {
-        return (
-            <div>
-                <Header />
-                <div className="max-w-350 mx-auto p-6">
-                    <p className="text-gray-500">Gegevens laden...</p>
-                </div>
-            </div>
-        );
+        return <Loading />;
     }
 
     if (error) {
@@ -68,7 +64,9 @@ export default function ChapterExercisesPage() {
             <div>
                 <Header />
                 <div className="max-w-350 mx-auto p-6">
-                    <p className="text-red-500">Fout: {(error as Error).message}</p>
+                    <p className="text-red-500">
+                        Fout: {(error as Error).message}
+                    </p>
                 </div>
             </div>
         );
@@ -79,17 +77,17 @@ export default function ChapterExercisesPage() {
             <Header />
 
             <div className="max-w-350 mx-auto p-6">
-                
                 <div className="mb-6">
-                    <Link 
-                        href={`/admin/${courseId}`} 
+                    <Link
+                        href={`/admin/${courseId}`}
                         className="flex items-center gap-2 text-gray-600 hover:text-black transition-colors w-fit text-sm font-medium mb-4"
                     >
                         <FaArrowLeft /> Terug naar hoofdstukken
                     </Link>
-                    
+
                     <h1 className="text-3xl font-bold text-gray-900">
-                        Oefeningen: {chapter?.chapterNameNL || `Hoofdstuk ${chapterId}`}
+                        Oefeningen:{" "}
+                        {chapter?.chapterNameNL || `Hoofdstuk ${chapterId}`}
                     </h1>
                 </div>
 
@@ -110,7 +108,7 @@ export default function ChapterExercisesPage() {
                 ) : (
                     <div className="flex flex-col gap-4">
                         {exercises.map((exercise) => (
-                            <AdminExerciseCard 
+                            <AdminExerciseCard
                                 key={exercise.exerciseId}
                                 exercise={exercise}
                                 onEdit={() => handleEditExercise(exercise)}

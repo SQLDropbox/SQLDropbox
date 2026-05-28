@@ -38,7 +38,7 @@ export default function Page() {
     }
 
     return (
-        <div className="bg-paper text-ink min-h-screen flex flex-col">
+        <div className="min-h-screen flex flex-col">
             <Header />
 
             {/* Below header: sidebar + content side by side, flush */}

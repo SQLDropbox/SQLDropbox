@@ -9,6 +9,7 @@ import { useState } from "react";
 import { FaEnvelope, FaLock } from "react-icons/fa";
 import { useTranslations } from "next-intl";
 import { FiEye, FiEyeOff } from "react-icons/fi";
+import Loading from "@/components/loading";
 
 export default function Page() {
     const router = useRouter();
@@ -62,19 +63,12 @@ export default function Page() {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen flex flex-col bg-paper text-ink font-mono">
-                <Header />
-                <div className="flex-1 flex items-center justify-center">
-                    <p className="text-sm text-muted uppercase tracking-widest">
-                        {t("loading")}
-                    </p>
-                </div>
-            </div>
+            <Loading />
         );
     }
 
     return (
-        <div className="min-h-screen flex flex-col bg-paper text-ink font-mono">
+        <div className="min-h-screen flex flex-col font-mono">
             <Header />
 
             <main className="flex-1 flex items-center justify-center px-6">
