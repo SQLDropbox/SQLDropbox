@@ -211,7 +211,30 @@
         "enroll": "Enroll",
         "upload": "Upload",
         "noPersonnel": "— NO STUDENTS ON RECORD —",
-        "recordingNo": "RECORDING NO. {courseId}"
+        "recordingNo": "RECORDING NO. {courseId}",
+        "modal": {
+            "bulkEnrollment": "BULK ENROLLMENT / DATABASE ENTRY",
+            "title": "Import Students",
+            "format": "FORMAT: CSV",
+            "step": "STEP:",
+            "stepUpload": "01 — UPLOAD",
+            "stepConfirm": "02 — CONFIRM",
+            "dragDrop": "Drag & drop CSV file here",
+            "orClick": "or click to browse",
+            "onlyCsv": "Only CSV files are allowed.",
+            "selectCsv": "Please select a CSV file.",
+            "somethingWrong": "Something went wrong.",
+            "recordsQueued": "Records queued for import:",
+            "recordsSkipped": "Records skipped:",
+            "colCode": "Code",
+            "colName": "Name",
+            "colEmail": "Email",
+            "cancel": "CANCEL",
+            "processing": "PROCESSING...",
+            "load": "LOAD",
+            "importing": "IMPORTING...",
+            "confirmImport": "CONFIRM IMPORT"
+        }
     },
     "Unauthorized": {
         "stamp": "ACCESS RESTRICTED",

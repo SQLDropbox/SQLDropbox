@@ -210,7 +210,30 @@
         "enroll": "Inschrijven",
         "upload": "Uploaden",
         "noPersonnel": "— GEEN STUDENTEN GEREGISTREERD —",
-        "recordingNo": "REGISTRATIE NR. {courseId}"
+        "recordingNo": "REGISTRATIE NR. {courseId}",
+        "modal": {
+            "bulkEnrollment": "GROEPSINSCHRIJVING / DATABASE-INGAVE",
+            "title": "Studenten importeren",
+            "format": "FORMEER: CSV",
+            "step": "STAP:",
+            "stepUpload": "01 — UPLOAD",
+            "stepConfirm": "02 — BEVESTIG",
+            "dragDrop": "Sleep CSV-bestand hier naartoe",
+            "orClick": "of klik om te bladeren",
+            "onlyCsv": "Alleen CSV-bestanden zijn toegestaan.",
+            "selectCsv": "Selecteer een CSV-bestand.",
+            "somethingWrong": "Er is iets misgegaan.",
+            "recordsQueued": "Records in wachtrij voor import:",
+            "recordsSkipped": "Overgeslagen records:",
+            "colCode": "Code",
+            "colName": "Naam",
+            "colEmail": "E-mail",
+            "cancel": "ANNULEREN",
+            "processing": "BEWERKEN...",
+            "load": "LADEN",
+            "importing": "IMPORTEREN...",
+            "confirmImport": "IMPORT BEVESTIGEN"
+        }
     },
     "Unauthorized": {
         "stamp": "TOEGANG BEPERKT",
