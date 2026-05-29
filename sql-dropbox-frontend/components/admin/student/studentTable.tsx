@@ -90,7 +90,7 @@ export default function StudentTable({ course, onAddManual, onUpload }: Props) {
                         "
                     >
                         <FaUserPlus className="text-[10px]" />
-                        Manual
+                        Enroll
                     </button>
 
                     {/* Upload */}

@@ -5,15 +5,14 @@ import { useState } from "react";
 import Header from "@/components/header";
 import { Course } from "@/types/types";
 import { useQuery } from "@tanstack/react-query";
-import AddStudentModal from "@/components/student/addStudentModal";
-import ImportStudentsModal from "@/components/student/importStudentsModal";
+import AddStudentModal from "@/components/admin/student/addStudentModal";
+import ImportStudentsModal from "@/components/admin/student/importStudentsModal";
 import AdminCourseNav from "@/components/admin/course/adminCourseNav";
 import { userService } from "@/services/userService";
 import StudentTable from "@/components/admin/student/studentTable";
 import Loading from "@/components/loading";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { FaArrowLeft } from "react-icons/fa6";
 
 export default function Page() {
     const params = useParams();

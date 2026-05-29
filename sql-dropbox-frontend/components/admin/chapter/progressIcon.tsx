@@ -10,16 +10,16 @@ export default function ProgressIcon({
     className?: string;
 }) {
     if (completed === 0) {
-        return <FaRegCircle className={`text-xl text-muted ${className}`} />;
+        return <FaRegCircle className={`text-xl text-muted ${className}`} title={completed + " / " + total} />;
     }
 
     if (completed < total / 2) {
-        return <FaClock className={`text-xl text-accent ${className}`} />;
+        return <FaClock className={`text-xl text-accent ${className}`} title={completed + " / " + total} />;
     }
 
     if (completed < total) {
-        return <FaMedal className={`text-xl text-gray-500 ${className}`} />;
+        return <FaMedal className={`text-xl text-gray-500 ${className}`} title={completed + " / " + total} />;
     }
 
-    return <FaMedal className={`text-xl text-yellow-500 ${className}`} />;
+    return <FaMedal className={`text-xl text-yellow-500 ${className}`} title={completed + " / " + total} />;
 }
