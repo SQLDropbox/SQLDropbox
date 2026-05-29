@@ -5,19 +5,21 @@ namespace SQLDropbox.Services
 {
     public class SqlQueryService
     {
-        public bool IsProtectedSchema(string schema){
-            
+        public bool IsProtectedSchema(string schema)
+        {
+
             if (string.IsNullOrWhiteSpace(schema)) return true;
 
             schema = schema.Trim().ToLowerInvariant();
 
-            var forbidden = new[] {"util", "public", "pg_catalog", "information_schema"};
+            var forbidden = new[] { "util", "public", "pg_catalog", "information_schema" };
 
             return forbidden.Contains(schema);
         }
 
-        public QueryValidationResult Validate(string query) {
-            
+        public QueryValidationResult Validate(string query)
+        {
+
             if (string.IsNullOrWhiteSpace(query)) return QueryValidationResult.Fail("Query is required.");
 
             var trimmed = query.Trim();
@@ -46,14 +48,14 @@ namespace SQLDropbox.Services
 
             if (trimmed.EndsWith(";")) trimmed = trimmed[..^1].Trim();
 
-            var forbiddenPatterns = new[] { "GRANT ", "REVOKE ", "ALTER ROLE ", "CREATE ROLE ", "DROP ROLE ", "CREATE USER ", "ALTER USER ", "DROP USER ", "SET ROLE ", "RESET ROLE ", "SECURITY LABEL "};
+            var forbiddenPatterns = new[] { "GRANT ", "REVOKE ", "ALTER ROLE ", "CREATE ROLE ", "DROP ROLE ", "CREATE USER ", "ALTER USER ", "DROP USER ", "SET ROLE ", "RESET ROLE ", "SECURITY LABEL " };
 
             if (forbiddenPatterns.Any(x => trimmed.Contains(x, StringComparison.OrdinalIgnoreCase)))
             {
                 return QueryValidationResult.Fail("Queries that change database privileges or roles are not allowed.");
             }
 
-            var allowedStarts = new[] {"SELECT", "INSERT", "UPDATE", "DELETE", "CREATE", "ALTER", "DROP", "COMMENT"};
+            var allowedStarts = new[] { "SELECT", "INSERT", "UPDATE", "DELETE", "CREATE", "ALTER", "DROP", "COMMENT" };
 
             normalized = Regex.Replace(trimmed.ToUpperInvariant(), @"\s+", " ").Trim();
 
@@ -63,7 +65,7 @@ namespace SQLDropbox.Services
                 return QueryValidationResult.Fail("Only allowed SQL statements are permitted.");
             }
 
-            var forbiddenSchemas = new[] {"util.", "public.", "pg_catalog.", "information_schema."};
+            var forbiddenSchemas = new[] { "util.", "public.", "pg_catalog.", "information_schema." };
 
             if (forbiddenSchemas.Any(x => trimmed.Contains(x, StringComparison.OrdinalIgnoreCase)))
             {
@@ -73,8 +75,9 @@ namespace SQLDropbox.Services
             return QueryValidationResult.Success(trimmed);
         }
 
-        public QueryValidationResult ValidateRoutineInvocation(string query) {
-            
+        public QueryValidationResult ValidateRoutineInvocation(string query)
+        {
+
             if (string.IsNullOrWhiteSpace(query)) return QueryValidationResult.Fail("Invocation SQL is required.");
 
             var trimmed = query.Trim();
@@ -94,14 +97,14 @@ namespace SQLDropbox.Services
                 return QueryValidationResult.Fail("Only SELECT or CALL is allowed for routine invocation.");
             }
 
-            var forbiddenSchemas = new[] { "util.", "public.", "pg_catalog.", "information_schema."};
+            var forbiddenSchemas = new[] { "util.", "public.", "pg_catalog.", "information_schema." };
 
             if (forbiddenSchemas.Any(x => trimmed.Contains(x, StringComparison.OrdinalIgnoreCase)))
             {
                 return QueryValidationResult.Fail("Referencing protected schemas is not allowed.");
             }
 
-            var forbidden = new[] {"INSERT ", "UPDATE ", "DELETE ", "DROP ", "ALTER ", "CREATE ", "TRUNCATE ", "GRANT ", "REVOKE "};
+            var forbidden = new[] { "INSERT ", "UPDATE ", "DELETE ", "DROP ", "ALTER ", "CREATE ", "TRUNCATE ", "GRANT ", "REVOKE " };
 
             if (forbidden.Any(x => normalized.Contains(x)))
             {
@@ -137,7 +140,7 @@ namespace SQLDropbox.Services
                 return QueryValidationResult.Fail("SQL comments are not allowed.");
             }
 
-            var forbiddenKeywords = new[] {"INSERT ", "UPDATE ", "DELETE ", "DROP ", "ALTER ", "CREATE ", "TRUNCATE ", "CALL ", "DO ", "COPY ", "GRANT ", "REVOKE ", "SET ", "RESET ", "SHOW "};
+            var forbiddenKeywords = new[] { "INSERT ", "UPDATE ", "DELETE ", "DROP ", "ALTER ", "CREATE ", "TRUNCATE ", "CALL ", "DO ", "COPY ", "GRANT ", "REVOKE ", "SET ", "RESET ", "SHOW " };
 
             if (forbiddenKeywords.Any(x => normalized.Contains(x)))
             {
@@ -232,8 +235,9 @@ namespace SQLDropbox.Services
             return QueryValidationResult.Success(trimmed);
         }
 
-        public bool IsSafeSelectQuery(string query) {
-            
+        public bool IsSafeSelectQuery(string query)
+        {
+
             if (string.IsNullOrWhiteSpace(query)) return false;
 
             var trimmed = query.Trim();
@@ -243,7 +247,7 @@ namespace SQLDropbox.Services
             if (trimmed.Contains("--") || trimmed.Contains("/*") || trimmed.Contains("*/"))
                 return false;
 
-            var forbidden = new[] {"INSERT ", "UPDATE ", "DELETE ", "DROP ", "ALTER ", "CREATE ", "TRUNCATE ", "CALL ", "DO ", "COPY ", "GRANT ", "REVOKE "};
+            var forbidden = new[] { "INSERT ", "UPDATE ", "DELETE ", "DROP ", "ALTER ", "CREATE ", "TRUNCATE ", "CALL ", "DO ", "COPY ", "GRANT ", "REVOKE " };
 
             return !forbidden.Any(x => trimmed.Contains(x, StringComparison.OrdinalIgnoreCase));
         }

@@ -118,7 +118,7 @@ public class ExerciseController(AppDbContext db, SolutionService solutionService
         try
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);            
+                return BadRequest(ModelState);
 
             Exercise? exercise = await _db.Exercises
                 .Include(e => e.Chapter)
@@ -132,7 +132,7 @@ public class ExerciseController(AppDbContext db, SolutionService solutionService
             if (dto.HintNL != null) exercise.HintNL = dto.HintNL;
             if (dto.HintEN != null) exercise.HintEN = dto.HintEN;
 
-            if(dto.QueryAction != null)
+            if (dto.QueryAction != null)
             {
                 if (!Enum.IsDefined(typeof(QueryAction), dto.QueryAction))
                     return BadRequest(new { message = "Query action has to be an allowed value" });
@@ -155,7 +155,7 @@ public class ExerciseController(AppDbContext db, SolutionService solutionService
                     //If this returns an error, that error should be shown
                     string queryOutput = await _scS.ExecuteSelectOnSchemaAsync(exercise.Chapter.Schema.SchemaName, formattedQuery);
                     exercise.QueryOutput = queryOutput;
-                }                                                           
+                }
 
                 exercise.Solutions =
                 [
@@ -169,13 +169,13 @@ public class ExerciseController(AppDbContext db, SolutionService solutionService
             }
 
             if (exercise.QueryAction != QueryAction.Select && dto.ValidationQuery != null)
-            {                
+            {
                 string formattedQuery = _soS.FormatQuery(dto.ValidationQuery);
                 string queryOutput = await _scS.ExecuteSelectOnSchemaAsync(exercise.Chapter.Schema.SchemaName, formattedQuery);
                 exercise.ValidationQuery = formattedQuery;
                 exercise.QueryOutput = queryOutput;
             }
-            
+
             exercise.UpdatedAt = DateTime.UtcNow;
 
             await _db.SaveChangesAsync();

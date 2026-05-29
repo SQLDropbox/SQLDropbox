@@ -1,7 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-using Npgsql;
-using SQLDropbox.Models;
-using System.Text.RegularExpressions;
+﻿using Npgsql;
 
 namespace SQLDropbox.Services
 {

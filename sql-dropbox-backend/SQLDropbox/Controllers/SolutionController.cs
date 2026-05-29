@@ -71,12 +71,12 @@ public class SolutionController(AppDbContext db, SolutionService solutionService
             // all else stays the same
             string queryOutput = "";
 
-            if(exercise.QueryAction == QueryAction.Select)
+            if (exercise.QueryAction == QueryAction.Select)
             {
                 queryOutput = await _scS.ExecuteSelectOnSchemaAsync(exercise.Chapter.Schema.SchemaName, formattedQuery);
             }
             else
-            {                
+            {
                 if (exercise.ValidationQuery == null)
                     return BadRequest(new { message = $"This {exercise.QueryAction} query cannot be validated." });
 
@@ -153,5 +153,5 @@ public class SolutionController(AppDbContext db, SolutionService solutionService
         {
             return BadRequest(new { message = "An error occured." });
         }
-    }    
+    }
 }
