@@ -35,7 +35,7 @@ export default function StudentTable({ course, onAddManual, onUpload }: Props) {
     );
 
     return (
-        <div className="max-w-7xl relative bg-paper bg-ruled border-2 border-border p-10 shadow-lg">
+        <div className="max-w-7xl relative bg-paper bg-ruled border-2 border-border shadow-lg">
             {/* Tape corners */}
             {TAPE_CORNERS.map((cls, i) => (
                 <div
@@ -45,7 +45,7 @@ export default function StudentTable({ course, onAddManual, onUpload }: Props) {
             ))}
 
             {/* Header */}
-            <div className="mb-8 pb-4 relative z-10 border-b-2 border-accent flex items-end justify-between gap-4 flex-wrap">
+            <div className="px-10 pt-10 pb-4 relative z-10 border-b-2 border-accent flex items-end justify-between gap-4 flex-wrap">
                 {/* Title block */}
                 <div>
                     <h1 className="font-display text-[1.75rem] font-bold text-accent uppercase tracking-tighter -rotate-1 inline-block mb-1">
@@ -110,41 +110,43 @@ export default function StudentTable({ course, onAddManual, onUpload }: Props) {
                 </div>
             </div>
 
-            {/* Table */}
-            <table
-                className="w-full text-left border-collapse"
-                style={{
-                    minWidth: `${260 + (course.chapters?.length ?? 0) * 100}px`,
-                }}
-            >
-                <StudentTableHead course={course} />
-                <tbody>
-                    {filteredStudents.length > 0 ? (
-                        filteredStudents.map((student, rowIndex) => {
-                            return (
+            {/* Scrollable table container — sits inside the card, clips overflow */}
+            <div className="overflow-x-auto p-10">
+                <table
+                    className="w-full text-left border-collapse"
+                    style={{
+                        minWidth: `${260 + (course.chapters?.length ?? 0) * 100}px`,
+                    }}
+                >
+                    <StudentTableHead course={course} />
+                    <tbody>
+                        {filteredStudents.length > 0 ? (
+                            filteredStudents.map((student, rowIndex) => (
                                 <StudentTableRow
                                     key={student.userCode}
                                     student={student}
                                     course={course}
                                     rowIndex={rowIndex}
                                 />
-                            );
-                        })
-                    ) : (
-                        <tr>
-                            <td
-                                colSpan={colCount}
-                                className="p-6 text-center font-mono text-xs text-muted uppercase tracking-widest border-t border-border"
-                            >
-                                — NO PERSONNEL ON RECORD —
-                            </td>
-                        </tr>
-                    )}
-                </tbody>
-            </table>
+                            ))
+                        ) : (
+                            <tr>
+                                <td
+                                    colSpan={colCount}
+                                    className="p-6 text-center font-mono text-xs text-muted uppercase tracking-widest border-t border-border"
+                                >
+                                    — NO PERSONNEL ON RECORD —
+                                </td>
+                            </tr>
+                        )}
+                    </tbody>
+                </table>
 
-            {/* Legend */}
-            <StudentTableLegend />
+                {/* Legend */}
+                <div className="px-10 left-0 sticky pt-6 border-t border-border">
+                    <StudentTableLegend />
+                </div>
+            </div>
 
             {/* Footer stamp */}
             <div className="absolute bottom-4 right-6 pointer-events-none font-mono text-[10px] text-accent opacity-30 rotate-[2deg] border border-current px-2 py-0.5 uppercase tracking-[0.1em]">
