@@ -1,4 +1,5 @@
 import { Course } from "@/types/types";
+import { useTranslations, useLocale } from "next-intl";
 
 const STAMP_ROTS = [-6, 5, -2, -5, 6, -4, 2, -5, 4, 6];
 const stRot = (i: number) => STAMP_ROTS[Math.abs(i) % STAMP_ROTS.length];
@@ -12,20 +13,22 @@ type Props = {
 };
 
 export default function StudentTableHead({ course }: Props) {
+    const t = useTranslations("StudentTableHead");
+    const locale = useLocale();
     return (
         <div className="flex border-b-2 border-border bg-surface-1 sticky top-0 z-20">
             {/* Code */}
             <div
                 className={`${COL_CODE_W} p-3 font-display text-ink whitespace-nowrap shrink-0`}
             >
-                CODE
+                {t("code")}
             </div>
 
             {/* Student */}
             <div
                 className={`${COL_NAME_W} p-3 font-display text-ink whitespace-nowrap bg-surface-2 shrink-0 border-l border-border`}
             >
-                STUDENT
+                {t("student")}
             </div>
 
             {/* Chapters */}
@@ -46,11 +49,18 @@ export default function StudentTableHead({ course }: Props) {
                         style={{ transform: `rotate(${stRot(i)}deg)` }}
                         title={chapter.chapterNameEN}
                     >
-                        {chapter.chapterNameEN}
-                    </div>
-                </div>
-            ))}
-        </div>
+                        <div
+                            className="inline-block"
+                            style={{
+                                transform: `rotate(${stRot(i)}deg)`,
+                            }}
+                        >
+                            {locale === "en" ? chapter.chapterNameEN : chapter.chapterNameNL}
+                        </div>
+                    </th>
+                ))}
+            </tr>
+        </thead>
     );
 }
 

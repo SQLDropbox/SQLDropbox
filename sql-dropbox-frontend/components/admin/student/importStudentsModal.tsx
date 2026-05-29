@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { FaTimes, FaUpload } from "react-icons/fa";
+import { useTranslations } from "next-intl";
 
 import { userService } from "@/services/userService";
 import { User } from "@/types/types";
@@ -20,6 +21,7 @@ export default function ImportStudentsModal({
     onClose,
     onSuccess,
 }: Props) {
+    const t = useTranslations("StudentTable");
     const [step, setStep] = useState<Step>("upload");
 
     const [file, setFile] = useState<File | null>(null);
@@ -50,7 +52,7 @@ export default function ImportStudentsModal({
             selected.name.toLowerCase().endsWith(".csv");
 
         if (!isCsv) {
-            setUploadError("Only CSV files are allowed.");
+            setUploadError(t("modal.onlyCsv"));
             setFile(null);
             return;
         }
@@ -73,7 +75,7 @@ export default function ImportStudentsModal({
     // ------------------------------------
     async function handleLoad() {
         if (!file) {
-            setUploadError("Please select a CSV file.");
+            setUploadError(t("modal.selectCsv"));
             return;
         }
 
@@ -87,7 +89,7 @@ export default function ImportStudentsModal({
             setStep("load");
         } catch (e) {
             setErrorDialog(
-                e instanceof Error ? e.message : "Something went wrong.",
+                e instanceof Error ? e.message : t("modal.somethingWrong"),
             );
         } finally {
             setSubmitting(false);
@@ -108,7 +110,7 @@ export default function ImportStudentsModal({
             }, 800);
         } catch (e) {
             setErrorDialog(
-                e instanceof Error ? e.message : "Something went wrong.",
+                e instanceof Error ? e.message : t("modal.somethingWrong"),
             );
         } finally {
             setSubmitting(false);
@@ -125,14 +127,13 @@ export default function ImportStudentsModal({
                 <div className="border-b border-border bg-paper px-6 py-4 flex justify-between items-start shrink-0">
                     <div>
                         <p className="text-[10px] uppercase tracking-widest text-muted">
-                            BULK ENROLLMENT / DATABASE ENTRY
+                            {t("modal.bulkEnrollment")}
                         </p>
                         <h2 className="font-display text-xl text-accent uppercase">
-                            Import Students
+                            {t("modal.title")}
                         </h2>
                         <p className="text-[11px] text-muted mt-1 uppercase tracking-widest">
-                            FORMAT: CSV &nbsp;/&nbsp; STEP:{" "}
-                            {step === "upload" ? "01 — UPLOAD" : "02 — CONFIRM"}
+                            {t("modal.format")}&nbsp;/&nbsp;{t("modal.step")} {step === "upload" ? t("modal.stepUpload") : t("modal.stepConfirm")}
                         </p>
                     </div>
 
@@ -175,15 +176,15 @@ export default function ImportStudentsModal({
                                 <FaUpload className="text-xl mx-auto mb-3 text-muted" />
 
                                 <p className="text-xs uppercase tracking-widest text-ink">
-                                    Drag &amp; drop CSV file here
+                                    {t("modal.dragDrop")}
                                 </p>
 
                                 <p className="text-[11px] text-muted mt-1 uppercase tracking-wider">
-                                    or click to browse
+                                    {t("modal.orClick")}
                                 </p>
 
                                 {file && (
-                                    <p className="mt-3 text-[11px] text-accent uppercase tracking-widest border-t border-border/50 pt-3">
+                                        <p className="mt-3 text-[11px] text-accent uppercase tracking-widest border-t border-border/50 pt-3">
                                         ✓ &nbsp;{file.name}
                                     </p>
                                 )}
@@ -201,7 +202,7 @@ export default function ImportStudentsModal({
                     {step === "load" && (
                         <div className="flex flex-col gap-4">
                             <p className="text-[11px] uppercase tracking-widest text-muted">
-                                Records queued for import:&nbsp;
+                                {t("modal.recordsQueued")} &nbsp;
                                 <span className="text-accent">
                                     {students.length}
                                 </span>
@@ -209,7 +210,7 @@ export default function ImportStudentsModal({
                         
                             {skipped.length > 0 && (
                                 <p className="text-[11px] uppercase tracking-widest text-muted">
-                                    Records skipped:&nbsp;
+                                    {t("modal.recordsSkipped")}&nbsp;
                                     <span className="text-error">
                                         {skipped.length}
                                     </span>
@@ -218,9 +219,9 @@ export default function ImportStudentsModal({
 
                             <div className="border border-border overflow-hidden max-h-96 overflow-y-auto">
                                 <table className="w-full text-xs">
-                                    <thead className="bg-paper sticky top-0 border-b border-border">
+                                            <thead className="bg-paper sticky top-0 border-b border-border">
                                         <tr>
-                                            {["Code", "Name", "Email"].map(
+                                            {[t("modal.colCode"), t("modal.colName"), t("modal.colEmail")].map(
                                                 (h) => (
                                                     <th
                                                         key={h}
@@ -264,7 +265,7 @@ export default function ImportStudentsModal({
                         disabled={submitting}
                         className="px-4 py-2 border border-border text-muted hover:bg-ink hover:text-paper transition"
                     >
-                        CANCEL
+                        {t("modal.cancel")}
                     </button>
 
                     {step === "upload" && (
@@ -273,7 +274,7 @@ export default function ImportStudentsModal({
                             disabled={submitting || !file}
                             className="px-4 py-2 border-2 border-accent text-accent hover:bg-accent hover:text-paper transition rotate-1 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            {submitting ? "PROCESSING..." : "LOAD"}
+                            {submitting ? t("modal.processing") : t("modal.load")}
                         </button>
                     )}
 
@@ -283,7 +284,7 @@ export default function ImportStudentsModal({
                             disabled={submitting}
                             className="px-4 py-2 border-2 border-accent text-accent hover:bg-accent hover:text-paper transition rotate-1 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            {submitting ? "IMPORTING..." : "CONFIRM IMPORT"}
+                            {submitting ? t("modal.importing") : t("modal.confirmImport")}
                         </button>
                     )}
                 </div>

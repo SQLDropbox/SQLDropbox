@@ -5,6 +5,7 @@ import LecturerTableHead from "./lecturerTableHead";
 import LecturerTableRow from "./lecturerTableRow";
 import { useState } from "react";
 import { FaUserPlus, FaSearch } from "react-icons/fa";
+import { useTranslations } from "next-intl";
 
 const TAPE_CORNERS = [
     "top-2 -left-4 -rotate-45",
@@ -21,6 +22,7 @@ type Props = {
 
 export default function LecturerTable({ course, onAddManual, onRemoveSuccess }: Props) {
     const [search, setSearch] = useState("");
+    const t = useTranslations("LecturerTable");
 
     const filteredLecturers = (course.lecturers ?? []).filter(
         (l) =>
@@ -45,10 +47,10 @@ export default function LecturerTable({ course, onAddManual, onRemoveSuccess }: 
                 {/* Title block */}
                 <div>
                     <h1 className="font-display text-[1.75rem] font-bold text-accent uppercase tracking-tighter -rotate-1 inline-block mb-1">
-                        MASTER INSTRUCTOR LEDGER
+                        {t("title")}
                     </h1>
                     <p className="font-mono text-[11px] uppercase tracking-widest text-muted mt-1">
-                        VOL. {String(course.courseId ?? "—").toUpperCase()} — ASSIGNED PERSONNEL
+                        {t("assignedPersonnel", { courseId: String(course.courseId ?? "—").toUpperCase() })}
                     </p>
                 </div>
 
@@ -58,7 +60,7 @@ export default function LecturerTable({ course, onAddManual, onRemoveSuccess }: 
                     <div className="relative">
                         <input
                             type="text"
-                            placeholder="SEARCH INSTRUCTORS..."
+                            placeholder={t("searchPlaceholder")}
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             className="
@@ -74,19 +76,19 @@ export default function LecturerTable({ course, onAddManual, onRemoveSuccess }: 
                     </div>
 
                     {/* Add Lecturer */}
-                    <button
-                        onClick={onAddManual}
-                        className="
+                        <button
+                            onClick={onAddManual}
+                            className="
                             flex items-center gap-1.5
                             border border-border px-3 py-1.5
                             font-mono text-[11px] uppercase tracking-wider text-muted
                             hover:border-ink hover:text-ink hover:bg-surface-1
                             transition-colors
                         "
-                    >
-                        <FaUserPlus className="text-[10px]" />
-                        ASSIGN LECTURER
-                    </button>
+                        >
+                            <FaUserPlus className="text-[10px]" />
+                            {t("assignLecturer")}
+                        </button>
                 </div>
             </div>
 
@@ -110,7 +112,7 @@ export default function LecturerTable({ course, onAddManual, onRemoveSuccess }: 
                                 colSpan={3}
                                 className="p-6 text-center font-mono text-xs text-muted uppercase tracking-widest border-t border-border bg-surface-1"
                             >
-                                — NO INSTRUCTORS ASSIGNED YET —
+                                {t("noInstructors")}
                             </td>
                         </tr>
                     )}
@@ -119,7 +121,7 @@ export default function LecturerTable({ course, onAddManual, onRemoveSuccess }: 
 
             {/* Footer stamp */}
             <div className="absolute bottom-4 right-6 pointer-events-none font-mono text-[10px] text-accent opacity-30 rotate-[2deg] border border-current px-2 py-0.5 uppercase tracking-[0.1em]">
-                RECORDING NO. {String(course.courseId ?? "—").toUpperCase()}
+                {t("recordingNo", { courseId: String(course.courseId ?? "—").toUpperCase() })}
             </div>
         </div>
     );

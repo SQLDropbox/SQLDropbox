@@ -1,6 +1,7 @@
 "use client";
 
 import { FaRegCircle } from "react-icons/fa6";
+import { useTranslations } from "next-intl";
 import { Exercise } from "@/types/types";
 
 function LoadingSkeleton() {
@@ -33,11 +34,13 @@ export default function ExerciseSidebar({
     onSelectExercise,
     isLoading = false,
 }: ExerciseSidebarProps) {
+    const t = useTranslations("ExerciseSidebar");
+
     return (
         <aside className="flex min-h-0 flex-col bg-paper">
             <div className="border-b border-border px-5 py-4">
                 <h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted">
-                    Questions
+                    {t("title")}
                 </h2>
             </div>
 
@@ -81,12 +84,14 @@ export default function ExerciseSidebar({
                                       <div className="min-w-0 flex-1">
                                           <div className="flex items-start justify-between gap-3">
                                               <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted">
-                                                  Exercise {index + 1}
+                                                  {t("exerciseLabel", {
+                                                      number: index + 1,
+                                                  })}
                                               </span>
 
                                               {isCompleted ? (
                                                   <span className="border border-border px-2 py-1 font-mono text-[10px] uppercase tracking-widest text-muted">
-                                                      Done
+                                                      {t("done")}
                                                   </span>
                                               ) : (
                                                   <FaRegCircle className="mt-0.5 text-muted text-xs" />
@@ -101,7 +106,7 @@ export default function ExerciseSidebar({
                                               }`}
                                           >
                                               {exercise.questionNL ||
-                                                  "Untitled exercise"}
+                                                  t("untitled")}
                                           </p>
                                       </div>
                                   </div>

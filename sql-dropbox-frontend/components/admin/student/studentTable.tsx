@@ -7,6 +7,7 @@ import StudentTableRow from "./studentTableRow";
 import { useEffect, useMemo, useState } from "react";
 import { FaUpload, FaUserPlus } from "react-icons/fa6";
 import { FaSearch } from "react-icons/fa";
+import { useTranslations } from "next-intl";
 
 const TAPE_CORNERS = [
     "top-2 -left-4 -rotate-45",
@@ -39,6 +40,7 @@ function useDebouncedValue<T>(value: T, delay = 200) {
 
 export default function StudentTable({ course, onAddManual, onUpload }: Props) {
     const [search, setSearch] = useState("");
+    const t = useTranslations("StudentTable");
     const debouncedSearch = useDebouncedValue(search, 250);
 
     const filteredStudents = useMemo(() => {
@@ -82,11 +84,10 @@ export default function StudentTable({ course, onAddManual, onUpload }: Props) {
                 {/* Title block */}
                 <div>
                     <h1 className="font-display text-[1.75rem] font-bold text-accent uppercase tracking-tighter -rotate-1 inline-block mb-1">
-                        MASTER STUDENT LEDGER
+                        {t("title")}
                     </h1>
                     <p className="font-mono text-[11px] uppercase tracking-widest text-muted mt-1">
-                        VOL. {String(course.courseId ?? "—").toUpperCase()} —{" "}
-                        PROGRESS TRACKING SHEET
+                        {t("progressSheet", { courseId: String(course.courseId ?? "—").toUpperCase() })}
                     </p>
                 </div>
 
@@ -95,7 +96,7 @@ export default function StudentTable({ course, onAddManual, onUpload }: Props) {
                     <div className="relative">
                         <input
                             type="text"
-                            placeholder="SEARCH STUDENTS..."
+                            placeholder={t("searchPlaceholder")}
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             className="
@@ -119,10 +120,10 @@ export default function StudentTable({ course, onAddManual, onUpload }: Props) {
                             hover:border-ink hover:text-ink hover:bg-surface-1
                             transition-colors
                         "
-                    >
-                        <FaUserPlus className="text-[10px]" />
-                        Enroll
-                    </button>
+                        >
+                            <FaUserPlus className="text-[10px]" />
+                            {t("enroll")}
+                        </button>
 
                     <button
                         onClick={onUpload}
@@ -135,7 +136,7 @@ export default function StudentTable({ course, onAddManual, onUpload }: Props) {
                         "
                     >
                         <FaUpload className="text-[10px]" />
-                        Upload
+                        {t("upload")}
                     </button>
                 </div>
             </div>
@@ -163,15 +164,20 @@ export default function StudentTable({ course, onAddManual, onUpload }: Props) {
                                         student.userCode,
                                     )}
                                 />
-                            ))}
-                        </div>
-                    </div>
-                ) : (
-                    <div className="p-6 text-center font-mono text-xs text-muted uppercase tracking-widest border-t border-border">
-                        — NO STUDENTS ON RECORD —
-                    </div>
-                )}
-            </div>
+                            );
+                        })
+                    ) : (
+                        <tr>
+                            <td
+                                colSpan={colCount}
+                                className="p-6 text-center font-mono text-xs text-muted uppercase tracking-widest border-t border-border"
+                            >
+                                {t("noPersonnel")}
+                            </td>
+                        </tr>
+                    )}
+                </tbody>
+            </table>
 
             {/* Legend */}
             <div className="p-10 left-0 sticky pt-6 border-t border-border">
@@ -180,7 +186,7 @@ export default function StudentTable({ course, onAddManual, onUpload }: Props) {
 
             {/* Footer stamp */}
             <div className="absolute bottom-4 right-6 pointer-events-none font-mono text-[10px] text-accent opacity-30 rotate-[2deg] border border-current px-2 py-0.5 uppercase tracking-[0.1em]">
-                RECORDING NO. {String(course.courseId ?? "—").toUpperCase()}
+                {t("recordingNo", { courseId: String(course.courseId ?? "—").toUpperCase() })}
             </div>
         </div>
     );
