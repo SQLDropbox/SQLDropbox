@@ -69,6 +69,8 @@ export default function StudentTable({ course, onAddManual, onUpload }: Props) {
         return map;
     }, [course.students]);
 
+    const colCount = (course.chapters?.length ?? 0) + 2;
+
     return (
         <div className="max-w-7xl relative bg-paper bg-ruled border-2 border-border shadow-lg">
             {/* Tape corners */}
@@ -152,32 +154,24 @@ export default function StudentTable({ course, onAddManual, onUpload }: Props) {
                             minWidth: `${400 + (course.chapters?.length ?? 0) * 80}px`,
                         }}
                     >
-                        <div>
-                            <StudentTableHead course={course} />
-                            {filteredStudents.map((student, rowIndex) => (
-                                <StudentTableRow
-                                    key={student.userCode}
-                                    student={student}
-                                    course={course}
-                                    rowIndex={rowIndex}
-                                    chapterMap={studentChapterMap.get(
-                                        student.userCode,
-                                    )}
-                                />
-                            );
-                        })
-                    ) : (
-                        <tr>
-                            <td
-                                colSpan={colCount}
-                                className="p-6 text-center font-mono text-xs text-muted uppercase tracking-widest border-t border-border"
-                            >
-                                {t("noPersonnel")}
-                            </td>
-                        </tr>
-                    )}
-                </tbody>
-            </table>
+                        <StudentTableHead course={course} />
+
+                        {filteredStudents.map((student, rowIndex) => (
+                            <StudentTableRow
+                                key={student.userCode}
+                                student={student}
+                                course={course}
+                                rowIndex={rowIndex}
+                                chapterMap={studentChapterMap.get(student.userCode)}
+                            />
+                        ))}
+                    </div>
+                ) : (
+                    <div className="p-6 text-center font-mono text-xs text-muted uppercase tracking-widest border-t border-border">
+                        {t("noPersonnel")}
+                    </div>
+                )}
+            </div>
 
             {/* Legend */}
             <div className="p-10 left-0 sticky pt-6 border-t border-border">

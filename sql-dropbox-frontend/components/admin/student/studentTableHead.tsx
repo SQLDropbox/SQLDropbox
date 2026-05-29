@@ -1,3 +1,5 @@
+"use client";
+
 import { Course } from "@/types/types";
 import { useTranslations, useLocale } from "next-intl";
 
@@ -57,10 +59,10 @@ export default function StudentTableHead({ course }: Props) {
                         >
                             {locale === "en" ? chapter.chapterNameEN : chapter.chapterNameNL}
                         </div>
-                    </th>
-                ))}
-            </tr>
-        </thead>
+                    </div>
+                </div>
+            ))}
+        </div>
     );
 }
 
