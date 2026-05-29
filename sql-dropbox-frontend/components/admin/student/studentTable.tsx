@@ -69,8 +69,6 @@ export default function StudentTable({ course, onAddManual, onUpload }: Props) {
         return map;
     }, [course.students]);
 
-    const colCount = (course.chapters?.length ?? 0) + 2;
-
     return (
         <div className="max-w-7xl relative bg-paper bg-ruled border-2 border-border shadow-lg">
             {/* Tape corners */}
@@ -89,7 +87,11 @@ export default function StudentTable({ course, onAddManual, onUpload }: Props) {
                         {t("title")}
                     </h1>
                     <p className="font-mono text-[11px] uppercase tracking-widest text-muted mt-1">
-                        {t("progressSheet", { courseId: String(course.courseId ?? "—").toUpperCase() })}
+                        {t("progressSheet", {
+                            courseId: String(
+                                course.courseId ?? "—",
+                            ).toUpperCase(),
+                        })}{" "}
                     </p>
                 </div>
 
@@ -122,10 +124,10 @@ export default function StudentTable({ course, onAddManual, onUpload }: Props) {
                             hover:border-ink hover:text-ink hover:bg-surface-1
                             transition-colors
                         "
-                        >
-                            <FaUserPlus className="text-[10px]" />
-                            {t("enroll")}
-                        </button>
+                    >
+                        <FaUserPlus className="text-[10px]" />
+                        {t("enroll")}
+                    </button>
 
                     <button
                         onClick={onUpload}
@@ -154,17 +156,20 @@ export default function StudentTable({ course, onAddManual, onUpload }: Props) {
                             minWidth: `${400 + (course.chapters?.length ?? 0) * 80}px`,
                         }}
                     >
-                        <StudentTableHead course={course} />
-
-                        {filteredStudents.map((student, rowIndex) => (
-                            <StudentTableRow
-                                key={student.userCode}
-                                student={student}
-                                course={course}
-                                rowIndex={rowIndex}
-                                chapterMap={studentChapterMap.get(student.userCode)}
-                            />
-                        ))}
+                        <div>
+                            <StudentTableHead course={course} />
+                            {filteredStudents.map((student, rowIndex) => (
+                                <StudentTableRow
+                                    key={student.userCode}
+                                    student={student}
+                                    course={course}
+                                    rowIndex={rowIndex}
+                                    chapterMap={studentChapterMap.get(
+                                        student.userCode,
+                                    )}
+                                />
+                            ))}
+                        </div>
                     </div>
                 ) : (
                     <div className="p-6 text-center font-mono text-xs text-muted uppercase tracking-widest border-t border-border">
@@ -180,7 +185,9 @@ export default function StudentTable({ course, onAddManual, onUpload }: Props) {
 
             {/* Footer stamp */}
             <div className="absolute bottom-4 right-6 pointer-events-none font-mono text-[10px] text-accent opacity-30 rotate-[2deg] border border-current px-2 py-0.5 uppercase tracking-[0.1em]">
-                {t("recordingNo", { courseId: String(course.courseId ?? "—").toUpperCase() })}
+                {t("recordingNo", {
+                    courseId: String(course.courseId ?? "—").toUpperCase(),
+                })}{" "}
             </div>
         </div>
     );

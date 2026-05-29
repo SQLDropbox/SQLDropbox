@@ -17,6 +17,7 @@ type Props = {
 export default function StudentTableHead({ course }: Props) {
     const t = useTranslations("StudentTableHead");
     const locale = useLocale();
+
     return (
         <div className="flex border-b-2 border-border bg-surface-1 sticky top-0 z-20">
             {/* Code */}
@@ -53,11 +54,11 @@ export default function StudentTableHead({ course }: Props) {
                     >
                         <div
                             className="inline-block"
-                            style={{
-                                transform: `rotate(${stRot(i)}deg)`,
-                            }}
+                            style={{ transform: `rotate(${stRot(i)}deg)` }}
                         >
-                            {locale === "en" ? chapter.chapterNameEN : chapter.chapterNameNL}
+                            {locale === "en"
+                                ? chapter.chapterNameEN
+                                : chapter.chapterNameNL}
                         </div>
                     </div>
                 </div>
