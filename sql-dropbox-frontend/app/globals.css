@@ -27,7 +27,11 @@
 
 @layer base {
     body {
-        background-image: linear-gradient(90deg, var(--color-paper), var(--color-surface-1));
+        background-image: linear-gradient(
+            90deg,
+            var(--color-paper),
+            var(--color-surface-1)
+        );
         color: var(--color-ink);
         overflow-x: hidden;
     }
@@ -41,5 +45,24 @@
         background-repeat: repeat;
         background-size: 100% 1.75rem;
         color: var(--color-ink);
+    }
+
+    ::-webkit-scrollbar {
+        width: 12px;
+        height: 12px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: var(--color-paper);
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: #b8b2a8;
+        border-radius: 8px;
+        border: 2px solid #f2efe9;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #8f897f;
     }
 }
