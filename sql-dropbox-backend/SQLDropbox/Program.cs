@@ -132,15 +132,8 @@ if (app.Environment.IsProduction())
 
     // Delete the seed
     await DbInitializer.SeedAsyncProd(db, pass);
-}
 
-if (app.Environment.IsProduction())
-{
     app.UseHttpsRedirection();
-}
-
-if (app.Environment.IsProduction())
-{
     app.UsePathBase("/api");
 }
 
