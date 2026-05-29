@@ -150,7 +150,41 @@
         }
     },
     "ChapterExercisePage": {
-        "invalidParams": "No valid URL parameters were found."
+        "invalidParams": "No valid URL parameters were found.",
+        "backToChapters": "Back to chapters",
+        "idLabel": "ID: {courseId} / CHAPTER {chapterId}",
+        "courseFallback": "Course",
+        "chapterFallback": "Chapter {chapterId}",
+        "pageDescription": "SQL exercises, schema reference, and expected output.",
+        "progressLabel": "Progress",
+        "percentComplete": "{percent}% complete",
+        "exercisesCount": "{count} exercises",
+        "exerciseList": "Exercise list",
+        "noExercises": "No exercises found for this chapter.",
+        "panel": {
+            "question": "Question",
+            "schema": "Database Schema",
+            "output": "Expected Output"
+        },
+        "exercisePrompt": "Exercise prompt",
+        "exerciseQuestionFallback": "Exercise question",
+        "hintInstructions": "Write your SQL query below, use the hint only when needed, and run the query to validate your answer.",
+        "activeSchema": "Active schema",
+        "noSchemaLinked": "No schema linked",
+        "zoomReset": "Reset",
+        "noSchemaImage": "No schema image is available for this chapter yet.",
+        "noExpectedOutput": "No expected output is available for this exercise yet.",
+        "workspaceLabel": "Workspace",
+        "yourSqlQuery": "Your SQL Query",
+        "showHint": "Show Hint",
+        "hideHint": "Hide Hint",
+        "requiredSyntax": "Required SQL syntax",
+        "textareaPlaceholder": "SELECT * FROM ...",
+        "runQuery": "Run Query",
+        "running": "Running...",
+        "noSchemaLinkedError": "No database schema is linked to this chapter.",
+        "missingSyntax": "Missing required SQL syntax: {list}",
+        "genericError": "Something went wrong"
     },
     "ExerciseSidebar": {
         "title": "Questions",

@@ -150,7 +150,41 @@
         }
     },
     "ChapterExercisePage": {
-        "invalidParams": "Geen geldige URL-parameters gevonden."
+        "invalidParams": "Geen geldige URL-parameters gevonden.",
+        "backToChapters": "Terug naar hoofdstukken",
+        "idLabel": "ID: {courseId} / HOOFDSTUK {chapterId}",
+        "courseFallback": "Cursus",
+        "chapterFallback": "Hoofdstuk {chapterId}",
+        "pageDescription": "SQL-oefeningen, schema-referentie en verwachte output.",
+        "progressLabel": "Voortgang",
+        "percentComplete": "{percent}% voltooid",
+        "exercisesCount": "{count} oefeningen",
+        "exerciseList": "Oefeningenlijst",
+        "noExercises": "Er zijn geen oefeningen voor dit hoofdstuk.",
+        "panel": {
+            "question": "Vraag",
+            "schema": "Databaseschema",
+            "output": "Verwachte output"
+        },
+        "exercisePrompt": "Oefening",
+        "exerciseQuestionFallback": "Oefingsvraag",
+        "hintInstructions": "Schrijf je SQL-query hieronder, gebruik de hint alleen indien nodig en voer de query uit om je antwoord te valideren.",
+        "activeSchema": "Actief schema",
+        "noSchemaLinked": "Geen schema gekoppeld",
+        "zoomReset": "Reset",
+        "noSchemaImage": "Er is nog geen schema-afbeelding beschikbaar voor dit hoofdstuk.",
+        "noExpectedOutput": "Er is nog geen verwachte output beschikbaar voor deze oefening.",
+        "workspaceLabel": "Werkruimte",
+        "yourSqlQuery": "Je SQL-query",
+        "showHint": "Toon hint",
+        "hideHint": "Verberg hint",
+        "requiredSyntax": "Vereiste SQL-syntaxis",
+        "textareaPlaceholder": "SELECT * FROM ...",
+        "runQuery": "Run Query",
+        "running": "Running...",
+        "noSchemaLinkedError": "Er is geen databaseschema gekoppeld aan dit hoofdstuk.",
+        "missingSyntax": "Ontbrekende vereiste SQL-syntaxis: {list}",
+        "genericError": "Er is iets misgegaan"
     },
     "ExerciseSidebar": {
         "title": "Vragen",
