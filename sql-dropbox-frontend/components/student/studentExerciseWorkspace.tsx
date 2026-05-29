@@ -2,7 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { FaArrowLeft, FaBookOpen, FaCircleInfo, FaLightbulb, FaPlay } from "react-icons/fa6";
+import {
+    FaArrowLeft,
+    FaBookOpen,
+    FaCircleInfo,
+    FaLightbulb,
+    FaPlay,
+} from "react-icons/fa6";
 import { useTranslations } from "next-intl";
 import { useQuery } from "@tanstack/react-query";
 import { Chapter, Course, Exercise } from "@/types/types";
@@ -31,7 +37,9 @@ export default function StudentExerciseWorkspace({
     completedExerciseIds = [],
 }: StudentExerciseWorkspaceProps) {
     const t = useTranslations("ChapterExercisePage");
-    const [activeExerciseId, setActiveExerciseId] = useState<number | null>(null);
+    const [activeExerciseId, setActiveExerciseId] = useState<number | null>(
+        null,
+    );
 
     const { data: course } = useQuery<Course>({
         queryKey: ["course", courseId],
@@ -45,12 +53,16 @@ export default function StudentExerciseWorkspace({
             const currentExerciseExists = exercises.some(
                 (exercise) => exercise.exerciseId === currentActiveId,
             );
-            return currentExerciseExists ? currentActiveId : exercises[0].exerciseId;
+            return currentExerciseExists
+                ? currentActiveId
+                : exercises[0].exerciseId;
         });
     }, [exercises]);
 
     const activeExercise =
-        exercises.find((exercise) => exercise.exerciseId === activeExerciseId) || exercises[0];
+        exercises.find(
+            (exercise) => exercise.exerciseId === activeExerciseId,
+        ) || exercises[0];
 
     const totalExercises = exercises.length;
     const completedCount = exercises.filter((exercise) =>
@@ -64,7 +76,9 @@ export default function StudentExerciseWorkspace({
         return (
             <div className="min-h-[calc(100vh-4rem)] bg-paper text-ink flex items-center justify-center px-6">
                 <div className="bg-surface-2 border-2 border-border px-6 py-5 shadow-[6px_6px_0px_0px_var(--color-border)]">
-                    <p className="font-mono text-sm text-error">{t("genericError")}: {error.message}</p>
+                    <p className="font-mono text-sm text-error">
+                        {t("genericError")}: {error.message}
+                    </p>
                 </div>
             </div>
         );
@@ -84,7 +98,10 @@ export default function StudentExerciseWorkspace({
                 <div className="relative bg-surface-2 border-2 border-border shadow-[6px_6px_0px_0px_var(--color-border)]">
                     <div className="absolute -top-6 -left-px min-w-[30%] bg-surface-2 px-4 py-1 border border-border border-b-0">
                         <span className="font-mono text-xs uppercase tracking-wider text-muted">
-                            {t("idLabel", { courseId: courseId?.toUpperCase(), chapterId })}
+                            {t("idLabel", {
+                                courseId: courseId?.toUpperCase(),
+                                chapterId,
+                            })}
                         </span>
                     </div>
 
@@ -94,7 +111,9 @@ export default function StudentExerciseWorkspace({
                                 <div className="flex items-center gap-3 font-mono text-xs uppercase tracking-widest text-muted mb-3">
                                     <FaBookOpen className="text-accent" />
                                     <span>
-                                        {course?.courseNameEN || course?.courseNameNL || t("courseFallback")}
+                                        {course?.courseNameEN ||
+                                            course?.courseNameNL ||
+                                            t("courseFallback")}
                                     </span>
                                 </div>
 
@@ -112,19 +131,32 @@ export default function StudentExerciseWorkspace({
                             <div className="w-full max-w-md border border-border bg-paper px-4 py-4">
                                 <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.2em] text-muted">
                                     <span>{t("progressLabel")}</span>
-                                    <span>{completedCount}/{totalExercises}</span>
+                                    <span>
+                                        {completedCount}/{totalExercises}
+                                    </span>
                                 </div>
 
                                 <div className="mt-3 h-3 border border-border bg-surface-2">
                                     <div
                                         className="h-full bg-accent transition-all"
-                                        style={{ width: `${progressPercentage}%` }}
+                                        style={{
+                                            width: `${progressPercentage}%`,
+                                        }}
                                     />
                                 </div>
 
                                 <div className="mt-3 flex items-center justify-between font-mono text-[10px] uppercase tracking-widest text-muted">
-                                    <span>{t("percentComplete", { percent: Math.round(progressPercentage) })}</span>
-                                    <span>{t("exercisesCount", { count: totalExercises })}</span>
+                                    <span>
+                                        {t("percentComplete", {
+                                            percent:
+                                                Math.round(progressPercentage),
+                                        })}
+                                    </span>
+                                    <span>
+                                        {t("exercisesCount", {
+                                            count: totalExercises,
+                                        })}
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -141,7 +173,9 @@ export default function StudentExerciseWorkspace({
                             <div className="px-4 pb-6">
                                 <ExerciseSidebar
                                     exercises={exercises}
-                                    activeExerciseId={activeExercise?.exerciseId ?? null}
+                                    activeExerciseId={
+                                        activeExercise?.exerciseId ?? null
+                                    }
                                     completedExerciseIds={completedExerciseIds}
                                     onSelectExercise={setActiveExerciseId}
                                     isLoading={isLoading}
@@ -261,7 +295,9 @@ function ExercisePanel({
         }
 
         if (!queryMeetsRequirements) {
-            const list = missingRequirements.map((r) => `"${r.statement}"`).join(", ");
+            const list = missingRequirements
+                .map((r) => `"${r.statement}"`)
+                .join(", ");
             setQueryError(t("missingSyntax", { list }));
 
             return;
@@ -339,7 +375,8 @@ function ExercisePanel({
                                 {t("exercisePrompt")}
                             </p>
                             <h3 className="font-display text-2xl font-bold text-ink">
-                                {exercise.questionNL || t("exerciseQuestionFallback")}
+                                {exercise.questionNL ||
+                                    t("exerciseQuestionFallback")}
                             </h3>
                         </div>
 
@@ -402,9 +439,15 @@ function ExercisePanel({
                                     <div
                                         ref={imageContainerRef}
                                         className="relative h-[600px] overflow-hidden border border-border bg-paper touch-none"
-                                        style={{ overscrollBehavior: "contain" }}
-                                        onMouseEnter={() => setIsHoveringImage(true)}
-                                        onMouseLeave={() => setIsHoveringImage(false)}
+                                        style={{
+                                            overscrollBehavior: "contain",
+                                        }}
+                                        onMouseEnter={() =>
+                                            setIsHoveringImage(true)
+                                        }
+                                        onMouseLeave={() =>
+                                            setIsHoveringImage(false)
+                                        }
                                         onMouseMove={handleMouseMove}
                                         onMouseUp={handleMouseUp}
                                     >
@@ -518,7 +561,7 @@ function ExercisePanel({
                     </div>
                 )}
 
-                    <textarea
+                <textarea
                     value={queryValue}
                     onChange={(event) => setQueryValue(event.target.value)}
                     placeholder={t("textareaPlaceholder")}

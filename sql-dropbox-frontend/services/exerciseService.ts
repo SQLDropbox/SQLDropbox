@@ -8,9 +8,9 @@ const mapToExerciseDto = (exercise: Partial<Exercise>) => {
         hintNL: exercise.hintNL ?? "",
         hintEN: exercise.hintEN ?? "",
         chapterId: exercise.chapterId,
-        solutionQuery: (exercise.solutionQueries ?? [])
-            .filter((q) => q && q.trim() !== "")
-            .join("\n"),
+        queryAction: exercise.queryAction,
+        validationQuery: exercise.validationQuery ?? "",
+        solutionQuery: exercise.solutionQuery,
     };
 };
 
@@ -20,7 +20,8 @@ const getExercisesByChapterId = async (chapterId: string) => {
     });
 };
 
-const addExercise = async (exercise: Partial<Exercise>) => {const payload = mapToExerciseDto(exercise);
+const addExercise = async (exercise: Partial<Exercise>) => {
+    const payload = mapToExerciseDto(exercise);
 
     return api.publicFetch(`/Exercise`, {
         method: "POST",
@@ -31,7 +32,11 @@ const addExercise = async (exercise: Partial<Exercise>) => {const payload = mapT
     });
 };
 
-const updateExercise = async (exerciseId: number,  exercise: Partial<Exercise>) => {const payload = mapToExerciseDto(exercise);
+const updateExercise = async (
+    exerciseId: number,
+    exercise: Partial<Exercise>,
+) => {
+    const payload = mapToExerciseDto(exercise);
 
     return api.publicFetch(`/Exercise/${exerciseId}`, {
         method: "PUT",

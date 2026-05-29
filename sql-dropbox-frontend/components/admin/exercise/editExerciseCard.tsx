@@ -77,8 +77,10 @@ export default function EditExerciseDialog({
         if (isEdit && requirementsLoading) return;
 
         if (exercise && isEdit) {
+            console.log(exercise);
             setForm({
                 ...exercise,
+                solutionQuery: exercise?.solutions?.[0]?.query,
                 chapterId,
             });
 
@@ -122,6 +124,13 @@ export default function EditExerciseDialog({
 
         if (!form.solutionQuery?.trim()) {
             newErrors.solutionQuery = t("errors.solutionRequired");
+        }
+
+        if (
+            form.queryAction !== QueryAction.Select &&
+            !form.validationQuery?.trim()
+        ) {
+            newErrors.validationQuery = t("errors.validationQueryRequired");
         }
 
         const cleanedRequirementStatements = requirements
@@ -391,11 +400,13 @@ export default function EditExerciseDialog({
 
                     <Section title={t("queryActionHeader")}>
                         <select
-                            value={form.queryAction}
+                            value={form.queryAction ?? QueryAction.Select}
                             onChange={(e) => {
                                 setForm((prev) => ({
                                     ...prev,
-                                    queryAction: e.target.value as QueryAction,
+                                    queryAction: Number(
+                                        e.target.value,
+                                    ) as QueryAction,
                                 }));
                             }}
                         >
