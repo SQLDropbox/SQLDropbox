@@ -1,4 +1,5 @@
 import { Course } from "@/types/types";
+import { useTranslations, useLocale } from "next-intl";
 
 const STAMP_ROTS = [-6, 5, -2, -5, 6, -4, 2, -5, 4, 6];
 const stRot = (i: number) => STAMP_ROTS[Math.abs(i) % STAMP_ROTS.length];
@@ -8,15 +9,17 @@ type Props = {
 };
 
 export default function StudentTableHead({ course }: Props) {
+    const t = useTranslations("StudentTableHead");
+    const locale = useLocale();
     return (
         <thead>
             <tr className="border-b-2 border-border divide-x divide-border bg-surface-1">
                 <th className="p-3 font-display text-ink whitespace-nowrap">
-                    CODE
+                    {t("code")}
                 </th>
 
                 <th className="p-3 font-display text-ink whitespace-nowrap bg-surface-2">
-                    STUDENT
+                    {t("student")}
                 </th>
 
                 {course.chapters?.map((chapter, i) => (
@@ -34,7 +37,7 @@ export default function StudentTableHead({ course }: Props) {
                                 transform: `rotate(${stRot(i)}deg)`,
                             }}
                         >
-                            {chapter.chapterNameEN}
+                            {locale === "en" ? chapter.chapterNameEN : chapter.chapterNameNL}
                         </div>
                     </th>
                 ))}
