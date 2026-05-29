@@ -121,7 +121,8 @@
         "errors": {
             "questionNLRequired": "Nederlandse vraag is verplicht.",
             "questionENRequired": "Engelse vraag is verplicht.",
-            "atLeastOneSolution": "Minstens één oplossing is verplicht."
+            "solutionRequired": "Oplossing is verplicht.",
+            "validationQueryRequired": "Validatie query is verplicht"
         },
         "confirm": {
             "title": "Oefening verwijderen",

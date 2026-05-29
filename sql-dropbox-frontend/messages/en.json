@@ -121,7 +121,8 @@
         "errors": {
             "questionNLRequired": "Dutch question is required.",
             "questionENRequired": "English question is required.",
-            "atLeastOneSolution": "At least one solution is required."
+            "solutionRequired": "Solution is required.",
+            "validationQueryRequired": "Validation query is required"
         },
         "confirm": {
             "title": "Delete exercise",
