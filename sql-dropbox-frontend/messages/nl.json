@@ -152,6 +152,12 @@
     "ChapterExercisePage": {
         "invalidParams": "Geen geldige URL-parameters gevonden."
     },
+    "ExerciseSidebar": {
+        "title": "Vragen",
+        "exerciseLabel": "Oefening {number}",
+        "done": "Klaar",
+        "untitled": "Naamloze oefening"
+    },
     "LecturerTableRow": {
         "primaryLecturer": "HOOFDLECTOR",
         "removeInstructorTitle": "Lector uit cursus verwijderen",

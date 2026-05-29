@@ -152,6 +152,12 @@
     "ChapterExercisePage": {
         "invalidParams": "No valid URL parameters were found."
     },
+    "ExerciseSidebar": {
+        "title": "Questions",
+        "exerciseLabel": "Exercise {number}",
+        "done": "Done",
+        "untitled": "Untitled exercise"
+    },
     "LecturerTableRow": {
         "primaryLecturer": "PRIMARY LECTURER",
         "removeInstructorTitle": "Remove lecturer from course",
