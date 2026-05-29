@@ -7,10 +7,9 @@ using System.Text;
 
 namespace SQLDropbox.Services
 {
-    public class SolutionService(AppDbContext db, SchemaService scS)
+    public class SolutionService(AppDbContext db)
     {
         private readonly AppDbContext _db = db;
-        private readonly SchemaService _scS = scS;
 
         public async Task<uint> HashSolution(string query)
         {

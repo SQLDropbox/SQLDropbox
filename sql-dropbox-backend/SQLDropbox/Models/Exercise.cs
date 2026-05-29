@@ -1,5 +1,4 @@
-using System;
-using System.Collections.Generic;
+using SQLDropbox.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
@@ -17,6 +16,8 @@ namespace SQLDropbox.Models
         public string? HintNL { get; set; }
         public string? HintEN { get; set; }
         public string? QueryOutput { get; set; }
+        public required QueryAction QueryAction { get; set; }
+        public string? ValidationQuery { get; set; }
 
         [JsonIgnore]
         public Chapter Chapter { get; set; } = null!;
