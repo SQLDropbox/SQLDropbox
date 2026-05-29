@@ -44,8 +44,8 @@ const logout = async (router: AppRouterInstance) => {
 };
 
 export const setJWTCookie = (token: string | null = null) => {
-    const isDevelopmentMode = process.env.NEXT_PUBLIC_ENVIRONMENT == "dev";
-    const secureFlag = isDevelopmentMode ? "" : "; Secure";
+    const environment = process.env.NEXT_PUBLIC_ENVIRONMENT;
+    const secureFlag = environment == "dev" ? "" : "; Secure";
 
     try {
         if (!token) {
