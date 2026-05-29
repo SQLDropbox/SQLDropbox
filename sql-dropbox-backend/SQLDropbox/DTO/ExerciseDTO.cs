@@ -1,3 +1,5 @@
+using SQLDropbox.Enums;
+
 namespace SQLDropbox.DTO;
 
 public class ExerciseDTO
@@ -7,6 +9,7 @@ public class ExerciseDTO
     public string HintNL { get; set; }
     public string HintEN { get; set; }
     public required string SolutionQuery { get; set; }
+    public required QueryAction QueryAction { get; set; }
     public required int ChapterId { get; set; }
     
 }

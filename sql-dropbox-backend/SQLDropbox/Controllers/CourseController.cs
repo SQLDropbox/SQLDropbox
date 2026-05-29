@@ -152,7 +152,7 @@ public class CourseController(AppDbContext db) : BaseController
         }
 
         _db.Courses.Add(newCourse);
-        _db.SaveChangesAsync();
+        await _db.SaveChangesAsync();
 
         return Ok(newCourse);
     }
@@ -260,7 +260,7 @@ public class CourseController(AppDbContext db) : BaseController
             CourseDescriptionNL = existingCourse.CourseDescriptionNL,
             CourseDescriptionEN = existingCourse.CourseDescriptionEN,
             //Lecturer = existingCourse.Lecturer,
-            Lecturers = existingCourse.Lecturers.ToList(),
+            Lecturers = [.. existingCourse.Lecturers],
             IsActive = false,
             CreatedAt = DateTime.Now,
             Chapters = []
@@ -292,6 +292,7 @@ public class CourseController(AppDbContext db) : BaseController
                     HintNL = exercises.HintNL,
                     HintEN = exercises.HintEN,
                     QueryOutput = exercises.QueryOutput,
+                    QueryAction = exercises.QueryAction,
                     CreatedAt = DateTime.Now,
                 };
                 newChapter.Exercises.Add(newExercise);

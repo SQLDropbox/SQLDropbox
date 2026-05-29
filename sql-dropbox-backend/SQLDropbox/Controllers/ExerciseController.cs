@@ -47,6 +47,7 @@ public class ExerciseController(AppDbContext db, SolutionService solutionService
                 HintNL = dto.HintNL,
                 HintEN = dto.HintEN,
                 QueryOutput = queryOutput,
+                QueryAction = dto.QueryAction,
                 Chapter = chapter,
                 CreatedAt = DateTime.UtcNow,
 

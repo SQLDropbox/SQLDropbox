@@ -249,6 +249,7 @@ namespace SQLDropbox.Repositories
                 QuestionNL = "Toon alle dieren wiens habitat \"Jungle\" is.",
                 QuestionEN = "Show all animals whose habitat is \"Jungle\".",
                 QueryOutput = "id,name,habitat,food_id\r\n4,Tiger,Jungle,2\r\n5,Orangutan,Jungle,4\r\n6,Jaguar,Jungle,2\r\n",
+                QueryAction = QueryAction.Select,
                 Chapter = chapter1,
                 CreatedAt = DateTime.UtcNow,
             };
@@ -257,6 +258,7 @@ namespace SQLDropbox.Repositories
                 QuestionNL = "Toon alle dieren die \"Nuts\" eten.",
                 QuestionEN = "Show all animals who eat \"Nuts\".",
                 QueryOutput = "id,name,habitat,food_id,id,name\r\n1,Elephant,Savannah,1,1,Nuts\r\n14,Squirrel,Woods,1,1,Nuts\r\n",
+                QueryAction = QueryAction.Select,
                 Chapter = chapter1,
                 CreatedAt = DateTime.UtcNow,
             };
@@ -267,6 +269,7 @@ namespace SQLDropbox.Repositories
                 HintNL = "Gebruik een wildcard.",
                 HintEN = "Use a wildcard.",
                 QueryOutput = "id,name,habitat,food_id\r\n1,Elephant,Savannah,1\r\n3,Zebra,Savannah,4\r\n",
+                QueryAction = QueryAction.Select,
                 Chapter = chapter1,
                 CreatedAt = DateTime.UtcNow,
             };
@@ -277,6 +280,7 @@ namespace SQLDropbox.Repositories
                 HintNL = "Gebruik een JOIN.",
                 HintEN = "Use a JOIN.",
                 QueryOutput = "id,name,habitat,food_id,id,name\r\n7,Polar Bear,Arctic,3,3,Fish\r\n9,Blue Whale,Arctic,3,3,Fish\r\n",
+                QueryAction = QueryAction.Select,
                 Chapter = chapter1,
                 CreatedAt = DateTime.UtcNow,
             };
@@ -287,6 +291,7 @@ namespace SQLDropbox.Repositories
                 HintNL = "Gebruik een JOIN.",
                 HintEN = "Use a JOIN.",
                 QueryOutput = "id,name,habitat,food_id,id,name\r\n2,Lion,Savannah,2,2,Meat\r\n3,Zebra,Savannah,4,4,Plants\r\n4,Tiger,Jungle,2,2,Meat\r\n5,Orangutan,Jungle,4,4,Plants\r\n6,Jaguar,Jungle,2,2,Meat\r\n8,Artic Fox,Arctic,2,2,Meat\r\n11,Bat,Caves,4,4,Plants\r\n12,Cave Bear,Caves,2,2,Meat\r\n13,Kangaroo,Grasslands,4,4,Plants\r\n",
+                QueryAction = QueryAction.Select,
                 Chapter = chapter1,
                 CreatedAt = DateTime.UtcNow,
             };
@@ -690,6 +695,7 @@ namespace SQLDropbox.Repositories
                 QuestionNL = "Toon alle dieren wiens habitat \"Jungle\" is.",
                 QuestionEN = "Show all animals whose habitat is \"Jungle\".",
                 QueryOutput = "id,name,habitat,food_id\r\n4,Tiger,Jungle,2\r\n5,Orangutan,Jungle,4\r\n6,Jaguar,Jungle,2\r\n",
+                QueryAction = QueryAction.Select,
                 Chapter = chapter1,
                 CreatedAt = DateTime.UtcNow,
             };
@@ -698,6 +704,7 @@ namespace SQLDropbox.Repositories
                 QuestionNL = "Toon alle dieren die \"Nuts\" eten.",
                 QuestionEN = "Show all animals who eat \"Nuts\".",
                 QueryOutput = "id,name,habitat,food_id,id,name\r\n1,Elephant,Savannah,1,1,Nuts\r\n14,Squirrel,Woods,1,1,Nuts\r\n",
+                QueryAction = QueryAction.Select,
                 Chapter = chapter1,
                 CreatedAt = DateTime.UtcNow,
             };
@@ -708,6 +715,7 @@ namespace SQLDropbox.Repositories
                 HintNL = "Gebruik een wildcard.",
                 HintEN = "Use a wildcard.",
                 QueryOutput = "id,name,habitat,food_id\r\n1,Elephant,Savannah,1\r\n3,Zebra,Savannah,4\r\n",
+                QueryAction = QueryAction.Select,
                 Chapter = chapter1,
                 CreatedAt = DateTime.UtcNow,
             };
@@ -718,6 +726,7 @@ namespace SQLDropbox.Repositories
                 HintNL = "Gebruik een JOIN.",
                 HintEN = "Use a JOIN.",
                 QueryOutput = "id,name,habitat,food_id,id,name\r\n7,Polar Bear,Arctic,3,3,Fish\r\n9,Blue Whale,Arctic,3,3,Fish\r\n",
+                QueryAction = QueryAction.Select,
                 Chapter = chapter1,
                 CreatedAt = DateTime.UtcNow,
             };
@@ -728,6 +737,7 @@ namespace SQLDropbox.Repositories
                 HintNL = "Gebruik een JOIN.",
                 HintEN = "Use a JOIN.",
                 QueryOutput = "id,name,habitat,food_id,id,name\r\n2,Lion,Savannah,2,2,Meat\r\n3,Zebra,Savannah,4,4,Plants\r\n4,Tiger,Jungle,2,2,Meat\r\n5,Orangutan,Jungle,4,4,Plants\r\n6,Jaguar,Jungle,2,2,Meat\r\n8,Artic Fox,Arctic,2,2,Meat\r\n11,Bat,Caves,4,4,Plants\r\n12,Cave Bear,Caves,2,2,Meat\r\n13,Kangaroo,Grasslands,4,4,Plants\r\n",
+                QueryAction = QueryAction.Select,
                 Chapter = chapter1,
                 CreatedAt = DateTime.UtcNow,
             };
