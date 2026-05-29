@@ -20,7 +20,7 @@
         "backToCourses": "Terug naar cursussen",
         "chaptersLabel": "Hoofdstukken",
         "noChapters": "Er zijn nog geen hoofdstukken beschikbaar voor deze cursus, neem contact op met uw lector.",
-        "newChapter": "Nieuw hoofdstuk"  
+        "newChapter": "Nieuw hoofdstuk"
     },
     "CourseDialog": {
         "titleEdit": "Cursus bewerken",
@@ -104,11 +104,13 @@
             "questionEN": "Vraag (Engels)",
             "hintNL": "Hint (Nederlands) - optioneel",
             "hintEN": "Hint (Engels) - optioneel",
-            "queryOutput": "JSON / CSV-weergave van de verwachte output",
+            "queryAction": "Het type query",
+            "validationQuery": "SELECT * FROM table...",
             "solution": "SELECT * FROM table..."
         },
-        "queryOutputHeader": "Verwachte Query Output",
-        "solutionsHeader": "Oplossingen (SQL Queries)",
+        "queryActionHeader": "Query Type",
+        "validationQueryHeader": "Validatie Query (SQL Query)",
+        "solutionHeader": "Oplossing (SQL Query)",
         "addSolution": "Extra oplossing toevoegen",
         "removeSolution": "Oplossing verwijderen",
         "delete": "Verwijderen",
@@ -295,8 +297,7 @@
             "processing": "BEWERKEN...",
             "load": "LADEN",
             "importing": "IMPORTEREN...",
-            "confirmImport": "IMPORT BEVESTIGEN"
-            ,
+            "confirmImport": "IMPORT BEVESTIGEN",
             "sysError": "SYSTEEMFOUT",
             "acknowledge": "BEVESTIGEN"
         }
