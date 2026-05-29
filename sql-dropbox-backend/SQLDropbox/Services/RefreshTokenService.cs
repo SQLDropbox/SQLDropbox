@@ -35,8 +35,8 @@ namespace SQLDropbox.Services
             response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
             {
                 HttpOnly = true,
-                Secure = false, //true,
-                SameSite = SameSiteMode.Lax,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
                 Expires = expiresAt,
                 Path = "/"
             });
