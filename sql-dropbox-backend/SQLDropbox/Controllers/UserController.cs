@@ -54,6 +54,16 @@ namespace SQLDropbox.Controllers
             {
                 var parsed = await _csvService.ParseStudentsAsync(file);
 
+                var enrolledStudentIds = await _db.Users.Where(x => x.Role == Role.Student && x.StudentCourses.Any(y => y.CourseId == courseId)).Select(sc => sc.UserCode).ToListAsync();
+                var enrolledSet = enrolledStudentIds.ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+
+                var alreadyEnrolled = parsed.Students.Where(s => string.IsNullOrWhiteSpace(s.UserCode) || enrolledSet.Contains(s.UserCode)).ToList();
+                parsed.Students = parsed.Students.Where(s => !string.IsNullOrWhiteSpace(s.UserCode) && !enrolledSet.Contains(s.UserCode!)).ToList();
+
+
+                parsed.Skipped += alreadyEnrolled.Count;
+
                 return Ok(new
                 {
                     parsed.Students,
