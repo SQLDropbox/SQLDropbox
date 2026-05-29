@@ -298,12 +298,9 @@ export default function EditCourseDialog({
                         ) : (
                             <div className="bg-surface-1 border border-border p-2 max-h-40 overflow-y-auto flex flex-col gap-1 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]">
                                 {(() => {
-                                    // Filter docenten die al aan de cursus zijn gekoppeld eruit
-                                    const availableLecturers = allLecturers?.filter(
-                                        (l) => !course?.lecturers?.some((cl) => cl.userId === l.userId)
-                                    ) ?? [];
+                                    const lecturerToShow = allLecturers ?? [];
 
-                                    if (availableLecturers.length === 0) {
+                                    if (lecturerToShow.length === 0) {
                                         return (
                                             <div className="p-3">
                                                 <p className="text-[10px] text-accent uppercase tracking-widest">
@@ -313,7 +310,7 @@ export default function EditCourseDialog({
                                         );
                                     }
 
-                                    return availableLecturers.map((l) => (
+                                    return lecturerToShow.map((l) => (
                                         <label 
                                             key={l.userId} 
                                             className="flex items-center gap-3 p-2 hover:bg-paper cursor-pointer border border-transparent hover:border-border transition-colors group"
