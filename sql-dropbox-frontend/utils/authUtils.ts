@@ -50,17 +50,7 @@ export const setJWTCookie = (token: string | null = null) => {
             return;
         }
 
-        const payload = JSON.parse(atob(token.split(".")[1]));
-
-        const exp = payload.exp;
-
-        if (!exp) {
-            throw new Error("Token missing exp claim");
-        }
-
-        const maxAge = exp - Math.floor(Date.now() / 1000);
-
-        document.cookie = `token=${token}; path=/; max-age=${maxAge}; SameSite=Strict`;
+        document.cookie = `token=${token}; path=/; SameSite=Strict`;
     } catch (err) {
         console.error("Invalid token:", err);
     }
