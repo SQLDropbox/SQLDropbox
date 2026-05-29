@@ -214,6 +214,24 @@
         "recordingNo": "RECORDING NO. {courseId}",
         "modal": {
             "bulkEnrollment": "BULK ENROLLMENT / DATABASE ENTRY",
+            "enrollmentRecord": "ENROLLMENT RECORD / DATABASE ENTRY",
+            "addTitle": "Enroll Student",
+            "sysRole": "SYS. ROLE: STUDENT",
+            "fieldFirstName": "First Name",
+            "fieldLastName": "Last Name",
+            "fieldStudentCode": "Student Code",
+            "fieldEmail": "Email",
+            "placeholderFirstName": "e.g. Jane",
+            "placeholderLastName": "e.g. Doe",
+            "placeholderStudentCode": "e.g. r1234567",
+            "placeholderEmail": "e.g. r1234567@student.ucll.be",
+            "validation": {
+                "userCodeRequired": "Student code is required",
+                "firstNameRequired": "First name is required",
+                "lastNameRequired": "Last name is required",
+                "emailRequired": "Email is required",
+                "emailInvalid": "Invalid email format"
+            },
             "title": "Import Students",
             "format": "FORMAT: CSV",
             "step": "STEP:",
@@ -234,6 +252,9 @@
             "load": "LOAD",
             "importing": "IMPORTING...",
             "confirmImport": "CONFIRM IMPORT"
+            ,
+            "sysError": "SYS ERROR",
+            "acknowledge": "ACKNOWLEDGE"
         }
     },
     "Unauthorized": {

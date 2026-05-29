@@ -213,6 +213,24 @@
         "recordingNo": "REGISTRATIE NR. {courseId}",
         "modal": {
             "bulkEnrollment": "GROEPSINSCHRIJVING / DATABASE-INGAVE",
+            "enrollmentRecord": "INSCHRIJVINGSREGISTER / DATABASE-INGAVE",
+            "addTitle": "Student inschrijven",
+            "sysRole": "SYS. ROL: STUDENT",
+            "fieldFirstName": "Voornaam",
+            "fieldLastName": "Achternaam",
+            "fieldStudentCode": "Studentcode",
+            "fieldEmail": "E-mail",
+            "placeholderFirstName": "bijv. Jane",
+            "placeholderLastName": "bijv. Doe",
+            "placeholderStudentCode": "bijv. r1234567",
+            "placeholderEmail": "bijv. r1234567@student.ucll.be",
+            "validation": {
+                "userCodeRequired": "Studentcode is verplicht",
+                "firstNameRequired": "Voornaam is verplicht",
+                "lastNameRequired": "Achternaam is verplicht",
+                "emailRequired": "E-mail is verplicht",
+                "emailInvalid": "Ongeldig e-mailformaat"
+            },
             "title": "Studenten importeren",
             "format": "FORMEER: CSV",
             "step": "STAP:",
@@ -233,6 +251,9 @@
             "load": "LADEN",
             "importing": "IMPORTEREN...",
             "confirmImport": "IMPORT BEVESTIGEN"
+            ,
+            "sysError": "SYSTEEMFOUT",
+            "acknowledge": "BEVESTIGEN"
         }
     },
     "Unauthorized": {
