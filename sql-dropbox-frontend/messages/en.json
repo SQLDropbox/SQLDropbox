@@ -104,11 +104,13 @@
             "questionEN": "Question (English)",
             "hintNL": "Hint (Dutch) - optional",
             "hintEN": "Hint (English) - optional",
-            "queryOutput": "JSON / CSV representation of expected output",
+            "queryAction": "The type of query",
+            "validationQuery": "SELECT * FROM table...",
             "solution": "SELECT * FROM table..."
         },
-        "queryOutputHeader": "Expected Query Output",
-        "solutionsHeader": "Solutions (SQL Queries)",
+        "queryActionHeader": "Query Type",
+        "validationQueryHeader": "Validation Query (SQL Query)",
+        "solutionHeader": "Solution (SQL Query)",
         "addSolution": "Add extra solution",
         "removeSolution": "Remove solution",
         "delete": "Delete",
@@ -216,8 +218,7 @@
         "searchPlaceholder": "SEARCH LECTORS...",
         "assignLecturer": "ASSIGN LECTURER",
         "noInstructors": "— NO LECTORS ASSIGNED YET —",
-        "recordingNo": "RECORDING NO. {courseId}"
-    ,
+        "recordingNo": "RECORDING NO. {courseId}",
         "modal": {
             "title": "Assign Lecturer",
             "authorization": "AUTHORIZATION REQ. FOR COURSE: {courseId}",
@@ -296,8 +297,7 @@
             "processing": "PROCESSING...",
             "load": "LOAD",
             "importing": "IMPORTING...",
-            "confirmImport": "CONFIRM IMPORT"
-            ,
+            "confirmImport": "CONFIRM IMPORT",
             "sysError": "SYS ERROR",
             "acknowledge": "ACKNOWLEDGE"
         }
