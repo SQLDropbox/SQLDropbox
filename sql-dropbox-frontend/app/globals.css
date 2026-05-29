@@ -41,9 +41,16 @@
     }
 
     .bg-ruled {
-        background-image: url("/ruledLines.svg");
+        background-image: url("/ruled.svg");
         background-repeat: repeat;
         background-size: 100% 1.75rem;
+        color: var(--color-ink);
+    }
+
+    .bg-grain {
+        background-image: url("/grain.svg");
+        background-repeat: repeat;
+        background-size: 4px 4px;
         color: var(--color-ink);
     }
 

@@ -1,118 +1,147 @@
 "use client";
 
-import { FaRegCircle } from "react-icons/fa6";
+import Link from "next/link";
+import { FaArrowLeft, FaBookOpen, FaCheck } from "react-icons/fa6";
 import { useTranslations } from "next-intl";
 import { Exercise } from "@/types/types";
-
-function LoadingSkeleton() {
-    return (
-        <div className="w-full border border-border bg-paper bg-ruled px-4 py-4 animate-pulse">
-            <div className="flex items-start gap-4">
-                <div className="h-4 w-8 bg-surface-2 border border-border" />
-                <div className="flex-1 space-y-2">
-                    <div className="h-3 w-24 bg-surface-2 border border-border" />
-                    <div className="h-4 w-40 bg-surface-2 border border-border" />
-                </div>
-                <div className="h-5 w-10 bg-surface-2 border border-border" />
-            </div>
-        </div>
-    );
-}
+import ProgressIcon from "../admin/chapter/progressIcon";
 
 interface ExerciseSidebarProps {
+    courseId: string;
+    chapterId: string;
     exercises: Exercise[];
-    activeExerciseId: number | null;
-    completedExerciseIds: number[];
-    onSelectExercise: (exerciseId: number) => void;
     isLoading?: boolean;
+    activeExerciseId: number | null;
+    setActiveExerciseId: (id: number) => void;
+    completedExerciseIds: number[];
 }
 
 export default function ExerciseSidebar({
+    courseId,
+    chapterId,
     exercises,
-    activeExerciseId,
-    completedExerciseIds,
-    onSelectExercise,
     isLoading = false,
+    activeExerciseId,
+    setActiveExerciseId,
+    completedExerciseIds,
 }: ExerciseSidebarProps) {
-    const t = useTranslations("ExerciseSidebar");
+    const t = useTranslations("ChapterExercisePage");
+
+    const totalExercises = exercises.length;
+    const completedCount = exercises.filter((e) =>
+        completedExerciseIds.includes(e.exerciseId),
+    ).length;
+
+    const progressPercentage =
+        totalExercises > 0 ? (completedCount / totalExercises) * 100 : 0;
 
     return (
-        <aside className="flex min-h-0 flex-col bg-paper">
-            <div className="border-b border-border px-5 py-4">
-                <h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted">
-                    {t("title")}
-                </h2>
+        <aside className="flex flex-col w-72 border-r-2 border-border bg-surface-3 px-6 py-8 gap-6">
+            {/* HEADER */}
+            <div>
+                <Link
+                    href={`/${courseId}`}
+                    className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-muted mb-6"
+                >
+                    <FaArrowLeft />
+                    {t("backToChapters")}
+                </Link>
+
+                <div className="font-display flex items-center gap-2 text-xl font-bold text-ink">
+                    <FaBookOpen />
+                    {courseId.toUpperCase()}
+                </div>
+                <div className="font-mono text-[10px] uppercase tracking-widest text-muted border-b border-border pb-3 mt-1">
+                    Chapter {chapterId}
+                </div>
             </div>
 
-            <div className="flex-1 min-h-0 space-y-0 overflow-y-auto px-4 py-4">
-                {isLoading
-                    ? Array.from({ length: 6 }).map((_, index) => (
-                          <div
-                              key={index}
-                              className={index === 0 ? "" : "-mt-px"}
-                          >
-                              <LoadingSkeleton />
-                          </div>
-                      ))
-                    : exercises.map((exercise, index) => {
-                          const isActive =
-                              exercise.exerciseId === activeExerciseId;
-                          const isCompleted = completedExerciseIds.includes(
-                              exercise.exerciseId,
-                          );
+            {/* PROGRESS */}
+            <div className="border-b border-border pb-4">
+                <div className="flex justify-between font-mono text-[12px] uppercase text-muted mb-2 tracking-widest">
+                    <span>{t("progressLabel")}</span>
+                    <div className="flex items-center gap-2">
+                        <span>
+                            {isLoading
+                                ? "-/-"
+                                : `${completedCount}/${totalExercises}`}
+                        </span>
+                        <ProgressIcon
+                            completed={completedCount}
+                            total={totalExercises}
+                            className="text-[14px]"
+                        />
+                    </div>
+                </div>
 
-                          return (
-                              <button
-                                  key={exercise.exerciseId}
-                                  type="button"
-                                  onClick={() =>
-                                      onSelectExercise(exercise.exerciseId)
-                                  }
-                                  className={`relative w-full text-left border px-4 py-4 bg-paper bg-ruled transition-all ${
-                                      index === 0 ? "" : "-mt-px"
-                                  } ${
-                                      isActive
-                                          ? "z-10 border-accent shadow-[0px_-3px_0px_0px_var(--color-accent)]"
-                                          : "border-border hover:z-10 hover:border-ink hover:shadow-[0px_-3px_0px_0px_var(--color-border)]"
-                                  }`}
-                              >
-                                  <div className="flex items-start gap-4">
-                                      <span className="w-8 shrink-0 pt-0.5 font-mono text-xs text-muted">
-                                          {String(index + 1).padStart(2, "0")}
-                                      </span>
+                <div className="h-2 border border-border bg-surface-2">
+                    <div
+                        className="h-full bg-accent"
+                        style={{ width: `${progressPercentage}%` }}
+                    />
+                </div>
+            </div>
 
-                                      <div className="min-w-0 flex-1">
-                                          <div className="flex items-start justify-between gap-3">
-                                              <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted">
-                                                  {t("exerciseLabel", {
-                                                      number: index + 1,
-                                                  })}
-                                              </span>
+            {/* EXERCISE LIST */}
+            <div className="flex-1 space-y-0 overflow-y-auto flex flex-col">
+                <p className="font-mono text-[12px] uppercase tracking-widest text-muted mb-4">
+                    {t("exerciseList")}
+                </p>
 
-                                              {isCompleted ? (
-                                                  <span className="border border-border px-2 py-1 font-mono text-[10px] uppercase tracking-widest text-muted">
-                                                      {t("done")}
-                                                  </span>
-                                              ) : (
-                                                  <FaRegCircle className="mt-0.5 text-muted text-xs" />
-                                              )}
-                                          </div>
+                {exercises.map((exercise, index) => {
+                    completedExerciseIds.push(20);
 
-                                          <p
-                                              className={`mt-2 font-display text-base font-bold leading-snug ${
-                                                  isCompleted
-                                                      ? "text-muted line-through"
-                                                      : "text-ink"
-                                              }`}
-                                          >
-                                              {exercise.questionNL ||
-                                                  t("untitled")}
-                                          </p>
-                                      </div>
-                                  </div>
-                              </button>
-                          );
-                      })}
+                    const isActive = exercise.exerciseId == activeExerciseId;
+                    const isCompleted = completedExerciseIds.includes(
+                        exercise.exerciseId,
+                    );
+
+                    return (
+                        <button
+                            key={exercise.exerciseId}
+                            onClick={() =>
+                                setActiveExerciseId(exercise.exerciseId)
+                            }
+                            className={`w-full  text-left border px-4 py-4 transition-all relative bg-paper bg-grain ${
+                                index !== 0 ? "-mt-px" : ""
+                            } ${
+                                isActive
+                                    ? "border-ink bg-surface-2 rotate-[0.5deg]"
+                                    : "border-border hover:border-ink hover:bg-surface-2"
+                            }`}
+                        >
+                            <div className="flex justify-between items-center opacity-80">
+                                <span className="font-mono text-xs tracking-widest text-muted">
+                                    {String(index + 1).padStart(2, "0")}
+                                </span>
+
+                                {isCompleted && (
+                                    <span className="font-mono text-[10px] uppercase tracking-widest text-accent">
+                                        ✓ done
+                                    </span>
+                                )}
+                            </div>
+
+                            <p
+                                className={`mt-2 font-display text-sm font-bold leading-snug tracking-wide ${
+                                    isCompleted
+                                        ? "text-muted line-through opacity-70"
+                                        : "text-ink"
+                                }`}
+                            >
+                                {exercise.questionNL}
+                            </p>
+
+                            <div
+                                className={`absolute left-0 top-0 bottom-0 w-0.5 ${
+                                    isActive ? "bg-ink" : "bg-transparent"
+                                }`}
+                            />
+
+                            {/* subtle grain overlay hint (if you have a noise class or can add later) */}
+                        </button>
+                    );
+                })}
             </div>
         </aside>
     );
