@@ -147,12 +147,71 @@
     "ChapterExercisePage": {
         "invalidParams": "No valid URL parameters were found."
     },
+    "LecturerTableRow": {
+        "primaryLecturer": "PRIMARY LECTURER",
+        "removeInstructorTitle": "Remove instructor from course",
+        "confirmTitle": "Revoke Access",
+        "confirmSubtitle": "SYS ALERT: REMOVAL OPERATION",
+        "confirmDescriptionBefore": "Are you sure you want to remove",
+        "confirmDescriptionAfter": "from this course?",
+        "confirmImpact": "This action will revoke their grading and management privileges for course {courseId}.",
+        "cancel": "Cancel",
+        "confirm": "Confirm",
+        "removeFailed": "Failed to remove lecturer."
+    },
+    "LecturerTableHead": {
+        "lectorId": "LECTOR-ID",
+        "instructorName": "NAME",
+        "role": "ROLE",
+        "actions": "ACTIONS"
+    },
+    "LecturerTable": {
+        "title": "MASTER LECTOR LEDGER",
+        "assignedPersonnel": "VOL. {courseId} — ASSIGNED PERSONNEL",
+        "searchPlaceholder": "SEARCH LECTORS...",
+        "assignLecturer": "ASSIGN LECTURER",
+        "noInstructors": "— NO LECTORS ASSIGNED YET —",
+        "recordingNo": "RECORDING NO. {courseId}"
+    ,
+        "modal": {
+            "title": "Assign Lecturer",
+            "authorization": "AUTHORIZATION REQ. FOR COURSE: {courseId}",
+            "errorPrefix": "ERROR:",
+            "selectInstructor": "Select Lecturer",
+            "loadingInstructors": "LOADING LECTORS...",
+            "noAvailableInstructors": "NO AVAILABLE LECTORS",
+            "selectPersonnelPlaceholder": "-- SELECT PERSONNEL --",
+            "allAssignedNote": "* All registered lecturers are already assigned to this course.",
+            "cancel": "Cancel",
+            "processing": "PROCESSING...",
+            "assign": "ASSIGN"
+        }
+    },
     "NotFound": {
         "stamp": "SYSTEM ERROR",
         "title": "Record Not Found",
         "description": "This page doesn't exist or the link is invalid.",
         "goBack": "Go Back",
         "goHome": "Return Home"
+    },
+    "StudentTableLegend": {
+        "complete": "COMPLETE",
+        "partial": "PARTIAL",
+        "inProgress": "IN PROGRESS",
+        "notStarted": "NOT STARTED"
+    },
+    "StudentTableHead": {
+        "code": "CODE",
+        "student": "STUDENT"
+    },
+    "StudentTable": {
+        "title": "MASTER STUDENT LEDGER",
+        "progressSheet": "VOL. {courseId} — PROGRESS TRACKING SHEET",
+        "searchPlaceholder": "SEARCH STUDENTS...",
+        "enroll": "Enroll",
+        "upload": "Upload",
+        "noPersonnel": "— NO STUDENTS ON RECORD —",
+        "recordingNo": "RECORDING NO. {courseId}"
     },
     "Unauthorized": {
         "stamp": "ACCESS RESTRICTED",

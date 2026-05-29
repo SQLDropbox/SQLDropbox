@@ -6,6 +6,7 @@ import { courseService } from "@/services/courseService";
 import { userService } from "@/services/userService";
 import { useQuery } from "@tanstack/react-query";
 import { Lecturer } from "@/types/types";
+import { useTranslations } from "next-intl";
 
 type Props = {
     courseId: string;
@@ -18,8 +19,8 @@ export default function AddLecturerModal({ courseId, currentLecturers, onClose, 
     const [userId, setUserId] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const t = useTranslations("LecturerTable");
 
-    // Haal ALLE docenten op uit de database
     const { data: allLecturers, isLoading: isLoadingLecturers } = useQuery<Lecturer[]>({
         queryKey: ["all-lecturers"],
         queryFn: () => userService.getAllLecturers(),
@@ -60,17 +61,17 @@ export default function AddLecturerModal({ courseId, currentLecturers, onClose, 
                 </button>
 
                 <div className="mb-8 border-b-2 border-accent pb-4">
-                    <h2 className="font-display text-2xl font-bold text-accent uppercase tracking-tighter mb-1">
-                        Assign Instructor
+                        <h2 className="font-display text-2xl font-bold text-accent uppercase tracking-tighter mb-1">
+                        {t("modal.title")}
                     </h2>
                     <p className="font-mono text-[10px] uppercase tracking-widest text-muted">
-                        AUTHORIZATION REQ. FOR COURSE: {courseId.toUpperCase()}
+                        {t("modal.authorization", { courseId: courseId.toUpperCase() })}
                     </p>
                 </div>
 
                 {error && (
                     <div className="mb-6 p-3 bg-[rgba(108,18,8,0.06)] border-l-4 border-accent font-mono text-xs text-accent">
-                        ERROR: {error}
+                        {t("modal.errorPrefix")} {error}
                     </div>
                 )}
 
@@ -80,7 +81,7 @@ export default function AddLecturerModal({ courseId, currentLecturers, onClose, 
                             htmlFor="userId" 
                             className="font-mono text-[11px] uppercase tracking-widest text-ink font-bold"
                         >
-                            Select Instructor
+                            {t("modal.selectInstructor")}
                         </label>
                         
                         <div className="relative">
@@ -102,10 +103,10 @@ export default function AddLecturerModal({ courseId, currentLecturers, onClose, 
                             >
                                 <option value="" disabled>
                                     {isLoadingLecturers 
-                                        ? "LOADING INSTRUCTORS..." 
+                                        ? t("modal.loadingInstructors") 
                                         : availableLecturers.length === 0 
-                                            ? "NO AVAILABLE INSTRUCTORS" 
-                                            : "-- SELECT PERSONNEL --"
+                                            ? t("modal.noAvailableInstructors") 
+                                            : t("modal.selectPersonnelPlaceholder")
                                     }
                                 </option>
                                 
@@ -124,7 +125,7 @@ export default function AddLecturerModal({ courseId, currentLecturers, onClose, 
 
                         {availableLecturers.length === 0 && !isLoadingLecturers && (
                             <p className="font-mono text-[10px] text-accent uppercase tracking-wider mt-1">
-                                * All registered instructors are already assigned to this course.
+                                {t("modal.allAssignedNote")}
                             </p>
                         )}
                     </div>
@@ -140,7 +141,7 @@ export default function AddLecturerModal({ courseId, currentLecturers, onClose, 
                             "
                             disabled={isSubmitting}
                         >
-                            Cancel
+                            {t("modal.cancel")}
                         </button>
                         <button
                             type="submit"
@@ -153,7 +154,7 @@ export default function AddLecturerModal({ courseId, currentLecturers, onClose, 
                             "
                             disabled={isSubmitting || !userId}
                         >
-                            {isSubmitting ? "PROCESSING..." : <><FaUserPlus /> ASSIGN</>}
+                            {isSubmitting ? t("modal.processing") : <><FaUserPlus /> {t("modal.assign")}</>}
                         </button>
                     </div>
                 </form>

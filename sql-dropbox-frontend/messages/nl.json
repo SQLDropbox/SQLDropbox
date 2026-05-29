@@ -147,12 +147,70 @@
     "ChapterExercisePage": {
         "invalidParams": "Geen geldige URL-parameters gevonden."
     },
+    "LecturerTableRow": {
+        "primaryLecturer": "HOOFDLECTOR",
+        "removeInstructorTitle": "Lector uit cursus verwijderen",
+        "confirmTitle": "Toegang intrekken",
+        "confirmSubtitle": "SYSTEEMMELDING: VERWIJDERINGSACTIE",
+        "confirmDescriptionBefore": "Weet je zeker dat je",
+        "confirmDescriptionAfter": "uit deze cursus wilt verwijderen?",
+        "confirmImpact": "Deze actie trekt hun nakijk- en beheerdersrechten in voor cursus {courseId}.",
+        "cancel": "Annuleren",
+        "confirm": "Bevestigen",
+        "removeFailed": "Lector verwijderen mislukt."
+    },
+    "LecturerTableHead": {
+        "lectorId": "LECTOR-ID",
+        "instructorName": "NAAM",
+        "role": "ROL",
+        "actions": "ACTIES"
+    },
+    "LecturerTable": {
+        "title": "MASTER LECTOR LEDGER",
+        "assignedPersonnel": "VOL. {courseId} — TOEGEWEZEN PERSONEEL",
+        "searchPlaceholder": "ZOEK LECTOREN...",
+        "assignLecturer": "LECTOR TOEWIJZEN",
+        "noInstructors": "— GEEN TOEGWIJZDE LECTOREN —",
+        "recordingNo": "REGISTRATIE NR. {courseId}",
+        "modal": {
+            "title": "Lector toewijzen",
+            "authorization": "AUTORISATIE VEREIST VOOR CURSUS: {courseId}",
+            "errorPrefix": "FOUT:",
+            "selectInstructor": "Selecteer Lector",
+            "loadingInstructors": "LECTOREN LADEN...",
+            "noAvailableInstructors": "GEEN BESCHIKBARE LECTOREN",
+            "selectPersonnelPlaceholder": "-- SELECTEER PERSONEEL --",
+            "allAssignedNote": "* Alle geregistreerde lectoren zijn al toegewezen aan deze cursus.",
+            "cancel": "Annuleren",
+            "processing": "BEWERKEN...",
+            "assign": "TOEWIJZEN"
+        }
+    },
     "NotFound": {
         "stamp": "SYSTEEMFOUT",
         "title": "Record Niet Gevonden",
         "description": "Deze pagina bestaat niet of de link is ongeldig.",
         "goBack": "Ga Terug",
         "goHome": "Naar Homepagina"
+    },
+    "StudentTableLegend": {
+        "complete": "VOLTOOID",
+        "partial": "GEDEELTELIJK",
+        "inProgress": "BEZIG",
+        "notStarted": "NIET BEGONNEN"
+    },
+    "StudentTableHead": {
+        "code": "CODE",
+        "student": "STUDENT"
+    },
+    "StudentTable": {
+        "title": "MASTER STUDENT LEDGER",
+        "progressSheet": "VOL. {courseId} — VOORTGANGSOVERZICHT",
+        "searchPlaceholder": "ZOEK STUDENTEN...",
+        "enroll": "Inschrijven",
+        "upload": "Uploaden",
+        "noPersonnel": "— GEEN STUDENTEN GEREGISTREERD —",
+        "recordingNo": "REGISTRATIE NR. {courseId}"
     },
     "Unauthorized": {
         "stamp": "TOEGANG BEPERKT",
