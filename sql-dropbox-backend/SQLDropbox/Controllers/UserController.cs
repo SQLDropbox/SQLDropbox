@@ -23,7 +23,7 @@ namespace SQLDropbox.Controllers
         public async Task<ActionResult> AddStudentToCourse(string courseId, StudentDTO dto)
         {
             Course? course = await _db.Courses
-                .FirstOrDefaultAsync(x => x.DeletedAt == null && x.CourseId == courseId);
+                .FirstOrDefaultAsync(x => x.CourseId == courseId);
 
             if (course == null)
                 return BadRequest("Course not found");
@@ -45,7 +45,7 @@ namespace SQLDropbox.Controllers
         public async Task<ActionResult> PreviewImportStudents(string courseId, IFormFile file)
         {
             var course = await _db.Courses
-                .FirstOrDefaultAsync(x => x.DeletedAt == null && x.CourseId == courseId);
+                .FirstOrDefaultAsync(x => x.CourseId == courseId);
 
             if (course == null)
                 return BadRequest("Course not found");
@@ -81,7 +81,7 @@ namespace SQLDropbox.Controllers
         public async Task<ActionResult> ImportStudents(string courseId, [FromBody] List<StudentDTO> students)
         {
             var course = await _db.Courses
-                .FirstOrDefaultAsync(x => x.DeletedAt == null && x.CourseId == courseId);
+                .FirstOrDefaultAsync(x => x.CourseId == courseId);
 
             if (course == null)
                 return BadRequest("Course not found");
@@ -129,14 +129,14 @@ namespace SQLDropbox.Controllers
         {
             try
             {
-                var course = await _db.Courses.FirstOrDefaultAsync(x => x.DeletedAt == null && x.CourseId == courseId);
+                var course = await _db.Courses.FirstOrDefaultAsync(x => x.CourseId == courseId);
 
                 if (course == null)
                     return BadRequest("Course not found");
 
                 var students = await _db.Users
-                    .Include(u => u.StudentCourses.Where(sc => sc.DeletedAt == null))
-                    .Where(u => u.DeletedAt == null && u.StudentCourses.Any(c => c.CourseId == courseId))
+                    .Include(u => u.StudentCourses)
+                    .Where(u => u.StudentCourses.Any(c => c.CourseId == courseId))
                     .ToListAsync();
 
                 students.ForEach(x => x.DeletedAt = DateTime.UtcNow);
@@ -162,14 +162,13 @@ namespace SQLDropbox.Controllers
                 .Include(c => c.Chapters)
                     .ThenInclude(ch => ch.Exercises)
                         .ThenInclude(e => e.UserExercises)
-                .Where(c => c.CourseId == courseId && c.DeletedAt == null)
+                .Where(c => c.CourseId == courseId)
                 .FirstOrDefault();
 
             if (course == null)
                 return NotFound();
 
             var chapters = course.Chapters
-                        .Where(ch => ch.DeletedAt == null)
                         .Select(ch => new
                         {
                             ch.ChapterId,
@@ -179,7 +178,6 @@ namespace SQLDropbox.Controllers
                         });
 
             var students = course.Students
-                .Where(s => s.DeletedAt == null)
                 .Select(student => new
                 {
                     student.UserCode,
@@ -187,15 +185,12 @@ namespace SQLDropbox.Controllers
                     student.LastName,
 
                     chapters = course.Chapters
-                        .Where(ch => ch.DeletedAt == null)
                         .Select(ch => new
                         {
                             ch.ChapterId,
                             completedAmount = ch.Exercises
-                                .Where(e => e.DeletedAt == null)
                                 .SelectMany(e => e.UserExercises)
                                 .Count(ue =>
-                                    ue.DeletedAt == null &&
                                     ue.User.UserId == student.UserId &&
                                     ue.IsCompleted)
                         })
@@ -213,7 +208,7 @@ namespace SQLDropbox.Controllers
         public async Task<IActionResult> GetAllLecturers()
         {
             var lecturers = await _db.Users
-                .Where(u => u.Role == Role.Lecturer && u.DeletedAt == null)
+                .Where(u => u.Role == Role.Lecturer)
                 .Select(u => new 
                 { 
                     u.UserId, 

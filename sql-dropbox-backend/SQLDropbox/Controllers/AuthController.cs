@@ -24,7 +24,7 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
         if (!Guid.TryParse(userId, out Guid guid))
             return BadRequest("Not a valid setup code.");
 
-        var user = await _db.Users.FirstOrDefaultAsync(u => u.DeletedAt == null && u.UserId == guid);
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.UserId == guid);
         if (user != null)
         {
             if (user.Password != null) return BadRequest("This account is already set up.");
@@ -42,7 +42,7 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
             if (!Guid.TryParse(dto.Guid, out Guid guid))
                 return BadRequest("Not a valid setup code.");
 
-            User? user = await _db.Users.FirstOrDefaultAsync(u => u.DeletedAt == null && u.UserId == guid);
+            User? user = await _db.Users.FirstOrDefaultAsync(u => u.UserId == guid);
             if (user != null)
             {
                 if (user.Password != null)
@@ -63,11 +63,11 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
                 return Ok(new { token = accessToken });
             }
 
-            return NotFound("This account does not exist.");
+            return NotFound(new { message = "This account does not exist." });
         }
         catch (Exception ex)
         {
-            return BadRequest(ex.Message);
+            return BadRequest(new { message = "Error occured during account setup." });
         }
     }
 
@@ -80,8 +80,8 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
                 return BadRequest("Email or code and password are required.");
 
             User? user = dto.EmailOrCode.Contains('@') ?
-                await _db.Users.FirstOrDefaultAsync(u => u.DeletedAt == null && u.Email.ToLower() == dto.EmailOrCode.ToLower()) :
-                await _db.Users.FirstOrDefaultAsync(u => u.DeletedAt == null && u.UserCode.ToLower() == dto.EmailOrCode.ToLower());
+                await _db.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == dto.EmailOrCode.ToLower()) :
+                await _db.Users.FirstOrDefaultAsync(u => u.UserCode.ToLower() == dto.EmailOrCode.ToLower());
 
             if (user != null)
             {
@@ -100,50 +100,63 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
                 return Ok(new { token = accessToken });
             }
 
-            return BadRequest("Incorrect credentials.");
+            return BadRequest(new { message = "Incorrect credentials." });
         }
         catch (Exception)
         {
-            return BadRequest("Incorrect credentials.");
+            return BadRequest(new { message = "Incorrect credentials." });
         }
     }
 
     [HttpGet("refresh")]
     public async Task<ActionResult> Refresh()
     {
-        string? refreshToken = Request.Cookies["refreshToken"];
-        if (refreshToken == null)
-            return Unauthorized();
+        try
+        {
+            string? refreshToken = Request.Cookies["refreshToken"];
+            if (refreshToken == null)
+                return Unauthorized();
 
-        RefreshToken? oldRefreshToken = await _rtS.ValidateRefreshToken(refreshToken);
-        if (oldRefreshToken == null)
-            return Unauthorized();
+            RefreshToken? oldRefreshToken = await _rtS.ValidateRefreshToken(refreshToken);
+            if (oldRefreshToken == null || oldRefreshToken.User == null)
+                return Unauthorized();
 
-        await _rtS.RevokeRefreshToken(oldRefreshToken);
+            await _rtS.RevokeRefreshToken(oldRefreshToken);
 
-        string newAccessToken = _jwtS.GenerateAccessToken(oldRefreshToken.User);
-        string newRefreshToken = _rtS.GenerateRefreshToken();
-        RefreshToken newValidRefreshToken = await _rtS.CreateRefreshToken(oldRefreshToken.User, HttpContext.Connection.RemoteIpAddress!.ToString(), newRefreshToken);
+            string newAccessToken = _jwtS.GenerateAccessToken(oldRefreshToken.User);
+            string newRefreshToken = _rtS.GenerateRefreshToken();
+            RefreshToken newValidRefreshToken = await _rtS.CreateRefreshToken(oldRefreshToken.User, HttpContext.Connection.RemoteIpAddress!.ToString(), newRefreshToken);
 
-        _rtS.AttachCookie(Response, newRefreshToken, newValidRefreshToken.ExpiresAt);
+            _rtS.AttachCookie(Response, newRefreshToken, newValidRefreshToken.ExpiresAt);
 
-        return Ok(new { token = newAccessToken });
+            return Ok(new { token = newAccessToken });
+        }
+        catch
+        {
+            return BadRequest(new { message = "Error occured refreshing" });
+        }
     }
 
     [HttpGet("logout")]
     public async Task<ActionResult> Logout()
     {
-        string? refreshToken = Request.Cookies["refreshToken"];
-        if (refreshToken == null)
-            return Unauthorized();
+        try
+        {
+            string? refreshToken = Request.Cookies["refreshToken"];
+            if (refreshToken == null)
+                return Unauthorized();
 
-        RefreshToken? oldRefreshToken = await _rtS.ValidateRefreshToken(refreshToken);
-        if (oldRefreshToken == null)
-            return Unauthorized();
+            RefreshToken? oldRefreshToken = await _rtS.ValidateRefreshToken(refreshToken);
+            if (oldRefreshToken != null)
+                await _rtS.RevokeRefreshToken(oldRefreshToken);
 
-        await _rtS.RevokeRefreshToken(oldRefreshToken);
-        _rtS.RemoveCookie(Response);
+            _rtS.RemoveCookie(Response);
 
-        return Ok(new { Message = "Successfully logged out" });
+            return Ok(new { Message = "Successfully logged out" });
+        }
+        catch
+        {
+            return BadRequest(new { message = "Error occured logging out" });
+        }
     }
 }

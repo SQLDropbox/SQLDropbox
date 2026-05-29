@@ -19,8 +19,7 @@ namespace SQLDropbox.Controllers
         [HttpGet("/Schema")]
         public async Task<ActionResult<IEnumerable<object>>> GetSchemas()
         {
-            var schemas = await _context.Set<Schema>()
-                .Where(s => s.DeletedAt == null)
+            var schemas = await _context.Set<Schema>()                
                 .OrderBy(s => s.SchemaName)
                 .Select(s => new
                 {

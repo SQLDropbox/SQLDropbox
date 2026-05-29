@@ -21,8 +21,8 @@ public class RequirementController(AppDbContext db) : ControllerBase
                 return BadRequest("Not a valid exercise ID.");
 
             Exercise? exercise = await _db.Exercises
-                .Include(e => e.Requirements.Where(r => r.DeletedAt == null))
-                .FirstOrDefaultAsync(e => e.DeletedAt == null && e.ExerciseId == exerciseId);
+                .Include(e => e.Requirements)
+                .FirstOrDefaultAsync(e => e.ExerciseId == exerciseId);
 
             if (exercise == null)
                 return NotFound(new { message = $"No exercise with ID {exerciseId} found." });
@@ -48,8 +48,8 @@ public class RequirementController(AppDbContext db) : ControllerBase
                 return BadRequest(new { message = "To add a requirement, a statement and exercise ID are needed." });
 
             Exercise? exercise = await _db.Exercises
-                .Include(e => e.Requirements.Where(r => r.DeletedAt == null))
-                .FirstOrDefaultAsync(e => e.DeletedAt == null && e.ExerciseId == dto.ExerciseId);
+                .Include(e => e.Requirements)
+                .FirstOrDefaultAsync(e => e.ExerciseId == dto.ExerciseId);
 
             if (exercise == null)
                 return NotFound(new { message = $"No exercise with ID {dto.ExerciseId} found." });
@@ -87,7 +87,7 @@ public class RequirementController(AppDbContext db) : ControllerBase
                 return BadRequest("Not a valid requirement ID.");
 
             Requirement? requirement = await _db.Requirements
-                .FirstOrDefaultAsync(r => r.DeletedAt == null && r.RequirementId == requirementId);
+                .FirstOrDefaultAsync(r => r.RequirementId == requirementId);
 
             if (requirement == null)
                 return NotFound(new { message = $"No requirement with ID {requirementId} found." });
@@ -118,7 +118,7 @@ public class RequirementController(AppDbContext db) : ControllerBase
                 return BadRequest("Not a valid requirement ID.");
 
             Requirement? requirement = await _db.Requirements
-                .FirstOrDefaultAsync(r => r.DeletedAt == null && r.RequirementId == requirementId);
+                .FirstOrDefaultAsync(r => r.RequirementId == requirementId);
 
             if (requirement == null)
                 return NotFound(new { message = $"No requirement with ID {requirementId} found." });

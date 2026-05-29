@@ -18,7 +18,7 @@ public class ExerciseController(AppDbContext db, SolutionService solutionService
     [HttpGet]
     public async Task<IActionResult> GetAllExercises()
     {
-        var exercises = await _db.Exercises.Include(e => e.Solutions).Where(e => e.DeletedAt == null).ToListAsync();
+        var exercises = await _db.Exercises.Include(e => e.Solutions).ToListAsync();
         return Ok(exercises);
     }
 
@@ -29,7 +29,7 @@ public class ExerciseController(AppDbContext db, SolutionService solutionService
         {
             Chapter? chapter = await _db.Chapters
                 .Include(c => c.Schema)
-                .FirstOrDefaultAsync(c => c.DeletedAt == null && c.ChapterId == dto.ChapterId);
+                .FirstOrDefaultAsync(c => c.ChapterId == dto.ChapterId);
 
             if (chapter == null)
                 return BadRequest(new { message = $"Chapter with ID {dto.ChapterId} could not be found." });
@@ -77,7 +77,7 @@ public class ExerciseController(AppDbContext db, SolutionService solutionService
     [HttpGet("{id}")]
     public async Task<IActionResult> GetExerciseById(int id)
     {
-        var exercise = await _db.Exercises.Include(e => e.Solutions.Where(s => s.DeletedAt == null)).FirstOrDefaultAsync(e => e.DeletedAt == null && e.ExerciseId == id);
+        var exercise = await _db.Exercises.Include(e => e.Solutions).FirstOrDefaultAsync(e => e.ExerciseId == id);
 
         if (exercise == null)
         {
@@ -89,7 +89,7 @@ public class ExerciseController(AppDbContext db, SolutionService solutionService
     [HttpDelete("{id}")]
     public ActionResult DeleteExercise(int id)
     {
-        var exercise = _db.Exercises.FirstOrDefault(x => x.DeletedAt == null && x.ExerciseId == id);
+        var exercise = _db.Exercises.FirstOrDefault(x => x.ExerciseId == id);
 
         if (exercise == null)
         {
@@ -108,8 +108,8 @@ public class ExerciseController(AppDbContext db, SolutionService solutionService
             Exercise? exercise = await _db.Exercises
                 .Include(e => e.Chapter)
                 .ThenInclude(c => c.Schema)
-                .Include(e => e.Solutions.Where(s => s.DeletedAt == null))
-                .FirstOrDefaultAsync(e => e.DeletedAt == null && e.ExerciseId == id);
+                .Include(e => e.Solutions)
+                .FirstOrDefaultAsync(e => e.ExerciseId == id);
 
             if (exercise == null) return BadRequest(new { message = "Exercise not found." });
             if (dto.QuestionNL != null) exercise.QuestionNL = dto.QuestionNL;

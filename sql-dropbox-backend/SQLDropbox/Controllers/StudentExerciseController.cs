@@ -15,7 +15,7 @@ public class StudentExerciseController(AppDbContext db) : BaseController
     [HttpPost("submit")]
     public async Task<IActionResult> SubmitSolution([FromBody] SubmitSolutionDTO dto)
     {
-        var exercise = await _db.Exercises.Include(e => e.Solutions.Where(s => s.DeletedAt == null)).FirstOrDefaultAsync(e => e.DeletedAt == null && e.ExerciseId == dto.ExerciseId);
+        var exercise = await _db.Exercises.Include(e => e.Solutions).FirstOrDefaultAsync(e => e.ExerciseId == dto.ExerciseId);
         var student = await _db.Users.FirstOrDefaultAsync(u => u.UserCode == dto.StudentCode);
 
         if (exercise == null || student == null)
@@ -23,8 +23,8 @@ public class StudentExerciseController(AppDbContext db) : BaseController
             return BadRequest(new { message = "Exercise or student not found." });
         }
         var studentExercise = await _db.UserExercises
-            .Include(se => se.UserSolutions.Where(us => us.DeletedAt == null))
-            .FirstOrDefaultAsync(se => se.DeletedAt == null && se.Exercise.ExerciseId == dto.ExerciseId && se.User.UserCode == dto.StudentCode);
+            .Include(se => se.UserSolutions)
+            .FirstOrDefaultAsync(se => se.Exercise.ExerciseId == dto.ExerciseId && se.User.UserCode == dto.StudentCode);
         if (studentExercise == null)
         {
             studentExercise = new UserExercise
