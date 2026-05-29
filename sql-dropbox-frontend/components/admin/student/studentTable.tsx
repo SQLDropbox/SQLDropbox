@@ -4,7 +4,7 @@ import { Course } from "@/types/types";
 import StudentTableLegend from "./studentTableLegend";
 import StudentTableHead from "./studentTableHead";
 import StudentTableRow from "./studentTableRow";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FaUpload, FaUserPlus } from "react-icons/fa6";
 import { FaSearch } from "react-icons/fa";
 
@@ -21,18 +21,51 @@ type Props = {
     onUpload: () => void;
 };
 
+function useDebouncedValue<T>(value: T, delay = 200) {
+    const [debouncedValue, setDebouncedValue] = useState(value);
+
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedValue(value);
+        }, delay);
+
+        return () => {
+            clearTimeout(handler);
+        };
+    }, [value, delay]);
+
+    return debouncedValue;
+}
+
 export default function StudentTable({ course, onAddManual, onUpload }: Props) {
     const [search, setSearch] = useState("");
+    const debouncedSearch = useDebouncedValue(search, 250);
 
-    const colCount = (course.chapters?.length ?? 0) + 2;
+    const filteredStudents = useMemo(() => {
+        const q = debouncedSearch.toLowerCase();
 
-    const filteredStudents = (course.students ?? []).filter(
-        (s) =>
-            `${s.firstName} ${s.lastName}`
-                .toLowerCase()
-                .includes(search.toLowerCase()) ||
-            s.userCode.toLowerCase().includes(search.toLowerCase()),
-    );
+        return (course.students ?? []).filter(
+            (s) =>
+                `${s.firstName} ${s.lastName}`.toLowerCase().includes(q) ||
+                s.userCode.toLowerCase().includes(q),
+        );
+    }, [course.students, debouncedSearch]);
+
+    const studentChapterMap = useMemo(() => {
+        const map = new Map<string, Map<number, number>>();
+
+        for (const s of course.students ?? []) {
+            const chapterMap = new Map<number, number>();
+
+            for (const c of s.chapters ?? []) {
+                chapterMap.set(c.chapterId, c.completedAmount ?? 0);
+            }
+
+            map.set(s.userCode, chapterMap);
+        }
+
+        return map;
+    }, [course.students]);
 
     return (
         <div className="max-w-7xl relative bg-paper bg-ruled border-2 border-border shadow-lg">
@@ -59,11 +92,10 @@ export default function StudentTable({ course, onAddManual, onUpload }: Props) {
 
                 {/* Toolbar */}
                 <div className="flex items-center gap-2 mb-1">
-                    {/* Search */}
                     <div className="relative">
                         <input
                             type="text"
-                            placeholder="SEARCH PERSONNEL..."
+                            placeholder="SEARCH STUDENTS..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             className="
@@ -78,7 +110,6 @@ export default function StudentTable({ course, onAddManual, onUpload }: Props) {
                         <FaSearch className="absolute right-2.5 top-1/2 -translate-y-1/2 text-border text-[10px]" />
                     </div>
 
-                    {/* Manual add */}
                     <button
                         onClick={onAddManual}
                         className="
@@ -93,7 +124,6 @@ export default function StudentTable({ course, onAddManual, onUpload }: Props) {
                         Enroll
                     </button>
 
-                    {/* Upload */}
                     <button
                         onClick={onUpload}
                         className="
@@ -109,43 +139,43 @@ export default function StudentTable({ course, onAddManual, onUpload }: Props) {
                     </button>
                 </div>
             </div>
+            <p className="font-mono text-[11px] mx-10 mt-4 text-muted">
+                students found: {filteredStudents.length} /{" "}
+                {course.students?.length ?? 0}
+            </p>
 
-            {/* Scrollable table container — sits inside the card, clips overflow */}
-            <div className="overflow-x-auto p-10">
-                <table
-                    className="w-full text-left border-collapse"
-                    style={{
-                        minWidth: `${260 + (course.chapters?.length ?? 0) * 100}px`,
-                    }}
-                >
-                    <StudentTableHead course={course} />
-                    <tbody>
-                        {filteredStudents.length > 0 ? (
-                            filteredStudents.map((student, rowIndex) => (
+            <div className="overflow-auto mx-10 my-4 h-[70vh]">
+                {filteredStudents.length > 0 ? (
+                    <div
+                        style={{
+                            minWidth: `${400 + (course.chapters?.length ?? 0) * 80}px`,
+                        }}
+                    >
+                        <div>
+                            <StudentTableHead course={course} />
+                            {filteredStudents.map((student, rowIndex) => (
                                 <StudentTableRow
                                     key={student.userCode}
                                     student={student}
                                     course={course}
                                     rowIndex={rowIndex}
+                                    chapterMap={studentChapterMap.get(
+                                        student.userCode,
+                                    )}
                                 />
-                            ))
-                        ) : (
-                            <tr>
-                                <td
-                                    colSpan={colCount}
-                                    className="p-6 text-center font-mono text-xs text-muted uppercase tracking-widest border-t border-border"
-                                >
-                                    — NO PERSONNEL ON RECORD —
-                                </td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
+                            ))}
+                        </div>
+                    </div>
+                ) : (
+                    <div className="p-6 text-center font-mono text-xs text-muted uppercase tracking-widest border-t border-border">
+                        — NO STUDENTS ON RECORD —
+                    </div>
+                )}
+            </div>
 
-                {/* Legend */}
-                <div className="px-10 left-0 sticky pt-6 border-t border-border">
-                    <StudentTableLegend />
-                </div>
+            {/* Legend */}
+            <div className="p-10 left-0 sticky pt-6 border-t border-border">
+                <StudentTableLegend />
             </div>
 
             {/* Footer stamp */}
