@@ -42,7 +42,7 @@ export default function LecturerTableRow({
         <tr className={`group border-b border-border divide-x divide-border ${rowBg} transition-colors`}>
             {/* ID */}
             <td className="p-3 font-mono text-[11px] text-muted tracking-wide uppercase whitespace-nowrap">
-                {lecturer.userId.split('-')[0]}
+                {lecturer.userCode.split('-')[0]}
             </td>
 
             {/* Name */}
