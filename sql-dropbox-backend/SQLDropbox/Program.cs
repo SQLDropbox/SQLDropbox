@@ -139,6 +139,11 @@ if (app.Environment.IsProduction())
     app.UseHttpsRedirection();
 }
 
+if (app.Environment.IsProduction())
+{
+    app.UsePathBase("/api");
+}
+
 // IMAGES
 app.UseStaticFiles();
 
@@ -146,10 +151,5 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
-if (app.Environment.IsProduction())
-{
-    app.UsePathBase("/api");
-}
 
 app.Run();
