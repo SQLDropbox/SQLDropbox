@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { FaArrowLeft, FaBookOpen, FaCircleInfo, FaLightbulb, FaPlay } from "react-icons/fa6";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Chapter, Course, Exercise } from "@/types/types";
 import { courseService } from "@/services/courseService";
 import { queryService } from "@/services/queryService";
@@ -165,6 +165,7 @@ export default function StudentExerciseWorkspace({
                                     }
                                     schemaName={chapter?.schemaName || ""}
                                     schemaImage={chapter?.schemaImage || null}
+                                    chapterId={chapterId}
                                 />
                             ) : (
                                 <div className="bg-paper border border-dashed border-border px-6 py-10 font-mono text-sm text-muted">
@@ -202,11 +203,13 @@ function ExercisePanel({
     chapterName,
     schemaName,
     schemaImage,
+    chapterId,
 }: {
     exercise: Exercise;
     chapterName: string;
     schemaName: string;
     schemaImage?: string | null;
+    chapterId: string;
 }) {
     const [activeTab, setActiveTab] = useState<PanelTab>("question");
     const [showHint, setShowHint] = useState(false);
@@ -220,7 +223,7 @@ function ExercisePanel({
     const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
     const [queryError, setQueryError] = useState<string | null>(null);
     const [isExecuting, setIsExecuting] = useState(false);
-
+    const queryClient = useQueryClient();
     const normalizedQuery = queryValue.toLowerCase();
 
     const requirements = (exercise.requirements ?? []).filter(
@@ -249,39 +252,61 @@ function ExercisePanel({
         return () => el.removeEventListener("wheel", handleWheelEvent);
     }, [isHoveringImage]);
 
+    const submitSolution = async ({ exerciseId, query }: {
+        exerciseId: number;
+        query: string;
+    }) => {
+        const res = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/Solution/submit/select`,
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({
+                    exerciseId,
+                    query,
+                }),
+            }
+        );
+
+        if (!res.ok) {
+            throw new Error(await res.text());
+        }
+
+        return res.json();
+    };
+
     const handleRunQuery = async () => {
         if (!queryValue.trim()) return;
-
-        if (!schemaName) {
-            setQueryError("No database schema is linked to this chapter.");
-            return;
-        }
-
-        if (!queryMeetsRequirements) {
-            setQueryError(
-                `Missing required SQL syntax: ${missingRequirements
-                    .map((r) => `"${r.statement}"`)
-                    .join(", ")}`,
-            );
-
-            return;
-        }
 
         try {
             setIsExecuting(true);
             setQueryError(null);
             setQueryResult(null);
 
-            const result = await queryService.executeQuery({
+            // 1. run SQL (for preview output)
+            const preview = await queryService.executeQuery({
                 schema: schemaName,
                 query: queryValue,
             });
 
-            setQueryResult(result);
+            setQueryResult(preview);
+
+            // 2. submit for validation (IMPORTANT PART)
+            const submission = await submitSolution({
+                exerciseId: exercise.exerciseId,
+                query: queryValue,
+            });
+
+            if (submission.correct) {
+                queryClient.invalidateQueries({
+                    queryKey: ["chapter", chapterId],
+                });
+            } else {
+                setQueryError(submission.message);
+            }
         } catch (err) {
-            setQueryError(
-                err instanceof Error ? err.message : "Something went wrong",
-            );
+            setQueryError(err instanceof Error ? err.message : "Something went wrong");
         } finally {
             setIsExecuting(false);
         }

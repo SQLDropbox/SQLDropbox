@@ -69,6 +69,14 @@ export interface RequirementDTO {
     exerciseId?: number | null;
 }
 
+export interface SubmitResult {
+    correct: boolean;
+    message: string;
+    alreadySolved?: boolean;
+    expected?: string;
+    actual?: string;
+}
+
 export interface User {
     userCode: string;
     firstName: string;

@@ -63,6 +63,7 @@ export default function EditChapterDialog({
 
     useEffect(() => {
         if (!open) return;
+        console.log("chapter", chapter);
 
         if (chapter && isEdit) {
             setForm({
