@@ -20,7 +20,6 @@ public class UtilitiesController(AppDbContext db, PasswordService passwordServic
     private readonly SolutionService _soS = solutionService;
     private readonly SchemaService _scS = schemaService;
 
-    [Authorize(Roles = "Admin")]
     [HttpGet("seed-db")]
     public async Task<IActionResult> SeedTheDb()
     {
