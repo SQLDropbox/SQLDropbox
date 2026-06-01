@@ -143,7 +143,7 @@ public class ChapterController(AppDbContext db) : BaseController
         await _db.SaveChangesAsync();
         return Ok(new { message = $"Chapter with ID {id} successfully deleted." });
     }
-    
+
     [Authorize]
     [HttpGet("{chapterId}/exercises")]
     public async Task<ActionResult<IEnumerable<Exercise>>> GetExercisesByChapter(int chapterId)
@@ -170,7 +170,6 @@ public class ChapterController(AppDbContext db) : BaseController
                 if (student == null)
                     return NotFound("Student not found.");
 
-                // Get a chapter with all exercises and all their user exercises
                 Chapter? chapterForStudent = await _db.Chapters
                   .Where(c => c.ChapterId == chapterId)
                   .Include(c => c.Exercises
@@ -186,41 +185,31 @@ public class ChapterController(AppDbContext db) : BaseController
 
                 int amount = chapterForStudent.AmountOfExercises ?? 0;
 
-                // Get the exercises for which a user exercise for this student already exists
                 List<Exercise> currentExercises = [.. chapterForStudent.Exercises
                     .Where(e => e.UserExercises.Any(se => se.User == student))
                     .OrderBy(e => e.ExerciseId)];
 
-                // If there are as much off those as the amount required for a chapter, return those current exercises
-                if(currentExercises.Count == amount)
+                if (currentExercises.Count == amount)
                     return Ok(currentExercises);
 
-                // If not, get all possible exercises, for which a user exercise for this student doesn't yet exist
                 List<Exercise> possibleExercises = [.. chapterForStudent.Exercises
                     .Where(e => !e.UserExercises.Any(se => se.User == student))
                     .OrderBy(e => e.ExerciseId)];
 
-                // Init the list of exercises to return by adding the current exercises (in case the needed amount gets increased)
                 List<Exercise> exercises = currentExercises;
                 List<UserExercise> userExercises = [];
 
-                // Loop for the amount of exercises needed for a student to make in a chapter
                 for (int i = 0; i < amount; i++)
                 {
-                    // If there are no more possible exercises, but more exercises are required in the chapter than that exist for the chapter (lecturer issue)
-                    // In this case, for now, throw an error, obviously, this scenario should be impossible
                     if (possibleExercises.Count == 0)
                         return BadRequest(new { message = "No possible exercise left for this chapter." });
 
-                    // Pick a random exercise for the possible ones left
                     int random = Random.Shared.Next(possibleExercises.Count);
                     Exercise randomExercise = possibleExercises[random];
 
-                    // If none left, error
                     if (randomExercise == null)
                         return BadRequest(new { message = "Error occured selecting a random exercise." });
 
-                    // Create a user exercise for the current student and the random exercise
                     userExercises.Add(new UserExercise
                     {
                         IsCompleted = false,
@@ -229,7 +218,6 @@ public class ChapterController(AppDbContext db) : BaseController
                         CreatedAt = DateTime.UtcNow,
                     });
 
-                    // Remove the randomly selected exercise from the possible exercises
                     exercises.Add(randomExercise);
                     possibleExercises.RemoveAll(e => e.ExerciseId == randomExercise.ExerciseId);
                 }
@@ -237,7 +225,6 @@ public class ChapterController(AppDbContext db) : BaseController
                 _db.UserExercises.AddRange(userExercises);
                 await _db.SaveChangesAsync();
 
-                // return the exercises;
                 return Ok(exercises);
             }
 
@@ -253,7 +240,7 @@ public class ChapterController(AppDbContext db) : BaseController
             Chapter? chapter = await _db.Chapters
                 .Where(c => c.ChapterId == chapterId)
                 .Include(c => c.Exercises)
-                    .ThenInclude(e => e.Requirements)                    
+                    .ThenInclude(e => e.Requirements)
                 .Include(c => c.Exercises)
                     .ThenInclude(e => e.Solutions)
                 .FirstOrDefaultAsync();

@@ -132,11 +132,9 @@ if (app.Environment.IsProduction())
 
     // Delete the seed
     await DbInitializer.SeedAsyncProd(db, pass);
-}
 
-if (app.Environment.IsProduction())
-{
     app.UseHttpsRedirection();
+    app.UsePathBase("/api");
 }
 
 // IMAGES
@@ -146,10 +144,5 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
-if (app.Environment.IsProduction())
-{
-    app.UsePathBase("/api");
-}
 
 app.Run();

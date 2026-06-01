@@ -56,5 +56,5 @@ namespace SQLDropbox.Services
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
-    } 
+    }
 }

@@ -40,13 +40,12 @@ export default function Page() {
         <div className="min-h-screen flex flex-col">
             <Header />
 
-            {/* Below header: sidebar + content side by side, flush */}
             <div className="flex flex-1 relative">
-                <div className="sticky top-0 h-screen overflow-y-auto">
+                <div className="sticky top-0 h-screen">
                     <AdminCourseNav course={course!} />
                 </div>
 
-                <main className="flex-1 flex flex-col gap-6 overflow-y-auto p-8 md:p-12 max-w-7xl mx-auto">
+                <main className="flex-1 flex flex-col gap-6 p-8 md:p-12 max-w-7xl mx-auto">
                     <Link
                         href="/admin"
                         className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-muted hover:text-ink"

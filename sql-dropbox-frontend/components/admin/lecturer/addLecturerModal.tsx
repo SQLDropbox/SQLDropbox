@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { FaTimes, FaUserPlus } from "react-icons/fa";
+import { FaTimes, FaUserPlus, FaCheck } from "react-icons/fa";
 import { courseService } from "@/services/courseService";
 import { userService } from "@/services/userService";
 import { useQuery } from "@tanstack/react-query";
 import { Lecturer } from "@/types/types";
+import { useTranslations } from "next-intl";
 
 type Props = {
     courseId: string;
@@ -15,11 +16,11 @@ type Props = {
 };
 
 export default function AddLecturerModal({ courseId, currentLecturers, onClose, onSuccess }: Props) {
-    const [userId, setUserId] = useState("");
+    const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const t = useTranslations("LecturerTable");
 
-    // Haal ALLE docenten op uit de database
     const { data: allLecturers, isLoading: isLoadingLecturers } = useQuery<Lecturer[]>({
         queryKey: ["all-lecturers"],
         queryFn: () => userService.getAllLecturers(),
@@ -31,18 +32,27 @@ export default function AddLecturerModal({ courseId, currentLecturers, onClose, 
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!userId) return;
+        if (selectedUserIds.length === 0) return;
 
         setIsSubmitting(true);
         setError(null);
 
         try {
-            await courseService.addLecturerToCourse(courseId, userId);
+            await Promise.all(
+                selectedUserIds.map((id) => courseService.addLecturerToCourse(courseId, id))
+            );
+            
             onSuccess();
         } catch (err: any) {
-            setError(err.message || "Failed to assign instructor.");
+            setError(err.message || "Failed to assign instructors.");
             setIsSubmitting(false);
         }
+    };
+
+    const handleCheckboxChange = (userId: string, isChecked: boolean) => {
+        setSelectedUserIds((prev) =>
+            isChecked ? [...prev, userId] : prev.filter((id) => id !== userId)
+        );
     };
 
     return (
@@ -60,71 +70,74 @@ export default function AddLecturerModal({ courseId, currentLecturers, onClose, 
                 </button>
 
                 <div className="mb-8 border-b-2 border-accent pb-4">
-                    <h2 className="font-display text-2xl font-bold text-accent uppercase tracking-tighter mb-1">
-                        Assign Instructor
+                        <h2 className="font-display text-2xl font-bold text-accent uppercase tracking-tighter mb-1">
+                        {t("modal.title")}
                     </h2>
                     <p className="font-mono text-[10px] uppercase tracking-widest text-muted">
-                        AUTHORIZATION REQ. FOR COURSE: {courseId.toUpperCase()}
+                        {t("modal.authorization", { courseId: courseId.toUpperCase() })}
                     </p>
                 </div>
 
                 {error && (
                     <div className="mb-6 p-3 bg-[rgba(108,18,8,0.06)] border-l-4 border-accent font-mono text-xs text-accent">
-                        ERROR: {error}
+                        {t("modal.errorPrefix")} {error}
                     </div>
                 )}
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-6">
                     <div className="flex flex-col gap-2">
                         <label 
-                            htmlFor="userId" 
                             className="font-mono text-[11px] uppercase tracking-widest text-ink font-bold"
                         >
-                            Select Instructor
+                            {t("modal.selectInstructor")}
                         </label>
                         
-                        <div className="relative">
-                            <select
-                                id="userId"
-                                value={userId}
-                                onChange={(e) => setUserId(e.target.value)}
-                                className="
-                                    appearance-none w-full
-                                    bg-surface-1 border border-border
-                                    px-4 py-2.5 pr-10
-                                    font-mono text-sm text-ink
-                                    focus:outline-none focus:border-accent
-                                    focus:bg-paper transition-colors
-                                    disabled:opacity-50 disabled:cursor-not-allowed
-                                "
-                                required
-                                disabled={isLoadingLecturers || availableLecturers.length === 0}
-                            >
-                                <option value="" disabled>
-                                    {isLoadingLecturers 
-                                        ? "LOADING INSTRUCTORS..." 
-                                        : availableLecturers.length === 0 
-                                            ? "NO AVAILABLE INSTRUCTORS" 
-                                            : "-- SELECT PERSONNEL --"
-                                    }
-                                </option>
-                                
-                                {availableLecturers.map((l) => (
-                                    <option key={l.userId} value={l.userId}>
-                                        {l.firstName} {l.lastName} ({l.userCode.toUpperCase()})
-                                    </option>
-                                ))}
-                            </select>
-                            
-                            {/* Custom arrow for the select dropdown to match the brutalist style */}
-                            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-border text-[10px] rotate-90">
-                                {">"}
+                        {isLoadingLecturers ? (
+                            <div className="bg-surface-1 border border-border p-4">
+                                <p className="font-mono text-[11px] text-muted uppercase tracking-widest italic animate-pulse">
+                                    {t("modal.loadingInstructors")}
+                                </p>
                             </div>
-                        </div>
+                        ) : (
+                            <div className="bg-surface-1 border border-border p-2 max-h-52 overflow-y-auto flex flex-col gap-1 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]">
+                                {availableLecturers.length === 0 ? (
+                                    <div className="p-3 text-center">
+                                        <p className="font-mono text-[11px] text-accent uppercase tracking-wider">
+                                            {t("modal.noAvailableInstructors")}
+                                        </p>
+                                    </div>
+                                ) : (
+                                    availableLecturers.map((l) => {
+                                        const isChecked = selectedUserIds.includes(l.userId);
+                                        return (
+                                            <label
+                                                key={l.userId}
+                                                className="flex items-center gap-3 p-2 hover:bg-paper cursor-pointer border border-transparent hover:border-border transition-colors group"
+                                            >
+                                                <div className="relative flex items-center justify-center w-4 h-4 shrink-0">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={isChecked}
+                                                        onChange={(e) => handleCheckboxChange(l.userId, e.target.checked)}
+                                                        className="peer appearance-none w-4 h-4 border-2 border-border checked:bg-accent checked:border-accent cursor-pointer transition-colors"
+                                                    />
+                                                    <FaCheck className="absolute text-paper text-[10px] pointer-events-none opacity-0 peer-checked:opacity-100 scale-50 peer-checked:scale-100 transition-transform" />
+                                                </div>
+                                                
+                                                {/* Label Tekst */}
+                                                <span className="font-mono text-[11px] text-ink uppercase tracking-wider group-hover:translate-x-1 transition-transform">
+                                                    {l.firstName} {l.lastName} <span className="text-muted">({l.userCode.toUpperCase()})</span>
+                                                </span>
+                                            </label>
+                                        );
+                                    })
+                                )}
+                            </div>
+                        )}
 
                         {availableLecturers.length === 0 && !isLoadingLecturers && (
                             <p className="font-mono text-[10px] text-accent uppercase tracking-wider mt-1">
-                                * All registered instructors are already assigned to this course.
+                                {t("modal.allAssignedNote")}
                             </p>
                         )}
                     </div>
@@ -140,7 +153,7 @@ export default function AddLecturerModal({ courseId, currentLecturers, onClose, 
                             "
                             disabled={isSubmitting}
                         >
-                            Cancel
+                            {t("modal.cancel")}
                         </button>
                         <button
                             type="submit"
@@ -151,9 +164,9 @@ export default function AddLecturerModal({ courseId, currentLecturers, onClose, 
                                 hover:bg-paper hover:text-accent transition-colors
                                 disabled:opacity-50 disabled:cursor-not-allowed
                             "
-                            disabled={isSubmitting || !userId}
+                            disabled={isSubmitting || selectedUserIds.length === 0}
                         >
-                            {isSubmitting ? "PROCESSING..." : <><FaUserPlus /> ASSIGN</>}
+                            {isSubmitting ? t("modal.processing") : <><FaUserPlus /> {t("modal.assign")}</>}
                         </button>
                     </div>
                 </form>

@@ -111,10 +111,7 @@ export default function EditCourseDialog({
             onClose();
         } catch (err: any) {
             console.error(err);
-            setErrorDialog(
-                err?.message ||
-                    "Something went wrong while duplicating the course.",
-            );
+            setErrorDialog(err?.message || t("errors.duplicateFailed"));
         } finally {
             setIsDuplicating(false);
         }
@@ -187,7 +184,7 @@ export default function EditCourseDialog({
                 <div className="border-b border-border bg-paper px-6 py-4 flex justify-between items-start">
                     <div>
                         <p className="text-[10px] uppercase tracking-widest text-muted">
-                            COURSE DOSSIER / DATABASE ENTRY
+                            {t("headerStamp")}
                         </p>
                         <h2 className="font-display text-xl">
                             {isEdit ? t("titleEdit") : t("titleAdd")}
@@ -291,32 +288,29 @@ export default function EditCourseDialog({
                     </Field>
 
                     {/* LECTURER */}
-                    <Field label={t("lecturer") || "Assign Additional Instructors"} error={errors.lecturerIds}>
+                    <Field label={t("lecturer")} error={errors.lecturerIds}>
                         {isLoadingLecturers ? (
                             <div className="bg-surface-1 border border-border p-4">
                                 <p className="text-[11px] text-muted uppercase tracking-widest italic animate-pulse">
-                                    LOADING PERSONNEL LIST...
+                                    {t("loadingLecturers")}
                                 </p>
                             </div>
                         ) : (
-                            <div className="bg-surface-1 border border-border p-2 max-h-[160px] overflow-y-auto flex flex-col gap-1 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]">
+                            <div className="bg-surface-1 border border-border p-2 max-h-40 overflow-y-auto flex flex-col gap-1 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]">
                                 {(() => {
-                                    // Filter docenten die al aan de cursus zijn gekoppeld eruit
-                                    const availableLecturers = allLecturers?.filter(
-                                        (l) => !course?.lecturers?.some((cl) => cl.userId === l.userId)
-                                    ) ?? [];
+                                    const lecturerToShow = allLecturers ?? [];
 
-                                    if (availableLecturers.length === 0) {
+                                    if (lecturerToShow.length === 0) {
                                         return (
                                             <div className="p-3">
                                                 <p className="text-[10px] text-accent uppercase tracking-widest">
-                                                    * ALL AVAILABLE INSTRUCTORS ARE ALREADY ASSIGNED.
+                                                    {t("noAvailableLecturers")}
                                                 </p>
                                             </div>
                                         );
                                     }
 
-                                    return availableLecturers.map((l) => (
+                                    return lecturerToShow.map((l) => (
                                         <label 
                                             key={l.userId} 
                                             className="flex items-center gap-3 p-2 hover:bg-paper cursor-pointer border border-transparent hover:border-border transition-colors group"
@@ -442,7 +436,7 @@ export default function EditCourseDialog({
                 title={t("errorTitle")}
                 description={errorDialog || ""}
                 type="error"
-                buttonText="OK"
+                buttonText={t("ok")}
             />
 
             <ConfirmDialog

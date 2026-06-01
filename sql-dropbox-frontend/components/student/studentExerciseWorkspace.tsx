@@ -5,6 +5,7 @@ import Link from "next/link";
 import { FaArrowLeft, FaBookOpen, FaCircleInfo, FaLightbulb, FaPlay } from "react-icons/fa6";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Chapter, Course, Exercise } from "@/types/types";
+import { useTranslations } from "next-intl";
 import { courseService } from "@/services/courseService";
 import { queryService } from "@/services/queryService";
 import QueryResult from "@/components/student/QueryResult";
@@ -29,7 +30,10 @@ export default function StudentExerciseWorkspace({
     error = null,
     completedExerciseIds = [],
 }: StudentExerciseWorkspaceProps) {
-    const [activeExerciseId, setActiveExerciseId] = useState<number | null>(null);
+    const t = useTranslations("ChapterExercisePage");
+    const [activeExerciseId, setActiveExerciseId] = useState<number | null>(
+        null,
+    );
 
     const { data: course } = useQuery<Course>({
         queryKey: ["course", courseId],
@@ -43,12 +47,16 @@ export default function StudentExerciseWorkspace({
             const currentExerciseExists = exercises.some(
                 (exercise) => exercise.exerciseId === currentActiveId,
             );
-            return currentExerciseExists ? currentActiveId : exercises[0].exerciseId;
+            return currentExerciseExists
+                ? currentActiveId
+                : exercises[0].exerciseId;
         });
     }, [exercises]);
 
     const activeExercise =
-        exercises.find((exercise) => exercise.exerciseId === activeExerciseId) || exercises[0];
+        exercises.find(
+            (exercise) => exercise.exerciseId === activeExerciseId,
+        ) || exercises[0];
 
     const totalExercises = exercises.length;
     const completedCount = exercises.filter((exercise) =>
@@ -62,7 +70,9 @@ export default function StudentExerciseWorkspace({
         return (
             <div className="min-h-[calc(100vh-4rem)] bg-paper text-ink flex items-center justify-center px-6">
                 <div className="bg-surface-2 border-2 border-border px-6 py-5 shadow-[6px_6px_0px_0px_var(--color-border)]">
-                    <p className="font-mono text-sm text-error">Error: {error.message}</p>
+                    <p className="font-mono text-sm text-error">
+                        {t("genericError")}: {error.message}
+                    </p>
                 </div>
             </div>
         );
@@ -76,13 +86,16 @@ export default function StudentExerciseWorkspace({
                     className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-muted hover:text-ink mb-8"
                 >
                     <FaArrowLeft className="text-[12px]" />
-                    Back to chapters
+                    {t("backToChapters")}
                 </Link>
 
                 <div className="relative bg-surface-2 border-2 border-border shadow-[6px_6px_0px_0px_var(--color-border)]">
                     <div className="absolute -top-6 -left-px min-w-[30%] bg-surface-2 px-4 py-1 border border-border border-b-0">
                         <span className="font-mono text-xs uppercase tracking-wider text-muted">
-                            ID: {courseId?.toUpperCase()} / CHAPTER {chapterId}
+                            {t("idLabel", {
+                                courseId: courseId?.toUpperCase(),
+                                chapterId,
+                            })}
                         </span>
                     </div>
 
@@ -92,37 +105,52 @@ export default function StudentExerciseWorkspace({
                                 <div className="flex items-center gap-3 font-mono text-xs uppercase tracking-widest text-muted mb-3">
                                     <FaBookOpen className="text-accent" />
                                     <span>
-                                        {course?.courseNameEN || course?.courseNameNL || "Course"}
+                                        {course?.courseNameEN ||
+                                            course?.courseNameNL ||
+                                            t("courseFallback")}
                                     </span>
                                 </div>
 
                                 <h1 className="font-display text-4xl font-bold mb-2">
                                     {chapter?.chapterNameEN ||
                                         chapter?.chapterNameNL ||
-                                        `Chapter ${chapterId}`}
+                                        t("chapterFallback", { chapterId })}
                                 </h1>
 
                                 <p className="font-mono text-sm text-muted max-w-2xl">
-                                    SQL exercises, schema reference, and expected output.
+                                    {t("pageDescription")}
                                 </p>
                             </div>
 
                             <div className="w-full max-w-md border border-border bg-paper px-4 py-4">
                                 <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.2em] text-muted">
-                                    <span>Progress</span>
-                                    <span>{completedCount}/{totalExercises}</span>
+                                    <span>{t("progressLabel")}</span>
+                                    <span>
+                                        {completedCount}/{totalExercises}
+                                    </span>
                                 </div>
 
                                 <div className="mt-3 h-3 border border-border bg-surface-2">
                                     <div
                                         className="h-full bg-accent transition-all"
-                                        style={{ width: `${progressPercentage}%` }}
+                                        style={{
+                                            width: `${progressPercentage}%`,
+                                        }}
                                     />
                                 </div>
 
                                 <div className="mt-3 flex items-center justify-between font-mono text-[10px] uppercase tracking-widest text-muted">
-                                    <span>{Math.round(progressPercentage)}% complete</span>
-                                    <span>{totalExercises} exercises</span>
+                                    <span>
+                                        {t("percentComplete", {
+                                            percent:
+                                                Math.round(progressPercentage),
+                                        })}
+                                    </span>
+                                    <span>
+                                        {t("exercisesCount", {
+                                            count: totalExercises,
+                                        })}
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -132,14 +160,16 @@ export default function StudentExerciseWorkspace({
                         <aside className="border-r-2 border-border bg-paper">
                             <div className="px-6 pt-6">
                                 <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted mb-5 border-l-2 border-accent pl-3">
-                                    Exercise list
+                                    {t("exerciseList")}
                                 </p>
                             </div>
 
                             <div className="px-4 pb-6">
                                 <ExerciseSidebar
                                     exercises={exercises}
-                                    activeExerciseId={activeExercise?.exerciseId ?? null}
+                                    activeExerciseId={
+                                        activeExercise?.exerciseId ?? null
+                                    }
                                     completedExerciseIds={completedExerciseIds}
                                     onSelectExercise={setActiveExerciseId}
                                     isLoading={isLoading}
@@ -161,7 +191,7 @@ export default function StudentExerciseWorkspace({
                                     chapterName={
                                         chapter?.chapterNameEN ||
                                         chapter?.chapterNameNL ||
-                                        `Chapter ${chapterId}`
+                                        t("chapterFallback", { chapterId })
                                     }
                                     schemaName={chapter?.schemaName || ""}
                                     schemaImage={chapter?.schemaImage || null}
@@ -169,7 +199,7 @@ export default function StudentExerciseWorkspace({
                                 />
                             ) : (
                                 <div className="bg-paper border border-dashed border-border px-6 py-10 font-mono text-sm text-muted">
-                                    No exercises found for this chapter.
+                                    {t("noExercises")}
                                 </div>
                             )}
                         </section>
@@ -211,6 +241,7 @@ function ExercisePanel({
     schemaImage?: string | null;
     chapterId: string;
 }) {
+    const t = useTranslations("ChapterExercisePage");
     const [activeTab, setActiveTab] = useState<PanelTab>("question");
     const [showHint, setShowHint] = useState(false);
     const [queryValue, setQueryValue] = useState("");
@@ -278,6 +309,20 @@ function ExercisePanel({
 
     const handleRunQuery = async () => {
         if (!queryValue.trim()) return;
+
+        if (!schemaName) {
+            setQueryError(t("noSchemaLinkedError"));
+            return;
+        }
+
+        if (!queryMeetsRequirements) {
+            const list = missingRequirements
+                .map((r) => `"${r.statement}"`)
+                .join(", ");
+            setQueryError(t("missingSyntax", { list }));
+
+            return;
+        }
 
         try {
             setIsExecuting(true);
@@ -351,7 +396,7 @@ function ExercisePanel({
                                 : "bg-surface-2 border-transparent text-muted hover:border-border hover:text-ink"
                         }`}
                     >
-                        {label}
+                        {t(`panel.${id}`)}
                     </button>
                 ))}
             </div>
@@ -361,10 +406,11 @@ function ExercisePanel({
                     <div className="space-y-4">
                         <div>
                             <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted mb-2">
-                                Exercise prompt
+                                {t("exercisePrompt")}
                             </p>
                             <h3 className="font-display text-2xl font-bold text-ink">
-                                {exercise.questionNL || "Exercise question"}
+                                {exercise.questionNL ||
+                                    t("exerciseQuestionFallback")}
                             </h3>
                         </div>
 
@@ -376,8 +422,7 @@ function ExercisePanel({
                             <div className="flex items-start gap-3">
                                 <FaCircleInfo className="mt-0.5 text-accent" />
                                 <p className="font-mono text-sm text-muted">
-                                    Write your SQL query below, use the hint only when needed,
-                                    and run the query to validate your answer.
+                                    {t("hintInstructions")}
                                 </p>
                             </div>
                         </div>
@@ -387,16 +432,16 @@ function ExercisePanel({
                 {activeTab === "schema" && (
                     <div className="space-y-4">
                         <h3 className="font-display text-2xl font-bold text-ink">
-                            Database Schema
+                            {t("panel.schema")}
                         </h3>
 
                         <div className="border border-border bg-surface-2 p-4">
                             <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted">
-                                Active schema
+                                {t("activeSchema")}
                             </p>
 
                             <code className="mt-3 block border border-border bg-paper px-3 py-2 font-mono text-sm text-ink">
-                                {schemaName || "No schema linked"}
+                                {schemaName || t("noSchemaLinked")}
                             </code>
 
                             {schemaImage ? (
@@ -418,7 +463,7 @@ function ExercisePanel({
                                             onClick={resetZoom}
                                             className="border border-border px-3 py-1 font-mono text-xs uppercase tracking-widest text-muted hover:text-ink hover:border-ink"
                                         >
-                                            Reset
+                                            {t("zoomReset")}
                                         </button>
                                         <span className="ml-2 font-mono text-xs uppercase tracking-widest text-muted">
                                             {Math.round(scale * 100)}%
@@ -428,9 +473,15 @@ function ExercisePanel({
                                     <div
                                         ref={imageContainerRef}
                                         className="relative h-[600px] overflow-hidden border border-border bg-paper touch-none"
-                                        style={{ overscrollBehavior: "contain" }}
-                                        onMouseEnter={() => setIsHoveringImage(true)}
-                                        onMouseLeave={() => setIsHoveringImage(false)}
+                                        style={{
+                                            overscrollBehavior: "contain",
+                                        }}
+                                        onMouseEnter={() =>
+                                            setIsHoveringImage(true)
+                                        }
+                                        onMouseLeave={() =>
+                                            setIsHoveringImage(false)
+                                        }
                                         onMouseMove={handleMouseMove}
                                         onMouseUp={handleMouseUp}
                                     >
@@ -453,7 +504,7 @@ function ExercisePanel({
                                 </div>
                             ) : (
                                 <p className="mt-4 font-mono text-sm text-muted">
-                                    No schema image is available for this chapter yet.
+                                    {t("noSchemaImage")}
                                 </p>
                             )}
                         </div>
@@ -463,7 +514,7 @@ function ExercisePanel({
                 {activeTab === "output" && (
                     <div className="space-y-3">
                         <h3 className="font-display text-2xl font-bold text-ink">
-                            Expected Output
+                            {t("panel.output")}
                         </h3>
 
                         <div className="min-h-40 border border-dashed border-border bg-surface-2 p-4">
@@ -473,7 +524,7 @@ function ExercisePanel({
                                 </pre>
                             ) : (
                                 <p className="font-mono text-sm text-muted">
-                                    No expected output is available for this exercise yet.
+                                    {t("noExpectedOutput")}
                                 </p>
                             )}
                         </div>
@@ -485,10 +536,10 @@ function ExercisePanel({
                 <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                         <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted mb-2">
-                            Workspace
+                            {t("workspaceLabel")}
                         </p>
                         <h3 className="font-display text-2xl font-bold text-ink">
-                            Your SQL Query
+                            {t("yourSqlQuery")}
                         </h3>
                     </div>
 
@@ -499,7 +550,7 @@ function ExercisePanel({
                             className="inline-flex items-center gap-2 border-2 border-accent text-accent px-4 py-2 font-mono text-xs uppercase tracking-widest hover:bg-accent hover:text-paper transition-colors"
                         >
                             <FaLightbulb />
-                            {showHint ? "Hide Hint" : "Show Hint"}
+                            {showHint ? t("hideHint") : t("showHint")}
                         </button>
                     )}
                 </div>
@@ -516,7 +567,7 @@ function ExercisePanel({
                             <FaCircleInfo className="text-accent text-sm" />
 
                             <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted">
-                                Required SQL syntax
+                                {t("requiredSyntax")}
                             </p>
                         </div>
 
@@ -547,7 +598,7 @@ function ExercisePanel({
                 <textarea
                     value={queryValue}
                     onChange={(event) => setQueryValue(event.target.value)}
-                    placeholder="SELECT * FROM ..."
+                    placeholder={t("textareaPlaceholder")}
                     rows={12}
                     spellCheck={false}
                     className="min-h-64 w-full border border-border bg-surface-2 px-5 py-4 font-mono text-sm text-ink outline-none transition focus:border-accent"
@@ -560,7 +611,7 @@ function ExercisePanel({
                     className="inline-flex items-center gap-2 border-2 border-accent text-accent px-6 py-3 font-mono text-xs uppercase tracking-widest hover:bg-accent hover:text-paper transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                     <FaPlay />
-                    {isExecuting ? "Running..." : "Run Query"}
+                    {isExecuting ? t("running") : t("runQuery")}
                 </button>
 
                 {queryError && (

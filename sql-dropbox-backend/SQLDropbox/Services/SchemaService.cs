@@ -1,27 +1,18 @@
-﻿using Microsoft.Extensions.Configuration;
-using Npgsql;
+﻿using Npgsql;
 using SQLDropbox.Models;
 
 namespace SQLDropbox.Services
 {
-    public class SchemaService
+    public class SchemaService(
+        IConfiguration config,
+        SqlQueryService sql,
+        CsvExportService csv,
+        RoutineService routineService)
     {
-        private readonly string _connectionString;
-        private readonly SqlQueryService _sql;
-        private readonly CsvExportService _csv;
-        private readonly RoutineService _routineService;
-
-        public SchemaService(
-            IConfiguration config,
-            SqlQueryService sql,
-            CsvExportService csv,
-            RoutineService routineService)
-        {
-            _connectionString = config.GetConnectionString("DefaultConnection")!;
-            _sql = sql;
-            _csv = csv;
-            _routineService = routineService;
-        }
+        private readonly string _connectionString = config.GetConnectionString("DefaultConnection")!;
+        private readonly SqlQueryService _sql = sql;
+        private readonly CsvExportService _csv = csv;
+        private readonly RoutineService _routineService = routineService;
 
         private async Task<NpgsqlConnection> OpenConnectionAsync()
         {
@@ -176,6 +167,32 @@ namespace SQLDropbox.Services
             if (trimmed.EndsWith(";")) trimmed = trimmed[..^1];
 
             return await _csv.ExportQueryAsync(conn, trimmed);
+        }
+
+        public async Task<string> ExecuteInsertUpdateDeleteOnSchemaAsync(string sourceSchema, string query, string validationQuery)
+        {
+            string? cloned = null;
+
+            try
+            {
+                cloned = await CloneSchemaAsync(sourceSchema);
+                await ExecuteQueryOnSchemaAsync(cloned, query);
+                return await ExecuteSelectOnSchemaAsync(cloned, validationQuery);
+            }
+            finally
+            {
+                if (!string.IsNullOrWhiteSpace(cloned))
+                {
+                    try
+                    {
+                        await DeleteSchemaAsync(cloned);
+                    }
+                    catch
+                    {
+                        // ignore cleanup failures
+                    }
+                }
+            }
         }
 
         public async Task<object> CloneQueryAndDeleteAsync(string sourceSchema, string query)

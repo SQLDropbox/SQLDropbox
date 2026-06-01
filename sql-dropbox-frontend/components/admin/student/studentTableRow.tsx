@@ -1,63 +1,57 @@
 import { Course, User } from "@/types/types";
 import ProgressIcon from "../chapter/progressIcon";
+import { COL_CODE_W, COL_NAME_W, COL_CHAPTER_W } from "./studentTableHead";
+import React from "react";
 
-export default function StudentTableRow({
+export default React.memo(function StudentTableRow({
     student,
     course,
     rowIndex,
+    chapterMap,
 }: {
     student: User;
     course: Course;
     rowIndex: number;
+    chapterMap?: Map<number, number>;
 }) {
-    const totalCompleted =
-        student.chapters?.reduce((s, c) => s + (c.completedAmount ?? 0), 0) ??
-        0;
-
-    const totalExercises =
-        course.chapters?.reduce((s, c) => s + (c.amountOfExercises ?? 0), 0) ??
-        0;
-
     const isEvenRow = rowIndex % 2 === 0;
-
     const rowBg = isEvenRow ? "bg-paper/50" : "bg-surface-3/50";
 
     return (
-        <tr
-            className={`group border-b border-border divide-x divide-border ${rowBg} transition-colors`}
+        <div
+            className={`flex border-b border-border ${rowBg} transition-colors group`}
         >
             {/* Code */}
-            <td
-                className="p-3 font-mono text-[11px] text-muted tracking-wide uppercase whitespace-nowrap"
+            <div
+                className={`${COL_CODE_W} shrink-0 p-3 font-mono text-[11px] text-muted truncate tracking-wide uppercase whitespace-nowrap`}
             >
                 {student.userCode}
-            </td>
+            </div>
 
             {/* Name */}
-            <td className="p-3 font-bold text-ink whitespace-nowrap bg-black/[0.035]">
+            <div
+                className={`${COL_NAME_W} shrink-0 p-3 border-l border-border font-bold truncate text-ink whitespace-nowrap bg-black/[0.035]`}
+            >
                 {student.firstName} {student.lastName}
-            </td>
+            </div>
 
             {/* Chapters */}
             {course.chapters?.map((chapter, colIndex) => {
-                const completedChapter = student.chapters?.find(
-                    (c) => c.chapterId === chapter.chapterId,
-                );
+                const completed = chapterMap?.get(chapter.chapterId) ?? 0;
                 const colStripe = colIndex % 2 === 1 ? "bg-black/[0.035]" : "";
 
                 return (
-                    <td key={chapter.chapterId} className={colStripe}>
-                        <div className="flex justify-center items-center w-full">
-                            <ProgressIcon
-                                completed={
-                                    completedChapter?.completedAmount ?? 0
-                                }
-                                total={chapter.amountOfExercises ?? 0}
-                            />
-                        </div>
-                    </td>
+                    <div
+                        key={chapter.chapterId}
+                        className={`${COL_CHAPTER_W} shrink-0 border-l border-border flex justify-center items-center ${colStripe}`}
+                    >
+                        <ProgressIcon
+                            completed={completed}
+                            total={chapter.amountOfExercises ?? 0}
+                        />
+                    </div>
                 );
             })}
-        </tr>
+        </div>
     );
-}
+});

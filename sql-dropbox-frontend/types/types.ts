@@ -40,6 +40,13 @@ export interface Chapter {
     schemaImage?: string | null;
 }
 
+export enum QueryAction {
+    Insert = 1,
+    Select = 2,
+    Update = 3,
+    Delete = 4,
+}
+
 export interface Exercise {
     exerciseId: number;
     chapterId: number;
@@ -47,8 +54,10 @@ export interface Exercise {
     questionEN: string;
     hintNL: string;
     hintEN: string;
-    queryOutput?: string;
-    solutionQueries?: string[];
+    queryOutput: string;
+    queryAction: QueryAction;
+    solutionQuery?: string;
+    validationQuery?: string;
     requirements?: Requirement[];
     solutions?: { solutionId?: number; query: string }[];
 }

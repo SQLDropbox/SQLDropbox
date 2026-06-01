@@ -5,6 +5,7 @@ import { Lecturer } from "@/types/types";
 import { FiTrash2 } from "react-icons/fi";
 import { FaTimes, FaUserMinus } from "react-icons/fa";
 import { courseService } from "@/services/courseService";
+import { useTranslations } from "next-intl";
 
 export default function LecturerTableRow({
     lecturer,
@@ -17,6 +18,7 @@ export default function LecturerTableRow({
     rowIndex: number;
     onRemoveSuccess: () => void;
 }) {
+    const t = useTranslations("LecturerTableRow");
     const [isDeleting, setIsDeleting] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
     
@@ -33,7 +35,7 @@ export default function LecturerTableRow({
             await courseService.removeLecturerFromCourse(courseId, lecturer.userId);
             onRemoveSuccess();
         } catch (err) {
-            alert("Failed to remove lecturer.");
+            alert(t("removeFailed"));
             setIsDeleting(false);
         }
     };
@@ -42,7 +44,7 @@ export default function LecturerTableRow({
         <tr className={`group border-b border-border divide-x divide-border ${rowBg} transition-colors`}>
             {/* ID */}
             <td className="p-3 font-mono text-[11px] text-muted tracking-wide uppercase whitespace-nowrap">
-                {lecturer.userId.split('-')[0]}
+                {lecturer.userCode.split('-')[0]}
             </td>
 
             {/* Name */}
@@ -52,7 +54,7 @@ export default function LecturerTableRow({
 
             {/* Role */}
             <td className="p-3 font-mono text-[10px] text-muted tracking-widest uppercase whitespace-nowrap text-right">
-                PRIMARY LECTURER
+                {t("primaryLecturer")}
             </td>
 
             {/* Actions (Vuilnisbakje + Modal) */}
@@ -65,7 +67,7 @@ export default function LecturerTableRow({
                         hover:border-border hover:bg-paper transition-all duration-150
                         disabled:opacity-50
                     "
-                    title="Remove instructor from course"
+                    title={t("removeInstructorTitle")}
                 >
                     <FiTrash2 className="text-sm" />
                 </button>
@@ -87,17 +89,19 @@ export default function LecturerTableRow({
 
                             <div className="mb-6 border-b-2 border-accent pb-4 mt-2">
                                 <h2 className="font-display text-xl font-bold text-accent uppercase tracking-tighter mb-1">
-                                    Revoke Access
+                                    {t("confirmTitle")}
                                 </h2>
                                 <p className="font-mono text-[10px] uppercase tracking-widest text-muted">
-                                    SYS ALERT: REMOVAL OPERATION
+                                    {t("confirmSubtitle")}
                                 </p>
                             </div>
 
                             <div className="mb-8 font-mono text-sm text-ink leading-relaxed">
-                                <p>Are you sure you want to remove <strong>{lecturer.firstName} {lecturer.lastName}</strong> from this course?</p>
+                                <p>
+                                    {t("confirmDescriptionBefore")} <strong>{lecturer.firstName} {lecturer.lastName}</strong> {t("confirmDescriptionAfter")}
+                                </p>
                                 <p className="text-[10px] uppercase tracking-wider text-muted mt-4 border-l-2 border-accent pl-2">
-                                    This action will revoke their grading and management privileges for course {courseId.toUpperCase()}.
+                                    {t("confirmImpact", { courseId: courseId.toUpperCase() })}
                                 </p>
                             </div>
 
@@ -111,7 +115,7 @@ export default function LecturerTableRow({
                                         hover:bg-surface-1 hover:text-ink transition-colors
                                     "
                                 >
-                                    Cancel
+                                    {t("cancel")}
                                 </button>
                                 <button
                                     onClick={handleRemove}
@@ -122,7 +126,7 @@ export default function LecturerTableRow({
                                         hover:bg-accent hover:text-paper transition-colors
                                     "
                                 >
-                                    <FaUserMinus /> CONFIRM
+                                    <FaUserMinus /> {t("confirm")}
                                 </button>
                             </div>
                         </div>

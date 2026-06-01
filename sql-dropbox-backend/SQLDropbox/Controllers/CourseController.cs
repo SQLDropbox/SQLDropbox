@@ -88,12 +88,12 @@ public class CourseController(AppDbContext db) : BaseController
             course.CourseNameNL,
             course.CourseDescriptionEN,
             course.CourseDescriptionNL,
-            lecturers = course.Lecturers.Select(l => new 
-            { 
-                l.UserId, 
+            lecturers = course.Lecturers.Select(l => new
+            {
+                l.UserId,
                 l.UserCode,
-                l.FirstName, 
-                l.LastName 
+                l.FirstName,
+                l.LastName
             }),
             course.IsActive,
             totalCourseCount,
@@ -141,7 +141,7 @@ public class CourseController(AppDbContext db) : BaseController
             CreatedAt = DateTime.Now,
             Lecturers = new List<User>()
         };
-        
+
         if (course.LecturerIds != null && course.LecturerIds.Any())
         {
             var lecturers = await _db.Users
@@ -152,7 +152,7 @@ public class CourseController(AppDbContext db) : BaseController
         }
 
         _db.Courses.Add(newCourse);
-        _db.SaveChangesAsync();
+        await _db.SaveChangesAsync();
 
         return Ok(newCourse);
     }
@@ -184,14 +184,14 @@ public class CourseController(AppDbContext db) : BaseController
             var newLecturers = await _db.Users
                 .Where(u => course.LecturerIds.Contains(u.UserId) && u.Role == Role.Lecturer)
                 .ToListAsync();
-            
+
             existing.Lecturers.Clear();
             foreach (var lecturer in newLecturers)
             {
                 existing.Lecturers.Add(lecturer);
             }
         }
-        
+
         await _db.SaveChangesAsync();
 
         return Ok(existing);
@@ -260,11 +260,11 @@ public class CourseController(AppDbContext db) : BaseController
             CourseDescriptionNL = existingCourse.CourseDescriptionNL,
             CourseDescriptionEN = existingCourse.CourseDescriptionEN,
             //Lecturer = existingCourse.Lecturer,
-            Lecturers = existingCourse.Lecturers.ToList(),
+            Lecturers = [.. existingCourse.Lecturers],
             IsActive = false,
             CreatedAt = DateTime.Now,
             Chapters = []
-            
+
         };
 
         foreach (var chapter in existingCourse.Chapters)
@@ -292,6 +292,7 @@ public class CourseController(AppDbContext db) : BaseController
                     HintNL = exercises.HintNL,
                     HintEN = exercises.HintEN,
                     QueryOutput = exercises.QueryOutput,
+                    QueryAction = exercises.QueryAction,
                     CreatedAt = DateTime.Now,
                 };
                 newChapter.Exercises.Add(newExercise);
@@ -312,17 +313,17 @@ public class CourseController(AppDbContext db) : BaseController
             .FirstOrDefaultAsync(c => c.CourseId == courseId);
         if (course == null)
             return NotFound("Course not found");
-        
+
         var user = await _db.Users
             .FirstOrDefaultAsync(u => u.UserId == request.UserId);
         if (user == null)
             return NotFound("User not found");
-        
+
         if (user.Role != Role.Lecturer)
             return BadRequest("This user does not have the Lecturer role.");
         if (course.Lecturers.Any(l => l.UserId == request.UserId))
             return BadRequest("This lecturer is already assigned to this course.");
-        
+
         course.Lecturers.Add(user);
         await _db.SaveChangesAsync();
 
@@ -339,16 +340,16 @@ public class CourseController(AppDbContext db) : BaseController
 
         if (course == null)
             return NotFound("Course not found");
-        
+
         var user = await _db.Users
             .FirstOrDefaultAsync(u => u.UserId == userId);
 
         if (user == null)
             return NotFound("User not found");
-        
+
         if (!course.Lecturers.Any(l => l.UserId == userId))
             return BadRequest("This lecturer is not assigned to this course.");
-        
+
         course.Lecturers.Remove(user);
         await _db.SaveChangesAsync();
 

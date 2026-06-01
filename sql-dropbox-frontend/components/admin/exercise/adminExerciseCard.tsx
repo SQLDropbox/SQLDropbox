@@ -19,13 +19,13 @@ export default function AdminExerciseCard({
 
     const question =
         locale === "nl"
-            ? exercise.questionNL ?? exercise.questionEN
-            : exercise.questionEN ?? exercise.questionNL;
+            ? (exercise.questionNL ?? exercise.questionEN)
+            : (exercise.questionEN ?? exercise.questionNL);
 
     const hint =
         locale === "nl"
-            ? exercise.hintNL ?? exercise.hintEN
-            : exercise.hintEN ?? exercise.hintNL;
+            ? (exercise.hintNL ?? exercise.hintEN)
+            : (exercise.hintEN ?? exercise.hintNL);
 
     return (
         <div

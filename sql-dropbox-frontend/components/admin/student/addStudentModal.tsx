@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { FaTimes } from "react-icons/fa";
 import { userService } from "@/services/userService";
 import AlertDialog from "@/components/dialog/alertDialog";
@@ -32,6 +33,7 @@ export default function AddStudentModal({
     onClose,
     onSuccess,
 }: Props) {
+    const t = useTranslations("StudentTable");
     const [form, setForm] = useState<FormState>(initialForm);
     const [errors, setErrors] = useState<FormErrors>({});
     const [submitted, setSubmitted] = useState(false);
@@ -40,12 +42,12 @@ export default function AddStudentModal({
 
     function validateForm(f: FormState): FormErrors {
         const errs: FormErrors = {};
-        if (!f.userCode.trim()) errs.userCode = "Student code is required";
-        if (!f.firstName.trim()) errs.firstName = "First name is required";
-        if (!f.lastName.trim()) errs.lastName = "Last name is required";
-        if (!f.email.trim()) errs.email = "Email is required";
+        if (!f.userCode.trim()) errs.userCode = t("modal.validation.userCodeRequired");
+        if (!f.firstName.trim()) errs.firstName = t("modal.validation.firstNameRequired");
+        if (!f.lastName.trim()) errs.lastName = t("modal.validation.lastNameRequired");
+        if (!f.email.trim()) errs.email = t("modal.validation.emailRequired");
         else if (!/\S+@\S+\.\S+/.test(f.email))
-            errs.email = "Invalid email format";
+            errs.email = t("modal.validation.emailInvalid");
         return errs;
     }
 
@@ -94,13 +96,13 @@ export default function AddStudentModal({
                 <div className="border-b border-border bg-paper px-6 py-4 flex justify-between items-start">
                     <div>
                         <p className="text-[10px] uppercase tracking-widest text-muted">
-                            ENROLLMENT RECORD / DATABASE ENTRY
+                            {t("modal.enrollmentRecord")}
                         </p>
                         <h2 className="font-display text-xl text-accent uppercase">
-                            Enroll Student
+                            {t("modal.addTitle")}
                         </h2>
                         <p className="text-[11px] text-muted mt-1 uppercase tracking-widest">
-                            SYS. ROLE: STUDENT
+                            {t("modal.sysRole")}
                         </p>
                     </div>
 
@@ -115,45 +117,45 @@ export default function AddStudentModal({
                 {/* FORM BODY */}
                 <div className="flex flex-col gap-2 px-6 py-4">
                     <div className="grid grid-cols-2 gap-4">
-                        <Field label="First Name" error={errors.firstName}>
+                        <Field label={t("modal.fieldFirstName")} error={errors.firstName}>
                             <input
                                 name="firstName"
                                 value={form.firstName}
                                 onChange={handleChange}
-                                placeholder="e.g. Jane"
+                                placeholder={t("modal.placeholderFirstName")}
                                 className="w-full bg-transparent border-b border-border focus:border-accent outline-none py-1 text-sm placeholder:text-muted/50"
                             />
                         </Field>
 
-                        <Field label="Last Name" error={errors.lastName}>
+                        <Field label={t("modal.fieldLastName")} error={errors.lastName}>
                             <input
                                 name="lastName"
                                 value={form.lastName}
                                 onChange={handleChange}
-                                placeholder="e.g. Doe"
+                                placeholder={t("modal.placeholderLastName")}
                                 className="w-full bg-transparent border-b border-border focus:border-accent outline-none py-1 text-sm placeholder:text-muted/50"
                             />
                         </Field>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                        <Field label="Student Code" error={errors.userCode}>
+                        <Field label={t("modal.fieldStudentCode")} error={errors.userCode}>
                             <input
                                 name="userCode"
                                 value={form.userCode}
                                 onChange={handleChange}
-                                placeholder="e.g. r1234567"
+                                placeholder={t("modal.placeholderStudentCode")}
                                 className="w-full bg-transparent border-b border-border focus:border-accent outline-none py-1 text-sm placeholder:text-muted/50"
                             />
                         </Field>
 
-                        <Field label="Email" error={errors.email}>
+                        <Field label={t("modal.fieldEmail")} error={errors.email}>
                             <input
                                 name="email"
                                 type="email"
                                 value={form.email}
                                 onChange={handleChange}
-                                placeholder="e.g. r1234567@student.ucll.be"
+                                placeholder={t("modal.placeholderEmail")}
                                 className="w-full bg-transparent border-b border-border focus:border-accent outline-none py-1 text-sm placeholder:text-muted/50"
                             />
                         </Field>
@@ -167,7 +169,7 @@ export default function AddStudentModal({
                         disabled={submitting}
                         className="px-4 py-2 border border-border text-muted hover:bg-ink hover:text-paper transition"
                     >
-                        CANCEL
+                        {t("modal.cancel")}
                     </button>
 
                     <button
@@ -175,7 +177,7 @@ export default function AddStudentModal({
                         disabled={submitting}
                         className="px-4 py-2 border-2 border-accent text-accent hover:bg-accent hover:text-paper transition rotate-1 disabled:opacity-50"
                     >
-                        {submitting ? "PROCESSING..." : "ENROLL"}
+                        {submitting ? t("modal.processing") : t("enroll")}
                     </button>
                 </div>
             </div>
@@ -183,10 +185,10 @@ export default function AddStudentModal({
             <AlertDialog
                 open={!!errorDialog}
                 onClose={() => setErrorDialog(null)}
-                title="SYS ERROR"
+                title={t("modal.sysError")}
                 description={errorDialog || ""}
                 type="error"
-                buttonText="ACKNOWLEDGE"
+                buttonText={t("modal.acknowledge")}
             />
         </div>
     );

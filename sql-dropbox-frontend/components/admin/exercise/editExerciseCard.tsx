@@ -1,16 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-    useMutation,
-    useQuery,
-    useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { FaTimes, FaPlus } from "react-icons/fa";
 import { FiTrash2 } from "react-icons/fi";
 import { useTranslations } from "next-intl";
 
-import { Exercise, Requirement } from "@/types/types";
+import { Exercise, QueryAction, Requirement } from "@/types/types";
 import { exerciseService } from "@/services/exerciseService";
 import { requirementService } from "@/services/requirementService";
 import ConfirmDialog from "@/components/dialog/confirmDialog";
@@ -38,8 +34,9 @@ const emptyForm: Partial<Exercise> = {
     questionEN: "",
     hintNL: "",
     hintEN: "",
-    queryOutput: "",
-    solutionQueries: [""],
+    queryAction: QueryAction.Select,
+    validationQuery: "",
+    solutionQuery: "",
 };
 
 export default function EditExerciseDialog({
@@ -55,19 +52,20 @@ export default function EditExerciseDialog({
 
     const [form, setForm] = useState<Partial<Exercise>>(emptyForm);
     const [errors, setErrors] = useState<FormErrors>({});
-    const [confirmDeleteDialogOpen, setConfirmDeleteDialogOpen] = useState(false);
+    const [confirmDeleteDialogOpen, setConfirmDeleteDialogOpen] =
+        useState(false);
     const [requirements, setRequirements] = useState<RequirementFormRow[]>([]);
     const [didInit, setDidInit] = useState(false);
 
-    const {
-        data: loadedRequirements = [],
-        isLoading: requirementsLoading,
-    } = useQuery<Requirement[]>({
-        queryKey: ["requirements", exercise?.exerciseId],
-        queryFn: () =>
-            requirementService.getRequirementsForExercise(exercise!.exerciseId),
-        enabled: open && isEdit && !!exercise?.exerciseId,
-    });
+    const { data: loadedRequirements = [], isLoading: requirementsLoading } =
+        useQuery<Requirement[]>({
+            queryKey: ["requirements", exercise?.exerciseId],
+            queryFn: () =>
+                requirementService.getRequirementsForExercise(
+                    exercise!.exerciseId,
+                ),
+            enabled: open && isEdit && !!exercise?.exerciseId,
+        });
 
     useEffect(() => {
         if (!open) {
@@ -78,18 +76,11 @@ export default function EditExerciseDialog({
         if (didInit) return;
         if (isEdit && requirementsLoading) return;
 
-        const mappedSolutions = exercise?.solutions?.map(s => s.query) || [];
-        
-        const solutions = mappedSolutions.length > 0
-            ? mappedSolutions
-            : exercise?.solutionQueries?.length
-                ? exercise.solutionQueries
-                : [""];
-
         if (exercise && isEdit) {
+            console.log(exercise);
             setForm({
                 ...exercise,
-                solutionQueries: solutions,
+                solutionQuery: exercise?.solutions?.[0]?.query,
                 chapterId,
             });
 
@@ -131,11 +122,15 @@ export default function EditExerciseDialog({
             newErrors.questionEN = t("errors.questionENRequired");
         }
 
-        const validSolutions =
-            form.solutionQueries?.filter((q) => q.trim() !== "") || [];
+        if (!form.solutionQuery?.trim()) {
+            newErrors.solutionQuery = t("errors.solutionRequired");
+        }
 
-        if (validSolutions.length === 0) {
-            newErrors.solutionQueries = t("errors.atLeastOneSolution") as any;
+        if (
+            form.queryAction !== QueryAction.Select &&
+            !form.validationQuery?.trim()
+        ) {
+            newErrors.validationQuery = t("errors.validationQueryRequired");
         }
 
         const cleanedRequirementStatements = requirements
@@ -204,7 +199,9 @@ export default function EditExerciseDialog({
                 ),
             ),
             ...toDelete.map((req) =>
-                requirementService.deleteRequirementForExercise(req.requirementId),
+                requirementService.deleteRequirementForExercise(
+                    req.requirementId,
+                ),
             ),
         ]);
     }
@@ -213,8 +210,6 @@ export default function EditExerciseDialog({
         mutationFn: async () => {
             const cleanedForm = {
                 ...form,
-                solutionQueries:
-                    form.solutionQueries?.filter((q) => q.trim() !== "") || [],
             };
 
             const savedExercise =
@@ -262,34 +257,8 @@ export default function EditExerciseDialog({
         mutation.mutate();
     }
 
-    const updateSolution = (index: number, value: string) => {
-        const newSolutions = [...(form.solutionQueries || [])];
-        newSolutions[index] = value;
-        setForm({ ...form, solutionQueries: newSolutions });
-    };
-
-    const addSolution = () => {
-        setForm({
-            ...form,
-            solutionQueries: [...(form.solutionQueries || []), ""],
-        });
-    };
-
-    const removeSolution = (index: number) => {
-        const newSolutions = [...(form.solutionQueries || [])];
-        newSolutions.splice(index, 1);
-
-        setForm({
-            ...form,
-            solutionQueries: newSolutions.length ? newSolutions : [""],
-        });
-    };
-
     const addRequirement = () => {
-        setRequirements((prev) => [
-            ...prev,
-            { statement: "", use: false },
-        ]);
+        setRequirements((prev) => [...prev, { statement: "", use: false }]);
     };
 
     const updateRequirement = (
@@ -404,71 +373,83 @@ export default function EditExerciseDialog({
                         </div>
                     </Section>
 
-                    <Section title={t("queryOutputHeader")}>
-                        <textarea
-                            placeholder={t("placeholders.queryOutput")}
-                            rows={4}
-                            value={form.queryOutput ?? ""}
-                            onChange={(e) =>
-                                setForm({
-                                    ...form,
-                                    queryOutput: e.target.value,
-                                })
-                            }
-                            className={`font-mono ${areaClass(false)}`}
-                        />
-                    </Section>
-
-                    <Section title={t("solutionsHeader")}>
-                        {errors.solutionQueries && (
+                    <Section title={t("solutionHeader")}>
+                        {errors.solutionQuery && (
                             <p className="text-[11px] text-error uppercase tracking-wider mb-3">
-                                {errors.solutionQueries as unknown as string}
+                                {errors.solutionQuery as unknown as string}
                             </p>
                         )}
 
                         <div className="space-y-3">
-                            {form.solutionQueries?.map((sol, index) => (
-                                <div
-                                    key={index}
-                                    className="border border-border bg-paper p-3"
-                                >
-                                    <div className="flex items-start gap-3">
-                                        <div className="w-8 shrink-0 pt-2 text-[10px] uppercase tracking-widest text-muted">
-                                            {String(index + 1).padStart(2, "0")}
-                                        </div>
-
-                                        <textarea
-                                            placeholder={t("placeholders.solution")}
-                                            rows={3}
-                                            value={sol}
-                                            onChange={(e) =>
-                                                updateSolution(index, e.target.value)
-                                            }
-                                            className="w-full bg-transparent border border-border p-3 font-mono text-sm resize-none outline-none focus:border-accent"
-                                        />
-
-                                        <button
-                                            onClick={() => removeSolution(index)}
-                                            className="mt-1 flex items-center justify-center w-9 h-9 border border-error text-ink hover:bg-error hover:text-paper transition -rotate-1"
-                                            title={t("removeSolution")}
-                                            type="button"
-                                        >
-                                            <FiTrash2 className="text-[14px]" />
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
+                            <div className="flex items-start gap-3">
+                                <textarea
+                                    placeholder={t("placeholders.solution")}
+                                    rows={3}
+                                    value={form.solutionQuery ?? ""}
+                                    onChange={(e) =>
+                                        setForm({
+                                            ...form,
+                                            solutionQuery: e.target.value,
+                                        })
+                                    }
+                                    className="w-full bg-transparent border border-border p-3 font-mono text-sm resize-none outline-none focus:border-accent"
+                                />
+                            </div>
                         </div>
-
-                        <button
-                            onClick={addSolution}
-                            type="button"
-                            className="mt-4 inline-flex items-center gap-2 px-4 py-2 border border-accent text-accent hover:bg-accent hover:text-paper transition rotate-[0.5deg]"
-                        >
-                            <FaPlus className="text-xs" />
-                            {t("addSolution")}
-                        </button>
                     </Section>
+
+                    <Section title={t("queryActionHeader")}>
+                        <select
+                            value={form.queryAction ?? QueryAction.Select}
+                            onChange={(e) => {
+                                setForm((prev) => ({
+                                    ...prev,
+                                    queryAction: Number(
+                                        e.target.value,
+                                    ) as QueryAction,
+                                }));
+                            }}
+                        >
+                            {Object.entries(QueryAction)
+                                .filter(([key]) => isNaN(Number(key))) // keep only names, not numeric reverse mapping
+                                .map(([key, value]) => (
+                                    <option key={key} value={value}>
+                                        {key}
+                                    </option>
+                                ))}
+                        </select>
+                    </Section>
+
+                    {form.queryAction !== QueryAction.Select && (
+                        <Section title={t("validationQueryHeader")}>
+                            {errors.validationQuery && (
+                                <p className="text-[11px] text-error uppercase tracking-wider mb-3">
+                                    {
+                                        errors.validationQuery as unknown as string
+                                    }
+                                </p>
+                            )}
+
+                            <div className="space-y-3">
+                                <div className="flex items-start gap-3">
+                                    <textarea
+                                        placeholder={t(
+                                            "placeholders.validationQuery",
+                                        )}
+                                        rows={3}
+                                        value={form.validationQuery ?? ""}
+                                        onChange={(e) =>
+                                            setForm({
+                                                ...form,
+                                                validationQuery: e.target.value,
+                                            })
+                                        }
+                                        className="w-full bg-transparent border border-border p-3 font-mono text-sm resize-none outline-none focus:border-accent"
+                                    />
+                                </div>
+                            </div>
+                        </Section>
+                    )}
 
                     <Section title="Requirements">
                         {errors.requirements && (
@@ -502,14 +483,19 @@ export default function EditExerciseDialog({
                                         >
                                             <div className="flex items-start gap-3">
                                                 <div className="w-8 shrink-0 pt-2 text-[10px] uppercase tracking-widest text-muted">
-                                                    {String(index + 1).padStart(2, "0")}
+                                                    {String(index + 1).padStart(
+                                                        2,
+                                                        "0",
+                                                    )}
                                                 </div>
 
                                                 <div className="flex-1 space-y-3">
                                                     <input
                                                         type="text"
                                                         placeholder="Requirement statement"
-                                                        value={requirement.statement}
+                                                        value={
+                                                            requirement.statement
+                                                        }
                                                         onChange={(e) =>
                                                             updateRequirement(
                                                                 index,
@@ -523,12 +509,15 @@ export default function EditExerciseDialog({
                                                     <label className="inline-flex items-center gap-2 text-[11px] uppercase tracking-widest text-muted">
                                                         <input
                                                             type="checkbox"
-                                                            checked={requirement.use}
+                                                            checked={
+                                                                requirement.use
+                                                            }
                                                             onChange={(e) =>
                                                                 updateRequirement(
                                                                     index,
                                                                     "use",
-                                                                    e.target.checked,
+                                                                    e.target
+                                                                        .checked,
                                                                 )
                                                             }
                                                         />
@@ -588,7 +577,10 @@ export default function EditExerciseDialog({
 
                         <button
                             onClick={handleSubmit}
-                            disabled={mutation.isPending || (isEdit && requirementsLoading && !didInit)}
+                            disabled={
+                                mutation.isPending ||
+                                (isEdit && requirementsLoading && !didInit)
+                            }
                             className="px-4 py-2 border-2 border-accent text-accent hover:bg-accent hover:text-paper transition rotate-1 disabled:opacity-50"
                             type="button"
                         >
@@ -607,7 +599,9 @@ export default function EditExerciseDialog({
                     onConfirm={async () => {
                         if (!exercise) return;
 
-                        await exerciseService.deleteExercise(exercise.exerciseId);
+                        await exerciseService.deleteExercise(
+                            exercise.exerciseId,
+                        );
 
                         await Promise.all([
                             queryClient.invalidateQueries({
