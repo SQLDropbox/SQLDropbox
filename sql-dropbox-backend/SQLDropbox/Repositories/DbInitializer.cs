@@ -3,6 +3,7 @@ using SQLDropbox.Data;
 using SQLDropbox.Enums;
 using SQLDropbox.Models;
 using SQLDropbox.Services;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace SQLDropbox.Repositories
 {
@@ -199,7 +200,7 @@ namespace SQLDropbox.Repositories
             };
 
             /* SCHEMAS */
-            var schema1 = new Schema { SchemaName = "animals", CreatedAt = DateTime.UtcNow, SchemaImage = "animals.png" };
+            var schema1 = new Schema { SchemaName = "animals", CreatedAt = DateTime.UtcNow, SchemaImage = "02fe567c-4e83-4db8-8eab-e2f8ca2c3804.png" };
             var schema2 = new Schema { SchemaName = "rooms", CreatedAt = DateTime.UtcNow };
 
             /* CHAPTERS */
