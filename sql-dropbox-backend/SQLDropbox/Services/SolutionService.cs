@@ -28,11 +28,15 @@ namespace SQLDropbox.Services
         {
             foreach (Requirement requirement in requirements)
             {
-                if (!requirement.Use ?
-                         formattedQuery.Contains(requirement.Statement) :
-                         !formattedQuery.Contains(requirement.Statement))
+                bool containsStatement = formattedQuery.Contains(requirement.Statement);
+
+                if (requirement.Use && !containsStatement)
                 {
-                    return (false, $"You {(requirement.Use ? "must" : "can't")} use {requirement.Statement}.");
+                    return (false, $"You must use {requirement.Statement}.");
+                }
+                if (!requirement.Use && containsStatement)
+                {
+                    return (false, $"You can't use {requirement.Statement}.");
                 }
             }
             return (true, "The query is correct.");
