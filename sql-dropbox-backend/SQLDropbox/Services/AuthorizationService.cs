@@ -72,5 +72,37 @@ namespace SQLDropbox.Services
 
             if (!userHasAccess) throw new UnauthorizedAccessException();
         }
+
+        public async Task UserHasAccessToExercise(Guid? userId, Role? role, int? exerciseId)
+        {
+            if (userId == null || role == null || exerciseId == null) throw new UnauthorizedAccessException();
+
+            bool userHasAccess = false;
+
+            if (role == Role.Admin)
+                userHasAccess = true;
+            if (role == Role.Lecturer)
+                userHasAccess = await _db.Exercises.AnyAsync(e => e.ExerciseId == exerciseId && e.Chapter.Course.Lecturers.Any(l => l.UserId == userId));
+            if (role == Role.Student)
+                userHasAccess = await _db.Exercises.AnyAsync(e => e.ExerciseId == exerciseId && e.Chapter.Course.Students.Any(l => l.UserId == userId));
+
+            if (!userHasAccess) throw new UnauthorizedAccessException();
+        }
+
+        public async Task UserHasAccessToRequirement(Guid? userId, Role? role, int? requirementId)
+        {
+            if (userId == null || role == null || requirementId == null) throw new UnauthorizedAccessException();
+
+            bool userHasAccess = false;
+
+            if (role == Role.Admin)
+                userHasAccess = true;
+            if (role == Role.Lecturer)
+                userHasAccess = await _db.Requirements.AnyAsync(r => r.RequirementId == requirementId && r.Exercise.Chapter.Course.Lecturers.Any(l => l.UserId == userId));
+            if (role == Role.Student)
+                userHasAccess = await _db.Requirements.AnyAsync(r => r.RequirementId == requirementId && r.Exercise.Chapter.Course.Students.Any(l => l.UserId == userId));
+
+            if (!userHasAccess) throw new UnauthorizedAccessException();
+        }
     }
 }

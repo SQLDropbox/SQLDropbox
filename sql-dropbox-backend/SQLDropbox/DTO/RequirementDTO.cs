@@ -2,8 +2,8 @@ namespace SQLDropbox.DTO
 {
     public class RequirementDTO
     {
-        public string? Statement { get; set; }
-        public bool Use { get; set; }
-        public int? ExerciseId { get; set; }
+        public required string Statement { get; set; }
+        public required bool Use { get; set; }
+        public required int ExerciseId { get; set; }
     }
 }

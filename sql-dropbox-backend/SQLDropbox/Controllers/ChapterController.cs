@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SQLDropbox.Data;
 using SQLDropbox.DTO;
-using SQLDropbox.Enums;
 using SQLDropbox.Models;
 using SQLDropbox.Services;
 
@@ -340,7 +339,7 @@ public class ChapterController(AppDbContext db, AuthorizationService authorizati
 
             var (success, message) = await _cS.AssignExercisesForChapterToUser(user, chapterId);
             if (!success)
-                return BadRequest(new { message });           
+                return BadRequest(new { message });
 
             var chapter = await _db.Chapters
                 .Where(c => c.ChapterId == chapterId)
@@ -364,7 +363,7 @@ public class ChapterController(AppDbContext db, AuthorizationService authorizati
                             e.HintNL,
                             e.HintEN,
                             e.QueryOutput,
-                            e.QueryAction,                        
+                            e.QueryAction,
 
                             Requirements = e.Requirements
                                 .Select(r => new

@@ -11,9 +11,10 @@ namespace SQLDropbox.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class UserController(AppDbContext db, PasswordService passwordService, CsvService csvService, UserService userService) : BaseController
+    public class UserController(AppDbContext db, AuthorizationService authorizationService, PasswordService passwordService, CsvService csvService, UserService userService) : BaseController
     {
         private readonly AppDbContext _db = db;
+        private readonly AuthorizationService _aS = authorizationService;
         private readonly PasswordService _passwordService = passwordService;
         private readonly CsvService _csvService = csvService;
         private readonly UserService _userService = userService;
@@ -22,36 +23,53 @@ namespace SQLDropbox.Controllers
         [HttpPost("studentCourse/{courseId}")]
         public async Task<ActionResult> AddStudentToCourse(string courseId, StudentDTO dto)
         {
-            Course? course = await _db.Courses
+            try
+            {
+                var (userId, role) = IsAuthenticated();
+                await _aS.UserHasAccessToCourse(userId, role, courseId);
+
+                Course? course = await _db.Courses
                 .FirstOrDefaultAsync(x => x.CourseId == courseId);
 
-            if (course == null)
-                return BadRequest("Course not found");
+                if (course == null)
+                    return BadRequest("Course not found");
 
+                var (Success, AlreadyExists, Error) = await _userService.AddStudentToCourse(course, dto);
 
-            var result = await _userService.AddStudentToCourse(course, dto);
+                if (Success)
+                    return Ok();
 
-            if (result.Success)
-                return Ok();
+                if (AlreadyExists)
+                    return BadRequest("This student is already assigned to this course");
 
-            if (result.AlreadyExists)
-                return BadRequest("This student is already assigned to this course");
-
-            return BadRequest(result.Error);
+                return BadRequest(Error);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Unauthorized(new { message = "You're not authorized to access this resource." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
         }
 
         [Authorize(Roles = "Admin,Lecturer")]
         [HttpPost("studentCourse/{courseId}/import/preview")]
         public async Task<ActionResult> PreviewImportStudents(string courseId, IFormFile file)
         {
-            var course = await _db.Courses
-                .FirstOrDefaultAsync(x => x.CourseId == courseId);
-
-            if (course == null)
-                return BadRequest("Course not found");
-
             try
             {
+                var (userId, role) = IsAuthenticated();
+                await _aS.UserHasAccessToCourse(userId, role, courseId);
+
+                var course = await _db.Courses
+                    .FirstOrDefaultAsync(x => x.CourseId == courseId);
+
+                if (course == null)
+                    return BadRequest("Course not found");
+
+
                 var parsed = await _csvService.ParseStudentsAsync(file);
 
                 var enrolledStudentIds = await _db.Users.Where(x => x.Role == Role.Student && x.StudentCourses.Any(y => y.CourseId == courseId)).Select(sc => sc.UserCode).ToListAsync();
@@ -70,9 +88,13 @@ namespace SQLDropbox.Controllers
                     parsed.Skipped
                 });
             }
+            catch (UnauthorizedAccessException)
+            {
+                return Unauthorized(new { message = "You're not authorized to access this resource." });
+            }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(ex);
             }
         }
 
@@ -80,47 +102,61 @@ namespace SQLDropbox.Controllers
         [HttpPost("studentCourse/{courseId}/import")]
         public async Task<ActionResult> ImportStudents(string courseId, [FromBody] List<StudentDTO> students)
         {
-            var course = await _db.Courses
+            try
+            {
+                var (userId, role) = IsAuthenticated();
+                await _aS.UserHasAccessToCourse(userId, role, courseId);
+
+                var course = await _db.Courses
                 .FirstOrDefaultAsync(x => x.CourseId == courseId);
 
-            if (course == null)
-                return BadRequest("Course not found");
+                if (course == null)
+                    return BadRequest("Course not found");
 
-            int added = 0;
-            int alreadyEnrolled = 0;
-            List<string> errors = [];
+                int added = 0;
+                int alreadyEnrolled = 0;
+                List<string> errors = [];
 
-            foreach (var student in students)
-            {
-                try
+                foreach (var student in students)
                 {
-                    var result = await _userService.AddStudentToCourse(course, student);
+                    try
+                    {
+                        var (Success, AlreadyExists, Error) = await _userService.AddStudentToCourse(course, student);
 
-                    if (result.Success)
-                    {
-                        added++;
+                        if (Success)
+                        {
+                            added++;
+                        }
+                        else if (AlreadyExists)
+                        {
+                            alreadyEnrolled++;
+                        }
+                        else
+                        {
+                            errors.Add($"Student {student.UserCode}: {Error}");
+                        }
                     }
-                    else if (result.AlreadyExists)
+                    catch (Exception ex)
                     {
-                        alreadyEnrolled++;
-                    }
-                    else
-                    {
-                        errors.Add($"Student {student.UserCode}: {result.Error}");
+                        errors.Add($"Student {student.UserCode}: {ex.Message}");
                     }
                 }
-                catch (Exception ex)
+
+                return Ok(new
                 {
-                    errors.Add($"Student {student.UserCode}: {ex.Message}");
-                }
+                    Added = added,
+                    AlreadyEnrolled = alreadyEnrolled,
+                    Errors = errors
+                });
             }
-
-            return Ok(new
+            catch (UnauthorizedAccessException)
             {
-                Added = added,
-                AlreadyEnrolled = alreadyEnrolled,
-                Errors = errors
-            });
+                return Unauthorized(new { message = "You're not authorized to access this resource." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
         }
 
         [Authorize(Roles = "Admin,Lecturer")]
@@ -129,6 +165,9 @@ namespace SQLDropbox.Controllers
         {
             try
             {
+                var (userId, role) = IsAuthenticated();
+                await _aS.UserHasAccessToCourse(userId, role, courseId);
+
                 var course = await _db.Courses.FirstOrDefaultAsync(x => x.CourseId == courseId);
 
                 if (course == null)
@@ -147,9 +186,13 @@ namespace SQLDropbox.Controllers
                     Removed = students.Count
                 });
             }
+            catch (UnauthorizedAccessException)
+            {
+                return Unauthorized(new { message = "You're not authorized to access this resource." });
+            }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(ex);
             }
         }
 
@@ -157,7 +200,12 @@ namespace SQLDropbox.Controllers
         [HttpGet("students/{courseId}")]
         public async Task<ActionResult> GetStudents(string courseId)
         {
-            var course = _db.Courses
+            try
+            {
+                var (userId, role) = IsAuthenticated();
+                await _aS.UserHasAccessToCourse(userId, role, courseId);
+
+                var course = _db.Courses
                 .Include(c => c.Students)
                 .Include(c => c.Chapters)
                     .ThenInclude(ch => ch.Exercises)
@@ -165,44 +213,54 @@ namespace SQLDropbox.Controllers
                 .Where(c => c.CourseId == courseId)
                 .FirstOrDefault();
 
-            if (course == null)
-                return NotFound();
+                if (course == null)
+                    return NotFound();
 
-            var chapters = course.Chapters
-                        .Select(ch => new
-                        {
-                            ch.ChapterId,
-                            ch.ChapterNameEN,
-                            ch.ChapterNameNL,
-                            ch.AmountOfExercises
-                        });
+                var chapters = course.Chapters
+                            .Select(ch => new
+                            {
+                                ch.ChapterId,
+                                ch.ChapterNameEN,
+                                ch.ChapterNameNL,
+                                ch.AmountOfExercises
+                            });
 
-            var students = course.Students
-                .Select(student => new
+                var students = course.Students
+                    .Select(student => new
+                    {
+                        student.UserCode,
+                        student.FirstName,
+                        student.LastName,
+
+                        chapters = course.Chapters
+                            .Select(ch => new
+                            {
+                                ch.ChapterId,
+                                completedAmount = ch.Exercises
+                                    .SelectMany(e => e.UserExercises)
+                                    .Count(ue =>
+                                        ue.User.UserId == student.UserId &&
+                                        ue.IsCompleted)
+                            })
+                    });
+
+                return Ok(new
                 {
-                    student.UserCode,
-                    student.FirstName,
-                    student.LastName,
-
-                    chapters = course.Chapters
-                        .Select(ch => new
-                        {
-                            ch.ChapterId,
-                            completedAmount = ch.Exercises
-                                .SelectMany(e => e.UserExercises)
-                                .Count(ue =>
-                                    ue.User.UserId == student.UserId &&
-                                    ue.IsCompleted)
-                        })
+                    courseId = course.CourseId,
+                    chapters,
+                    students
                 });
-
-            return Ok(new
+            }
+            catch (UnauthorizedAccessException)
             {
-                courseId = course.CourseId,
-                chapters,
-                students
-            });
+                return Unauthorized(new { message = "You're not authorized to access this resource." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
         }
+
         [Authorize(Roles = "Admin")]
         [HttpGet("lecturers")]
         public async Task<IActionResult> GetAllLecturers()

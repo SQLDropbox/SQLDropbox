@@ -86,7 +86,6 @@ public class ExerciseController(AppDbContext db, AuthorizationService authorizat
             await _db.SaveChangesAsync();
 
             return CreatedAtAction(nameof(CreateExercise), new { id = newExercise.ExerciseId }, newExercise);
-
         }
         catch (UnauthorizedAccessException)
         {
