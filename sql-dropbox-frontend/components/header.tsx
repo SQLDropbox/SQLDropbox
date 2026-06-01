@@ -16,6 +16,8 @@ const toggleableRoutes: (string | RegExp)[] = [
     "/admin",
     /^\/[^/]+$/,
     /^\/admin\/[^/]+$/,
+    /^\/[^/]+\/[^/]+$/,
+    /^\/admin\/[^/]+\/[^/]+$/, 
 ];
 
 export default function Header() {
@@ -65,7 +67,7 @@ export default function Header() {
     }
 
     return (
-        <header className="w-full border-b-2 border-border bg-linear-to-bl from-surface-3 to-surface-2  shadow-sm relative">
+        <header className="w-full border-b-2 h-20² border-border bg-linear-to-bl from-surface-3 to-surface-2  shadow-sm relative">
             <div className="flex justify-between items-center w-full px-6 py-4 max-w-7xl mx-auto gap-3">
                 {/* Brand */}
                 <Link

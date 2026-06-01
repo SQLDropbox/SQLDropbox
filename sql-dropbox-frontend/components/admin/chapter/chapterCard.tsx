@@ -136,7 +136,7 @@ export default function ChapterCard({
                 <div className="flex items-center gap-1 mt-0.5">
                     {/* Questions button */}
                     <Link
-                        href={`/admin/${courseId}/chapter/${chapter.chapterId}/exercises`}
+                        href={`/admin/${courseId}/${chapter.chapterId}`}
                         className="
                             inline-flex items-center gap-1.5
                             font-mono text-[10px] uppercase tracking-widest
@@ -196,7 +196,7 @@ export default function ChapterCard({
 
     return (
         <Link
-            href={`/${courseId}/chapter/${chapter.chapterId}`}
+            href={`/${courseId}/${chapter.chapterId}`}
             style={{
                 zIndex: index + 1,
                 marginTop: index === 0 ? 0 : CARD_OVERLAP,
