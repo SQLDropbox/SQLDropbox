@@ -23,7 +23,7 @@ const getExercisesByChapterId = async (chapterId: string) => {
 const addExercise = async (exercise: Partial<Exercise>) => {
     const payload = mapToExerciseDto(exercise);
 
-    return api.publicFetch(`/Exercise`, {
+    return api.privateFetch(`/Exercise`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -38,7 +38,7 @@ const updateExercise = async (
 ) => {
     const payload = mapToExerciseDto(exercise);
 
-    return api.publicFetch(`/Exercise/${exerciseId}`, {
+    return api.privateFetch(`/Exercise/${exerciseId}`, {
         method: "PUT",
         headers: {
             "Content-Type": "application/json",
@@ -48,9 +48,19 @@ const updateExercise = async (
 };
 
 const deleteExercise = async (exerciseId: number) => {
-    return api.publicFetch(`/Exercise/${exerciseId}`, {
+    return api.privateFetch(`/Exercise/${exerciseId}`, {
         method: "DELETE",
     });
+};
+
+const submitSolution = async (exerciseId: number, query: string) => {
+    return api.privateFetch(`/Solution/submit/select`, {
+        method: "POST",
+        body: JSON.stringify({
+                exerciseId,
+                query,
+            }),
+    })
 };
 
 export const exerciseService = {
@@ -58,4 +68,5 @@ export const exerciseService = {
     addExercise,
     updateExercise,
     deleteExercise,
+    submitSolution
 };

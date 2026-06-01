@@ -2,20 +2,15 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import {
-    FaArrowLeft,
-    FaBookOpen,
-    FaCircleInfo,
-    FaLightbulb,
-    FaPlay,
-} from "react-icons/fa6";
-import { useTranslations } from "next-intl";
-import { useQuery } from "@tanstack/react-query";
+import { FaArrowLeft, FaBookOpen, FaCircleInfo, FaLightbulb, FaPlay } from "react-icons/fa6";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Chapter, Course, Exercise } from "@/types/types";
+import { useTranslations } from "next-intl";
 import { courseService } from "@/services/courseService";
 import { queryService } from "@/services/queryService";
 import QueryResult from "@/components/student/QueryResult";
 import ExerciseSidebar from "@/components/student/exerciseSidebar";
+import { exerciseService } from "@/services/exerciseService";
 
 interface StudentExerciseWorkspaceProps {
     courseId: string;
@@ -120,16 +115,13 @@ export default function StudentExerciseWorkspace({
                         </div>
                     ) : activeExercise ? (
                         <ExercisePanel
-                            key={activeExercise.exerciseId}
-                            exercise={activeExercise}
-                            chapterName={
-                                chapter?.chapterNameEN ||
-                                chapter?.chapterNameNL ||
-                                t("chapterFallback", { chapterId })
-                            }
-                            schemaName={chapter?.schemaName || ""}
-                            schemaImage={chapter?.schemaImage || null}
-                        />
+                                key={activeExercise.exerciseId}
+                                    exercise={activeExercise}
+                                    chapterName={chapter?.chapterNameEN || chapter?.chapterNameNL || `Chapter ${chapterId}`}
+                                    schemaName={chapter?.schemaName || ""}
+                                    schemaImage={chapter?.schemaImage || null}
+                                    chapterId={chapterId}                        
+                            />
                     ) : (
                         <div className="bg-surface-2 border border-dashed border-border px-6 py-10 font-mono text-sm text-muted">
                             {t("noExercises")}
@@ -164,11 +156,13 @@ function ExercisePanel({
     chapterName,
     schemaName,
     schemaImage,
+    chapterId,
 }: {
     exercise: Exercise;
     chapterName: string;
     schemaName: string;
     schemaImage?: string | null;
+    chapterId: string;
 }) {
     const t = useTranslations("ChapterExercisePage");
     const [activeTab, setActiveTab] = useState<PanelTab>("question");
@@ -183,7 +177,7 @@ function ExercisePanel({
     const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
     const [queryError, setQueryError] = useState<string | null>(null);
     const [isExecuting, setIsExecuting] = useState(false);
-
+    const queryClient = useQueryClient();
     const normalizedQuery = queryValue.toLowerCase();
 
     const requirements = (exercise.requirements ?? []).filter(
@@ -233,16 +227,26 @@ function ExercisePanel({
             setQueryError(null);
             setQueryResult(null);
 
-            const result = await queryService.executeQuery({
+            // 1. run SQL (for preview output)
+            const preview = await queryService.executeQuery({
                 schema: schemaName,
                 query: queryValue,
             });
 
-            setQueryResult(result);
+            setQueryResult(preview);
+
+            // 2. submit for validation (IMPORTANT PART)
+            const submission = await exerciseService.submitSolution(exercise.exerciseId, queryValue);
+
+            if (submission.correct) {
+                queryClient.invalidateQueries({
+                    queryKey: ["chapter", chapterId],
+                });
+            } else {
+                setQueryError(submission.message);
+            }
         } catch (err) {
-            setQueryError(
-                err instanceof Error ? err.message : "Something went wrong",
-            );
+            setQueryError(err instanceof Error ? err.message : "Something went wrong");
         } finally {
             setIsExecuting(false);
         }

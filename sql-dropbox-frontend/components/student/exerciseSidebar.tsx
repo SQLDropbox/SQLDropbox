@@ -89,8 +89,6 @@ export default function ExerciseSidebar({
                 </p>
 
                 {exercises.map((exercise, index) => {
-                    completedExerciseIds.push(20);
-
                     const isActive = exercise.exerciseId == activeExerciseId;
                     const isCompleted = completedExerciseIds.includes(
                         exercise.exerciseId,
