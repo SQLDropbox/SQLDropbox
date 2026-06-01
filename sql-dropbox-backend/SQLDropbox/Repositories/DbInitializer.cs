@@ -199,7 +199,7 @@ namespace SQLDropbox.Repositories
             };
 
             /* SCHEMAS */
-            var schema1 = new Schema { SchemaName = "animals", CreatedAt = DateTime.UtcNow };
+            var schema1 = new Schema { SchemaName = "animals", CreatedAt = DateTime.UtcNow, SchemaImage = "animals.png" };
             var schema2 = new Schema { SchemaName = "rooms", CreatedAt = DateTime.UtcNow };
 
             /* CHAPTERS */
