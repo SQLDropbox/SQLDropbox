@@ -1,5 +1,6 @@
 import { Exercise } from "@/types/types";
 import { useTranslations } from "next-intl";
+import QueryResult from "../QueryResult";
 
 export default function ExpectedOutputCard({
     exercise,
@@ -16,9 +17,9 @@ export default function ExpectedOutputCard({
 
             <div className="min-h-40 border border-dashed border-border bg-surface-2 p-4">
                 {exercise.queryOutput ? (
-                    <pre className="whitespace-pre-wrap font-mono text-sm leading-6 text-ink">
-                        {exercise.queryOutput}
-                    </pre>
+                    <QueryResult
+                        result={{ type: "csv", data: exercise.queryOutput }}
+                    />
                 ) : (
                     <p className="font-mono text-sm text-muted">
                         {t("noExpectedOutput")}
