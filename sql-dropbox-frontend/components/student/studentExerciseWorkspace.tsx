@@ -10,6 +10,7 @@ import { courseService } from "@/services/courseService";
 import { queryService } from "@/services/queryService";
 import QueryResult from "@/components/student/QueryResult";
 import ExerciseSidebar from "@/components/student/exerciseSidebar";
+import { exerciseService } from "@/services/exerciseService";
 
 interface StudentExerciseWorkspaceProps {
     courseId: string;
@@ -205,30 +206,6 @@ function ExercisePanel({
         return () => el.removeEventListener("wheel", handleWheelEvent);
     }, [isHoveringImage]);
 
-    const submitSolution = async ({ exerciseId, query }: {
-        exerciseId: number;
-        query: string;
-    }) => {
-        const res = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/Solution/submit/select`,
-            {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                credentials: "include",
-                body: JSON.stringify({
-                    exerciseId,
-                    query,
-                }),
-            }
-        );
-
-        if (!res.ok) {
-            throw new Error(await res.text());
-        }
-
-        return res.json();
-    };
-
     const handleRunQuery = async () => {
         if (!queryValue.trim()) return;
 
@@ -259,10 +236,7 @@ function ExercisePanel({
             setQueryResult(preview);
 
             // 2. submit for validation (IMPORTANT PART)
-            const submission = await submitSolution({
-                exerciseId: exercise.exerciseId,
-                query: queryValue,
-            });
+            const submission = await exerciseService.submitSolution(exercise.exerciseId, queryValue);
 
             if (submission.correct) {
                 queryClient.invalidateQueries({

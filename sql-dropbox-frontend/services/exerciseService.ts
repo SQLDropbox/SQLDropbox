@@ -53,9 +53,20 @@ const deleteExercise = async (exerciseId: number) => {
     });
 };
 
+const submitSolution = async (exerciseId: number, query: string) => {
+    return api.publicFetch(`/Solution/submit/select`, {
+        method: "POST",
+        body: JSON.stringify({
+                exerciseId,
+                query,
+            }),
+    })
+};
+
 export const exerciseService = {
     getExercisesByChapterId,
     addExercise,
     updateExercise,
     deleteExercise,
+    submitSolution
 };
