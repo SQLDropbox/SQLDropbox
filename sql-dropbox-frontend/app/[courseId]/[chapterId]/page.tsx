@@ -15,9 +15,14 @@ export default function Page() {
     const chapterId = params?.chapterId;
     const courseId = params?.courseId;
 
-    const { data: chapter, isLoading: isChapterLoading, error: chapterError } = useQuery({
+    const {
+        data: chapter,
+        isLoading: isChapterLoading,
+        error: chapterError,
+    } = useQuery({
         queryKey: ["chapter", chapterId],
-        queryFn: () => chapterService.getChapterByChapterId(chapterId as string),
+        queryFn: () =>
+            chapterService.getChapterByChapterId(chapterId as string),
         enabled: !!chapterId,
     });
 
@@ -27,7 +32,8 @@ export default function Page() {
         error: exercisesError,
     } = useQuery({
         queryKey: ["exercises", chapterId],
-        queryFn: () => exerciseService.getExercisesByChapterId(chapterId as string),
+        queryFn: () =>
+            exerciseService.getExercisesByChapterId(chapterId as string),
         enabled: !!chapterId,
     });
 
@@ -39,7 +45,9 @@ export default function Page() {
             <div>
                 <Header />
                 <div className="max-w-350 mx-auto p-6">
-                    <p className="mt-6 text-center text-red-500">{t("invalidParams")}</p>
+                    <p className="mt-6 text-center text-red-500">
+                        {t("invalidParams")}
+                    </p>
                 </div>
             </div>
         );
