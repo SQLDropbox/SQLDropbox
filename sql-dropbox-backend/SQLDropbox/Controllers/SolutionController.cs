@@ -88,7 +88,7 @@ public class SolutionController(AppDbContext db, SolutionService solutionService
             if (exercise.QueryOutput != queryOutput)
             {
                 await _soS.RegisterUserSolution(formattedQuery, exercise, user, "This is wrong, an error should be saved (work in progress)!");
-                return Ok(new { message = "This is wrong, an error should be returned (work in progress)!" });
+                return Ok(new { message = "This is wrong, an error should be returned (work in progress)!", queryResult = queryOutput });
             }
 
             //If correct, save solution

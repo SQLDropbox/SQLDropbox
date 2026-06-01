@@ -358,6 +358,7 @@ public class ChapterController(AppDbContext db, AuthorizationService authorizati
                         .Where(e => e.UserExercises.Any(ue => ue.User == user))
                         .Select(e => new
                         {
+                            e.ExerciseId,
                             e.QuestionNL,
                             e.QuestionEN,
                             e.HintNL,
