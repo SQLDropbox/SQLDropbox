@@ -31,7 +31,7 @@ public class RoutineController(SchemaService schema, SqlQueryService sql) : Cont
         var validation = _sql.Validate(request.Sql);
         if (!validation.IsValid)
             return BadRequest(validation.Message);
-        
+
         if (!string.IsNullOrWhiteSpace(request.SetupSql))
         {
             var setupValidation = _sql.Validate(request.SetupSql);

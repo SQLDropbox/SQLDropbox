@@ -5,6 +5,6 @@
         Insert = 1,
         Select = 2,
         Update = 3,
-        Delete = 4,        
+        Delete = 4,
     }
 }

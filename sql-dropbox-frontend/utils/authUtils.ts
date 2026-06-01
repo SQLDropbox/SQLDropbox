@@ -44,13 +44,16 @@ const logout = async (router: AppRouterInstance) => {
 };
 
 export const setJWTCookie = (token: string | null = null) => {
+    const environment = process.env.NEXT_PUBLIC_ENVIRONMENT;
+    const secureFlag = environment == "dev" ? "" : "; Secure";
+
     try {
         if (!token) {
-            document.cookie = "token=; path=/; max-age=0; SameSite=Strict";
+            document.cookie = `token=; path=/; max-age=0; SameSite=Strict${secureFlag}`;
             return;
         }
 
-        document.cookie = `token=${token}; path=/; SameSite=Strict`;
+        document.cookie = `token=${token}; path=/; SameSite=Strict${secureFlag}`;
     } catch (err) {
         console.error("Invalid token:", err);
     }

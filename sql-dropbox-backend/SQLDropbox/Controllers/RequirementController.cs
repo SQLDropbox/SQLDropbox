@@ -67,7 +67,7 @@ public class RequirementController(AppDbContext db) : ControllerBase
             _db.Requirements.Add(requirement);
             await _db.SaveChangesAsync();
 
-            return Ok(new { message = "New requirement added."});
+            return Ok(new { message = "New requirement added." });
         }
         catch (Exception ex)
         {
@@ -81,7 +81,7 @@ public class RequirementController(AppDbContext db) : ControllerBase
         try
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);           
+                return BadRequest(ModelState);
 
             if (!int.TryParse(requirementIdStr, out int requirementId))
                 return BadRequest("Not a valid requirement ID.");
@@ -113,7 +113,7 @@ public class RequirementController(AppDbContext db) : ControllerBase
     public async Task<ActionResult> DeleteRequirementForExercise(string requirementIdStr)
     {
         try
-        {            
+        {
             if (!int.TryParse(requirementIdStr, out int requirementId))
                 return BadRequest("Not a valid requirement ID.");
 
@@ -123,7 +123,7 @@ public class RequirementController(AppDbContext db) : ControllerBase
             if (requirement == null)
                 return NotFound(new { message = $"No requirement with ID {requirementId} found." });
 
-           requirement.DeletedAt = DateTime.UtcNow;
+            requirement.DeletedAt = DateTime.UtcNow;
 
             _db.Requirements.Update(requirement);
             await _db.SaveChangesAsync();

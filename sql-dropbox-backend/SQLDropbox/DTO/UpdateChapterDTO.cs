@@ -1,6 +1,4 @@
-﻿using SQLDropbox.Models;
-
-namespace SQLDropbox.DTO;
+﻿namespace SQLDropbox.DTO;
 
 public class UpdateChapterDTO
 {

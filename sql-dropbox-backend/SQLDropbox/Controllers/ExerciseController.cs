@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SQLDropbox.Data;
 using SQLDropbox.DTO;
+using SQLDropbox.Enums;
 using SQLDropbox.Models;
 using SQLDropbox.Services;
 
@@ -18,7 +19,9 @@ public class ExerciseController(AppDbContext db, SolutionService solutionService
     [HttpGet]
     public async Task<IActionResult> GetAllExercises()
     {
-        var exercises = await _db.Exercises.Include(e => e.Solutions).ToListAsync();
+        var exercises = await _db.Exercises
+            .Include(e => e.Solutions.OrderBy(s => s.SolutionId).FirstOrDefault())
+            .ToListAsync();
         return Ok(exercises);
     }
 
@@ -27,6 +30,14 @@ public class ExerciseController(AppDbContext db, SolutionService solutionService
     {
         try
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            if (!Enum.IsDefined(typeof(QueryAction), dto.QueryAction))
+                return BadRequest(new { message = "Query action has to be an allowed value" });
+
+            QueryAction queryAction = (QueryAction)dto.QueryAction;
+
             Chapter? chapter = await _db.Chapters
                 .Include(c => c.Schema)
                 .FirstOrDefaultAsync(c => c.ChapterId == dto.ChapterId);
@@ -47,7 +58,7 @@ public class ExerciseController(AppDbContext db, SolutionService solutionService
                 HintNL = dto.HintNL,
                 HintEN = dto.HintEN,
                 QueryOutput = queryOutput,
-                QueryAction = dto.QueryAction,
+                QueryAction = queryAction,
                 Chapter = chapter,
                 CreatedAt = DateTime.UtcNow,
 
@@ -106,6 +117,9 @@ public class ExerciseController(AppDbContext db, SolutionService solutionService
     {
         try
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             Exercise? exercise = await _db.Exercises
                 .Include(e => e.Chapter)
                 .ThenInclude(c => c.Schema)
@@ -118,6 +132,17 @@ public class ExerciseController(AppDbContext db, SolutionService solutionService
             if (dto.HintNL != null) exercise.HintNL = dto.HintNL;
             if (dto.HintEN != null) exercise.HintEN = dto.HintEN;
 
+            if (dto.QueryAction != null)
+            {
+                if (!Enum.IsDefined(typeof(QueryAction), dto.QueryAction))
+                    return BadRequest(new { message = "Query action has to be an allowed value" });
+
+                exercise.QueryAction = (QueryAction)dto.QueryAction;
+
+                if (exercise.QueryAction != QueryAction.Select && dto.ValidationQuery == null)
+                    return BadRequest(new { message = "If query type is different from select, a validation query is required" });
+            }
+
             if (dto.SolutionQuery != null)
             {
                 _db.Solutions.RemoveRange(exercise.Solutions);
@@ -125,10 +150,12 @@ public class ExerciseController(AppDbContext db, SolutionService solutionService
                 string formattedQuery = _soS.FormatQuery(dto.SolutionQuery);
                 uint queryHash = await _soS.HashSolution(formattedQuery);
 
-                //If this returns an error, that error should be shown
-                string queryOutput = await _scS.ExecuteSelectOnSchemaAsync(exercise.Chapter.Schema.SchemaName, formattedQuery);
-
-                exercise.QueryOutput = queryOutput;
+                if (exercise.QueryAction == QueryAction.Select)
+                {
+                    //If this returns an error, that error should be shown
+                    string queryOutput = await _scS.ExecuteSelectOnSchemaAsync(exercise.Chapter.Schema.SchemaName, formattedQuery);
+                    exercise.QueryOutput = queryOutput;
+                }
 
                 exercise.Solutions =
                 [
@@ -139,6 +166,14 @@ public class ExerciseController(AppDbContext db, SolutionService solutionService
                     CreatedAt = DateTime.UtcNow
                 }
                 ];
+            }
+
+            if (exercise.QueryAction != QueryAction.Select && dto.ValidationQuery != null)
+            {
+                string formattedQuery = _soS.FormatQuery(dto.ValidationQuery);
+                string queryOutput = await _scS.ExecuteSelectOnSchemaAsync(exercise.Chapter.Schema.SchemaName, formattedQuery);
+                exercise.ValidationQuery = formattedQuery;
+                exercise.QueryOutput = queryOutput;
             }
 
             exercise.UpdatedAt = DateTime.UtcNow;

@@ -1,6 +1,7 @@
 ﻿namespace SQLDropbox.Models
 {
-    public class QueryExecutionResult {
+    public class QueryExecutionResult
+    {
 
         public string CommandType { get; set; } = string.Empty;
         public string Message { get; set; } = string.Empty;

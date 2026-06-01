@@ -209,12 +209,12 @@ namespace SQLDropbox.Controllers
         {
             var lecturers = await _db.Users
                 .Where(u => u.Role == Role.Lecturer)
-                .Select(u => new 
-                { 
-                    u.UserId, 
-                    u.UserCode, 
-                    u.FirstName, 
-                    u.LastName 
+                .Select(u => new
+                {
+                    u.UserId,
+                    u.UserCode,
+                    u.FirstName,
+                    u.LastName
                 })
                 .ToListAsync();
 
@@ -227,16 +227,16 @@ namespace SQLDropbox.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            
-            var userExists = await _db.Users.AnyAsync(u => 
-                u.UserCode.ToLower() == dto.UserCode.ToLower() || 
+
+            var userExists = await _db.Users.AnyAsync(u =>
+                u.UserCode.ToLower() == dto.UserCode.ToLower() ||
                 u.Email.ToLower() == dto.Email.ToLower());
-            
+
             if (userExists)
             {
                 return BadRequest("A user with this UserCode or Email already exists.");
             }
-            
+
             var newLecturer = new User
             {
                 UserId = Guid.NewGuid(),
@@ -248,16 +248,16 @@ namespace SQLDropbox.Controllers
                 Role = Role.Lecturer,
                 CreatedAt = DateTime.UtcNow
             };
-            
+
             _db.Users.Add(newLecturer);
             await _db.SaveChangesAsync();
-            
-            return Ok(new 
-            { 
-                newLecturer.UserId, 
-                newLecturer.UserCode, 
-                newLecturer.FirstName, 
-                newLecturer.LastName 
+
+            return Ok(new
+            {
+                newLecturer.UserId,
+                newLecturer.UserCode,
+                newLecturer.FirstName,
+                newLecturer.LastName
             });
         }
 

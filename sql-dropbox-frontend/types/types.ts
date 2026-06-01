@@ -41,10 +41,10 @@ export interface Chapter {
 }
 
 export enum QueryAction {
-    Insert = "INSERT",
-    Select = "SELECT",
-    Update = "UPDATE",
-    Delete = "DELETE",
+    Insert = 1,
+    Select = 2,
+    Update = 3,
+    Delete = 4,
 }
 
 export interface Exercise {
@@ -54,6 +54,7 @@ export interface Exercise {
     questionEN: string;
     hintNL: string;
     hintEN: string;
+    queryOutput: string;
     queryAction: QueryAction;
     solutionQuery?: string;
     validationQuery?: string;

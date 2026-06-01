@@ -1,6 +1,7 @@
 ﻿namespace SQLDropbox.Models
 {
-    public class QueryValidationResult {
+    public class QueryValidationResult
+    {
 
         public bool IsValid { get; set; }
         public string Message { get; set; } = string.Empty;

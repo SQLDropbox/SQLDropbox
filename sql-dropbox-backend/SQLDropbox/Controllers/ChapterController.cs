@@ -143,7 +143,7 @@ public class ChapterController(AppDbContext db) : BaseController
         await _db.SaveChangesAsync();
         return Ok(new { message = $"Chapter with ID {id} successfully deleted." });
     }
-    
+
     [Authorize]
     [HttpGet("{chapterId}/exercises")]
     public async Task<ActionResult<IEnumerable<Exercise>>> GetExercisesByChapter(int chapterId)
@@ -169,7 +169,7 @@ public class ChapterController(AppDbContext db) : BaseController
 
                 if (student == null)
                     return NotFound("Student not found.");
-               
+
                 Chapter? chapterForStudent = await _db.Chapters
                   .Where(c => c.ChapterId == chapterId)
                   .Include(c => c.Exercises
@@ -184,12 +184,12 @@ public class ChapterController(AppDbContext db) : BaseController
                     return BadRequest(new { message = $"Chapter with ID {chapterId} not found." });
 
                 int amount = chapterForStudent.AmountOfExercises ?? 0;
-                
+
                 List<Exercise> currentExercises = [.. chapterForStudent.Exercises
                     .Where(e => e.UserExercises.Any(se => se.User == student))
                     .OrderBy(e => e.ExerciseId)];
 
-                if(currentExercises.Count == amount)
+                if (currentExercises.Count == amount)
                     return Ok(currentExercises);
 
                 List<Exercise> possibleExercises = [.. chapterForStudent.Exercises
@@ -240,7 +240,7 @@ public class ChapterController(AppDbContext db) : BaseController
             Chapter? chapter = await _db.Chapters
                 .Where(c => c.ChapterId == chapterId)
                 .Include(c => c.Exercises)
-                    .ThenInclude(e => e.Requirements)                    
+                    .ThenInclude(e => e.Requirements)
                 .Include(c => c.Exercises)
                     .ThenInclude(e => e.Solutions)
                 .FirstOrDefaultAsync();

@@ -1,5 +1,3 @@
-using SQLDropbox.Models;
-
 public class ChapterDTO
 {
     public string ChapterNameNL { get; set; }
