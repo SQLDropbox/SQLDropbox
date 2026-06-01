@@ -38,6 +38,8 @@ builder.Services.AddScoped<CsvExportService>();
 builder.Services.AddScoped<RoutineService>();
 builder.Services.AddScoped<CsvService>();
 builder.Services.AddScoped<RefreshTokenService>();
+builder.Services.AddScoped<AuthorizationService>();
+builder.Services.AddScoped<ChapterService>();
 
 // Add controllers to the container
 builder.Services.AddControllers();

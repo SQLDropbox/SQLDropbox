@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Npgsql;
 using SQLDropbox.Models;
 using SQLDropbox.Services;
@@ -12,6 +13,7 @@ public class RoutineController(SchemaService schema, SqlQueryService sql) : Cont
     private readonly SchemaService _schema = schema;
     private readonly SqlQueryService _sql = sql;
 
+    [Authorize(Roles = "Admin")]
     [HttpPost("{schema}")]
     [Consumes("application/json")]
     public async Task<IActionResult> Execute(string schema, [FromBody] RoutineExecuteRequest request)

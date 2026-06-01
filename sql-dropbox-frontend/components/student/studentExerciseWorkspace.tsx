@@ -105,6 +105,8 @@ export default function StudentExerciseWorkspace({
                                 chapter?.chapterNameNL ||
                                 `Chapter ${chapterId}`
                             }
+                            schemaName={chapter?.schema?.schemaName || ""}
+                            schemaImage={chapter?.schema?.schemaImage || null}
                             schemaName={chapter?.schemaName || ""}
                             schemaImage={chapter?.schemaImage || null}
                             chapterId={chapterId}
