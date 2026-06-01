@@ -62,29 +62,28 @@ export default function EditChapterDialog({
     const [confirmDeleteDialogOpen, setConfirmDeleteDialogOpen] = useState(false);
 
     useEffect(() => {
-        if (!open) return;
-        console.log("chapter", chapter);
+        if (!open || !chapter || !isEdit) return;
 
-        if (chapter && isEdit) {
+        async function loadChapter() {
+            const fullChapter =
+                await chapterService.getChapterByChapterId(
+                    chapter!.chapterId.toString(),
+                );
+
             setForm({
-                chapterId: chapter.chapterId,
-                chapterNameNL: chapter.chapterNameNL ?? "",
-                chapterNameEN: chapter.chapterNameEN ?? "",
-                chapterDescriptionNL: chapter.chapterDescriptionNL ?? "",
-                chapterDescriptionEN: chapter.chapterDescriptionEN ?? "",
-                amountOfExercises: chapter.amountOfExercises ?? 0,
-                courseId: chapter.courseId ?? courseId,
-                schemaId: chapter.schemaId ?? null,
-                schemaName: chapter.schemaName ?? "",
-            });
-        } else {
-            setForm({
-                ...emptyForm,
-                courseId,
+                chapterId: fullChapter.chapterId,
+                chapterNameNL: fullChapter.chapterNameNL ?? "",
+                chapterNameEN: fullChapter.chapterNameEN ?? "",
+                chapterDescriptionNL: fullChapter.chapterDescriptionNL ?? "",
+                chapterDescriptionEN: fullChapter.chapterDescriptionEN ?? "",
+                amountOfExercises: fullChapter.amountOfExercises ?? 0,
+                courseId: courseId,
+                schemaId: fullChapter.schemaId ?? null,
+                schemaName: fullChapter.schemaName ?? "",
             });
         }
 
-        setErrors({});
+        loadChapter();
     }, [open, chapter, isEdit, courseId]);
 
     function validate() {
