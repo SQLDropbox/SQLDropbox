@@ -74,7 +74,7 @@ namespace SQLDropbox.Services
 
                 return (true, false, null);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return (false, false, null);
             }

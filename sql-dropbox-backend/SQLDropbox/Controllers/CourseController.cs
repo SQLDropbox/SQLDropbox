@@ -5,62 +5,74 @@ using SQLDropbox.Data;
 using SQLDropbox.DTO;
 using SQLDropbox.Enums;
 using SQLDropbox.Models;
+using SQLDropbox.Services;
 
 namespace SQLDropbox.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class CourseController(AppDbContext db) : BaseController
+public class CourseController(AppDbContext db, AuthorizationService authorizationService) : BaseController
 {
     private readonly AppDbContext _db = db;
+    private readonly AuthorizationService _aS = authorizationService;
 
     [Authorize]
     [HttpGet]
-    public ActionResult GetCourses()
+    public async Task<IActionResult> GetCourses()
     {
-        var id = GetUserId();
-        var role = GetUserRole();
-        if (id == null || role == null) return Unauthorized();
-
-        var query = _db.Courses.AsQueryable();
-
-        switch (role)
+        try
         {
-            case Role.Student:
-                query = query.Where(x => x.Students.Any(s => s.UserId == id) && x.IsActive);
-                break;
-            case Role.Lecturer:
-                query = query.Where(x => x.Lecturers.Any(l => l.UserId == id));
-                break;
+            var (userId, role) = IsAuthenticated();
+
+            var query = _db.Courses.AsQueryable();
+
+            switch (role)
+            {
+                case Role.Student:
+                    query = query.Where(x => x.Students.Any(s => s.UserId == userId) && x.IsActive);
+                    break;
+                case Role.Lecturer:
+                    query = query.Where(x => x.Lecturers.Any(l => l.UserId == userId));
+                    break;
+            }
+
+
+            var courses = query.Select(x => new
+            {
+                x.CourseId,
+                x.CourseNameEN,
+                x.CourseNameNL,
+                x.CourseDescriptionEN,
+                x.CourseDescriptionNL,
+                //x.Lecturer,
+                lecturers = x.Lecturers.Select(l => new { l.UserId, l.FirstName, l.LastName }).ToList(),
+                x.IsActive,
+                studentCount = x.Students.Count,
+                chapterCount = x.Chapters.Count,
+            }).OrderBy(x => x.CourseId).ToList();
+
+            return Ok(courses);
         }
-
-
-        var courses = query.Select(x => new
+        catch (UnauthorizedAccessException)
         {
-            x.CourseId,
-            x.CourseNameEN,
-            x.CourseNameNL,
-            x.CourseDescriptionEN,
-            x.CourseDescriptionNL,
-            //x.Lecturer,
-            lecturers = x.Lecturers.Select(l => new { l.UserId, l.FirstName, l.LastName }).ToList(),
-            x.IsActive,
-            studentCount = x.Students.Count,
-            chapterCount = x.Chapters.Count,
-        }).OrderBy(x => x.CourseId).ToList();
-
-        return Ok(courses);
+            return Unauthorized(new { message = "You're not authorized to access this resource." });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex);
+        }
     }
 
     [Authorize]
     [HttpGet("{courseId}")]
-    public ActionResult GetCourseByCourseId(string courseId)
+    public async Task<IActionResult> GetCourseByCourseId(string courseId)
     {
-        var id = GetUserId();
-        var role = GetUserRole();
-        if (id == null || role == null) return Unauthorized();
+        try
+        {
+            var (userId, role) = IsAuthenticated();
+            await _aS.UserHasAccessToCourse(userId, role, courseId);
 
-        var query = _db.Courses
+            var query = _db.Courses
             .Include(x => x.Lecturers)
             .Include(x => x.Chapters)
             .ThenInclude(c => c.Exercises)
@@ -68,48 +80,57 @@ public class CourseController(AppDbContext db) : BaseController
             .Include(x => x.Students)
             .AsQueryable();
 
-        if (role == Role.Student)
-        {
-            query = query.Where(x => x.IsActive && x.Students.Any(s => s.UserId == id));
+            if (role == Role.Student)
+            {
+                query = query.Where(x => x.IsActive && x.Students.Any(s => s.UserId == userId));
+            }
+
+            var totalCourseCount = query.Count();
+
+            var course = query.FirstOrDefault(x => x.CourseId == courseId);
+
+            if (course == null)
+                return NotFound();
+
+
+            return Ok(new
+            {
+                course.CourseId,
+                course.CourseNameEN,
+                course.CourseNameNL,
+                course.CourseDescriptionEN,
+                course.CourseDescriptionNL,
+                lecturers = course.Lecturers.Select(l => new
+                {
+                    l.UserId,
+                    l.UserCode,
+                    l.FirstName,
+                    l.LastName
+                }),
+                course.IsActive,
+                totalCourseCount,
+                chapters = course.Chapters
+                .Select(x => new
+                {
+                    x.ChapterId,
+                    x.ChapterNameEN,
+                    x.ChapterNameNL,
+                    x.ChapterDescriptionEN,
+                    x.ChapterDescriptionNL,
+                    x.AmountOfExercises,
+                    x.Course.CourseId,
+                    completedAmount = (role == Role.Student) ? x.Exercises.Sum(e => e.UserExercises.Count(ue => ue.User.UserId == userId && ue.IsCompleted)) : 0
+                })
+            });
         }
-
-        var totalCourseCount = query.Count();
-
-        var course = query.FirstOrDefault(x => x.CourseId == courseId);
-
-        if (course == null)
-            return NotFound();
-
-
-        return Ok(new
+        catch (UnauthorizedAccessException)
         {
-            course.CourseId,
-            course.CourseNameEN,
-            course.CourseNameNL,
-            course.CourseDescriptionEN,
-            course.CourseDescriptionNL,
-            lecturers = course.Lecturers.Select(l => new
-            {
-                l.UserId,
-                l.UserCode,
-                l.FirstName,
-                l.LastName
-            }),
-            course.IsActive,
-            totalCourseCount,
-            chapters = course.Chapters
-            .Select(x => new
-            {
-                x.ChapterId,
-                x.ChapterNameEN,
-                x.ChapterNameNL,
-                x.ChapterDescriptionEN,
-                x.ChapterDescriptionNL,
-                x.AmountOfExercises,
-                x.Course.CourseId,
-                completedAmount = (role == Role.Student) ? x.Exercises.Sum(e => e.UserExercises.Count(ue => ue.User.UserId == id && ue.IsCompleted)) : 0
-            })
-        });
+            return Unauthorized(new { message = "You're not authorized to access this resource." });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex);
+        }
     }
 
     [Authorize(Roles = "Admin")]
@@ -139,7 +160,7 @@ public class CourseController(AppDbContext db) : BaseController
             //Lecturer = course.Lecturer,
             IsActive = course.IsActive,
             CreatedAt = DateTime.Now,
-            Lecturers = new List<User>()
+            Lecturers = []
         };
 
         if (course.LecturerIds != null && course.LecturerIds.Any())
@@ -161,40 +182,54 @@ public class CourseController(AppDbContext db) : BaseController
     [HttpPut("{courseId}")]
     public async Task<IActionResult> UpdateCourse(string courseId, [FromBody] CourseDTO course)
     {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-
-        var existing = await _db.Courses
-            .Include(c => c.Lecturers)
-            .FirstOrDefaultAsync(c => c.CourseId == courseId);
-
-        if (existing == null)
-            return NotFound();
-
-        existing.CourseNameEN = course.CourseNameEN;
-        existing.CourseNameNL = course.CourseNameNL;
-        existing.CourseDescriptionEN = course.CourseDescriptionEN;
-        existing.CourseDescriptionNL = course.CourseDescriptionNL;
-        //existing.Lecturer = course.Lecturer;
-        existing.IsActive = course.IsActive;
-        existing.UpdatedAt = DateTime.UtcNow;
-
-        if (course.LecturerIds != null)
+        try
         {
-            var newLecturers = await _db.Users
-                .Where(u => course.LecturerIds.Contains(u.UserId) && u.Role == Role.Lecturer)
-                .ToListAsync();
+            var (userId, role) = IsAuthenticated();
+            await _aS.UserHasAccessToCourse(userId, role, courseId);
 
-            existing.Lecturers.Clear();
-            foreach (var lecturer in newLecturers)
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var existing = await _db.Courses
+                .Include(c => c.Lecturers)
+                .FirstOrDefaultAsync(c => c.CourseId == courseId);
+
+            if (existing == null)
+                return NotFound();
+
+            existing.CourseNameEN = course.CourseNameEN;
+            existing.CourseNameNL = course.CourseNameNL;
+            existing.CourseDescriptionEN = course.CourseDescriptionEN;
+            existing.CourseDescriptionNL = course.CourseDescriptionNL;
+            //existing.Lecturer = course.Lecturer;
+            existing.IsActive = course.IsActive;
+            existing.UpdatedAt = DateTime.UtcNow;
+
+            if (course.LecturerIds != null)
             {
-                existing.Lecturers.Add(lecturer);
+                var newLecturers = await _db.Users
+                    .Where(u => course.LecturerIds.Contains(u.UserId) && u.Role == Role.Lecturer)
+                    .ToListAsync();
+
+                existing.Lecturers.Clear();
+                foreach (var lecturer in newLecturers)
+                {
+                    existing.Lecturers.Add(lecturer);
+                }
             }
+
+            await _db.SaveChangesAsync();
+
+            return Ok(existing);
         }
-
-        await _db.SaveChangesAsync();
-
-        return Ok(existing);
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized(new { message = "You're not authorized to access this resource." });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex);
+        }
     }
 
     [Authorize(Roles = "Admin")]
@@ -214,10 +249,17 @@ public class CourseController(AppDbContext db) : BaseController
         return Ok();
     }
 
+
+    [Authorize(Roles = "Admin,Lecturer")]
     [HttpPost("{courseId}/Duplicate")]
-    public ActionResult DuplicateCourse(string courseId, [FromBody] DuplicateCourseDTO? request = null)
+    public async Task<IActionResult> DuplicateCourse(string courseId, [FromBody] DuplicateCourseDTO? request = null)
     {
-        var existingCourse = _db.Courses
+        try
+        {
+            var (userId, role) = IsAuthenticated();
+            await _aS.UserHasAccessToCourse(userId, role, courseId);
+
+            var existingCourse = _db.Courses
             .Include(c => c.Lecturers)
             .Include(c => c.Chapters)
             .ThenInclude(ch => ch.Schema)
@@ -225,83 +267,92 @@ public class CourseController(AppDbContext db) : BaseController
             .ThenInclude(ch => ch.Exercises)
             .FirstOrDefault(c => c.CourseId == courseId);
 
-        if (existingCourse == null)
-            return NotFound("Original course not found");
+            if (existingCourse == null)
+                return NotFound("Original course not found");
 
-        string finalCourseId;
-        string? newCourseId = request?.NewCourseId;
+            string finalCourseId;
+            string? newCourseId = request?.NewCourseId;
 
-        if (string.IsNullOrEmpty(newCourseId))
-        {
-            string baseId = existingCourse.CourseId + "-copy";
-            finalCourseId = baseId;
-            int counter = 1;
-
-            while (_db.Courses.Any(x => x.CourseId == finalCourseId))
+            if (string.IsNullOrEmpty(newCourseId))
             {
-                finalCourseId = $"{baseId}-{counter++}";
-                counter++;
+                string baseId = existingCourse.CourseId + "-copy";
+                finalCourseId = baseId;
+                int counter = 1;
+
+                while (_db.Courses.Any(x => x.CourseId == finalCourseId))
+                {
+                    finalCourseId = $"{baseId}-{counter++}";
+                    counter++;
+                }
             }
-        }
-        else
-        {
-            if (_db.Courses.Any(x => x.CourseId == newCourseId))
+            else
             {
-                return BadRequest("This course name is already in use");
+                if (_db.Courses.Any(x => x.CourseId == newCourseId))
+                {
+                    return BadRequest("This course name is already in use");
+                }
+                finalCourseId = newCourseId;
             }
-            finalCourseId = newCourseId;
-        }
 
-        var duplicateCourse = new Course
-        {
-            CourseId = finalCourseId,
-            CourseNameNL = existingCourse.CourseNameNL + " (Kopie)",
-            CourseNameEN = existingCourse.CourseNameEN + " (Copy)",
-            CourseDescriptionNL = existingCourse.CourseDescriptionNL,
-            CourseDescriptionEN = existingCourse.CourseDescriptionEN,
-            //Lecturer = existingCourse.Lecturer,
-            Lecturers = [.. existingCourse.Lecturers],
-            IsActive = false,
-            CreatedAt = DateTime.Now,
-            Chapters = []
-
-        };
-
-        foreach (var chapter in existingCourse.Chapters)
-        {
-            var newChapter = new Chapter
+            var duplicateCourse = new Course
             {
-                ChapterNameNL = chapter.ChapterNameNL,
-                ChapterNameEN = chapter.ChapterNameEN,
-                ChapterDescriptionNL = chapter.ChapterDescriptionNL,
-                ChapterDescriptionEN = chapter.ChapterDescriptionEN,
-                AmountOfExercises = chapter.AmountOfExercises,
-                Order = chapter.Order,
-                Deadline = chapter.Deadline,
-                Schema = chapter.Schema,
+                CourseId = finalCourseId,
+                CourseNameNL = existingCourse.CourseNameNL + " (Kopie)",
+                CourseNameEN = existingCourse.CourseNameEN + " (Copy)",
+                CourseDescriptionNL = existingCourse.CourseDescriptionNL,
+                CourseDescriptionEN = existingCourse.CourseDescriptionEN,
+                //Lecturer = existingCourse.Lecturer,
+                Lecturers = [.. existingCourse.Lecturers],
+                IsActive = false,
                 CreatedAt = DateTime.Now,
-                Exercises = []
+                Chapters = []
+
             };
 
-            foreach (var exercises in chapter.Exercises)
+            foreach (var chapter in existingCourse.Chapters)
             {
-                var newExercise = new Exercise
+                var newChapter = new Chapter
                 {
-                    QuestionNL = exercises.QuestionNL,
-                    QuestionEN = exercises.QuestionEN,
-                    HintNL = exercises.HintNL,
-                    HintEN = exercises.HintEN,
-                    QueryOutput = exercises.QueryOutput,
-                    QueryAction = exercises.QueryAction,
+                    ChapterNameNL = chapter.ChapterNameNL,
+                    ChapterNameEN = chapter.ChapterNameEN,
+                    ChapterDescriptionNL = chapter.ChapterDescriptionNL,
+                    ChapterDescriptionEN = chapter.ChapterDescriptionEN,
+                    AmountOfExercises = chapter.AmountOfExercises,
+                    Order = chapter.Order,
+                    Deadline = chapter.Deadline,
+                    Schema = chapter.Schema,
                     CreatedAt = DateTime.Now,
+                    Exercises = []
                 };
-                newChapter.Exercises.Add(newExercise);
+
+                foreach (var exercises in chapter.Exercises)
+                {
+                    var newExercise = new Exercise
+                    {
+                        QuestionNL = exercises.QuestionNL,
+                        QuestionEN = exercises.QuestionEN,
+                        HintNL = exercises.HintNL,
+                        HintEN = exercises.HintEN,
+                        QueryOutput = exercises.QueryOutput,
+                        QueryAction = exercises.QueryAction,
+                        CreatedAt = DateTime.Now,
+                    };
+                    newChapter.Exercises.Add(newExercise);
+                }
+                duplicateCourse.Chapters.Add(newChapter);
             }
-            duplicateCourse.Chapters.Add(newChapter);
+            _db.Courses.Add(duplicateCourse);
+            _db.SaveChanges();
+            return Ok(duplicateCourse);
         }
-        _db.Courses.Add(duplicateCourse);
-        _db.SaveChanges();
-        return Ok(duplicateCourse);
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized(new { message = "You're not authorized to access this resource." });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex);
+        }
     }
 
     [Authorize(Roles = "Admin")]

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Npgsql;
 using SQLDropbox.Services;
 
@@ -11,6 +12,7 @@ public class SchemaController(SchemaService schema, SqlQueryService sql) : Contr
     private readonly SchemaService _schema = schema;
     private readonly SqlQueryService _sql = sql;
 
+    [Authorize(Roles = "Admin")]
     [HttpPost("clone-dynamic")]
     public async Task<IActionResult> CloneSchema([FromQuery] string sourceSchema)
     {
@@ -28,6 +30,7 @@ public class SchemaController(SchemaService schema, SqlQueryService sql) : Contr
         return Ok(new { sourceSchema, cloned });
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPost("clone-and-query-dynamic")]
     public async Task<IActionResult> CloneAndQuery(
         [FromQuery] string sourceSchema,

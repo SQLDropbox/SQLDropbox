@@ -22,23 +22,23 @@ export default function Page() {
     } = useQuery({
         queryKey: ["chapter", chapterId],
         queryFn: () =>
-            chapterService.getChapterByChapterId(chapterId as string),
-        enabled: !!chapterId,
-    });
-
-    const {
-        data: exercises = [],
-        isLoading: isExercisesLoading,
-        error: exercisesError,
-    } = useQuery({
-        queryKey: ["exercises", chapterId],
-        queryFn: () =>
             exerciseService.getExercisesByChapterId(chapterId as string),
         enabled: !!chapterId,
     });
 
-    const isLoading = isChapterLoading || isExercisesLoading;
-    const error = chapterError || exercisesError;
+    // const {
+    //     data: exercises = [],
+    //     isLoading: isExercisesLoading,
+    //     error: exercisesError,
+    // } = useQuery({
+    //     queryKey: ["exercises", chapterId],
+    //     queryFn: () =>
+    //         exerciseService.getExercisesByChapterId(chapterId as string),
+    //     enabled: !!chapterId,
+    // });
+
+    const isLoading = isChapterLoading; /*|| isExercisesLoading*/
+    const error = chapterError; /*|| exercisesError*/
 
     if (!chapterId || !courseId) {
         return (
@@ -61,7 +61,7 @@ export default function Page() {
                     courseId={courseId}
                     chapterId={chapterId}
                     chapter={chapter}
-                    exercises={exercises}
+                    exercises={chapter?.exercises ?? []}
                     isLoading={isLoading}
                     error={error as Error | null}
                     completedExerciseIds={[]}
