@@ -107,8 +107,6 @@ export default function StudentExerciseWorkspace({
                             }
                             schemaName={chapter?.schema?.schemaName || ""}
                             schemaImage={chapter?.schema?.schemaImage || null}
-                            schemaName={chapter?.schemaName || ""}
-                            schemaImage={chapter?.schemaImage || null}
                             chapterId={chapterId}
                         />
                     ) : (
