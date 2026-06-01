@@ -57,10 +57,10 @@ const submitSolution = async (exerciseId: number, query: string) => {
     return api.privateFetch(`/Solution/submit/select`, {
         method: "POST",
         body: JSON.stringify({
-                exerciseId,
-                query,
-            }),
-    })
+            exerciseId,
+            query,
+        }),
+    });
 };
 
 export const exerciseService = {
@@ -68,5 +68,5 @@ export const exerciseService = {
     addExercise,
     updateExercise,
     deleteExercise,
-    submitSolution
+    submitSolution,
 };

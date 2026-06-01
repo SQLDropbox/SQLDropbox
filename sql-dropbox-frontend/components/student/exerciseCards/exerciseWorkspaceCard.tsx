@@ -1,6 +1,5 @@
 import { Exercise } from "@/types/types";
 import QueryResult from "../QueryResult";
-import { queryService } from "@/services/queryService";
 import { exerciseService } from "@/services/exerciseService";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
@@ -58,15 +57,6 @@ export default function ExerciseWorkspaceCard({
             setQueryError(null);
             setQueryResult(null);
 
-            // 1. run SQL (for preview output)
-            const preview = await queryService.executeQuery({
-                schema: schemaName,
-                query: queryValue,
-            });
-
-            setQueryResult(preview);
-
-            // 2. submit for validation
             const submission = await exerciseService.submitSolution(
                 exercise.exerciseId,
                 queryValue,
@@ -79,6 +69,8 @@ export default function ExerciseWorkspaceCard({
             } else {
                 setQueryError(submission.message);
             }
+
+            setQueryResult(submission.queryResult);
         } catch (err) {
             setQueryError(
                 err instanceof Error ? err.message : "Something went wrong",
@@ -197,7 +189,7 @@ export default function ExerciseWorkspaceCard({
                 </div>
             )}
 
-            {queryResult && <QueryResult result={queryResult} />}
+            {queryResult && <QueryResult result={{ type: "csv", data: queryResult }} />}
         </div>
     );
 }
