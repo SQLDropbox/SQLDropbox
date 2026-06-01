@@ -6,6 +6,10 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { FaCircleInfo, FaLightbulb, FaPlay } from "react-icons/fa6";
 import { useQueryClient } from "@tanstack/react-query";
+import CodeMirror, { keymap, Prec } from "@uiw/react-codemirror";
+import { PostgreSQL, sql } from "@codemirror/lang-sql";
+import { createTheme } from "@uiw/codemirror-themes";
+import { acceptCompletion } from "@codemirror/autocomplete";
 
 export default function ExerciseWorkspaceCard({
     exercise,
@@ -42,9 +46,9 @@ export default function ExerciseWorkspaceCard({
         }
 
         if (!queryMeetsRequirements) {
-            const list = missingRequirements ? missingRequirements
-                .map((r) => `"${r.statement}"`)
-                .join(", ") : "";
+            const list = missingRequirements
+                ? missingRequirements.map((r) => `"${r.statement}"`).join(", ")
+                : "";
             setQueryError(t("missingSyntax", { list }));
             return;
         }
@@ -85,7 +89,7 @@ export default function ExerciseWorkspaceCard({
     };
 
     return (
-        <div className="bg-paper border border-border p-6 shadow-[0px_-3px_0px_0px_var(--color-border)] space-y-4">
+        <div className="border border-border p-6 shadow-[0px_-3px_0px_0px_var(--color-border)] space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                     <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted mb-2">
@@ -147,13 +151,34 @@ export default function ExerciseWorkspaceCard({
                 </div>
             )}
 
-            <textarea
+            <CodeMirror
+                minHeight="200px"
                 value={queryValue}
-                onChange={(event) => setQueryValue(event.target.value)}
-                placeholder={t("textareaPlaceholder")}
-                rows={12}
-                spellCheck={false}
-                className="min-h-64 w-full border border-border bg-surface-2 px-5 py-4 font-mono text-sm text-ink outline-none transition focus:border-accent"
+                onChange={(val) => setQueryValue(val)}
+                extensions={[
+                    sql({ dialect: PostgreSQL }),
+                    Prec.highest(
+                        keymap.of([{ key: "Tab", run: acceptCompletion }]),
+                    ),
+                ]}
+                basicSetup={{
+                    lineNumbers: true,
+                    highlightActiveLine: true,
+                    autocompletion: true,
+                    defaultKeymap: false,
+                }}
+                theme={createTheme({
+                    theme: "light",
+                    settings: {
+                        background: "var(--color-paper)",
+                        gutterBackground: "var(--color-surface-3)",
+                        lineHighlight: "var(--color-surface-2)",
+                        gutterActiveForeground: "var(--color-ink)",
+                        caret: "var(--color-accent)",
+                    },
+                    styles: [],
+                })}
+                className="border border-border text-sm"
             />
 
             <button
