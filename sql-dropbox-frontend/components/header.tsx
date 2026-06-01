@@ -16,6 +16,8 @@ const toggleableRoutes: (string | RegExp)[] = [
     "/admin",
     /^\/[^/]+$/,
     /^\/admin\/[^/]+$/,
+    /^\/[^/]+\/[^/]+$/,
+    /^\/admin\/[^/]+\/[^/]+$/, 
 ];
 
 export default function Header() {
