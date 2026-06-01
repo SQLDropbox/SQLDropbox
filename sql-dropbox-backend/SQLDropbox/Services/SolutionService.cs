@@ -28,7 +28,7 @@ namespace SQLDropbox.Services
         {
             foreach (Requirement requirement in requirements)
             {
-                bool containsStatement = formattedQuery.Contains(requirement.Statement);
+                bool containsStatement = formattedQuery.Contains(requirement.Statement, StringComparison.CurrentCultureIgnoreCase);
 
                 if (requirement.Use && !containsStatement)
                 {
