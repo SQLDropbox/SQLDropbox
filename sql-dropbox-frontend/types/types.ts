@@ -62,6 +62,7 @@ export interface Exercise {
     queryAction: QueryAction;
     solutionQuery?: string;
     validationQuery?: string;
+    
     requirements?: Requirement[];
     solutions?: { solutionId?: number; query: string }[];
 }
@@ -80,6 +81,14 @@ export interface RequirementDTO {
     statement?: string;
     use: boolean;
     exerciseId?: number | null;
+}
+
+export interface SubmitResult {
+    correct: boolean;
+    message: string;
+    alreadySolved?: boolean;
+    expected?: string;
+    actual?: string;
 }
 
 export interface User {

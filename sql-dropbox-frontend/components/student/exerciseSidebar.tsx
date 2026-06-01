@@ -89,8 +89,6 @@ export default function ExerciseSidebar({
                 </p>
 
                 {exercises.map((exercise, index) => {
-                    completedExerciseIds.push(20);
-
                     const isActive = exercise.exerciseId == activeExerciseId;
                     const isCompleted = completedExerciseIds.includes(
                         exercise.exerciseId,
@@ -123,7 +121,7 @@ export default function ExerciseSidebar({
                             </div>
 
                             <p
-                                className={`mt-2 font-display text-sm font-bold leading-snug tracking-wide ${
+                                className={`mt-2 font-display text-sm font-bold leading-snug tracking-wide line-clamp-2 overflow-hidden text-ellipsis ${
                                     isCompleted
                                         ? "text-muted line-through opacity-70"
                                         : "text-ink"
@@ -137,8 +135,6 @@ export default function ExerciseSidebar({
                                     isActive ? "bg-ink" : "bg-transparent"
                                 }`}
                             />
-
-                            {/* subtle grain overlay hint (if you have a noise class or can add later) */}
                         </button>
                     );
                 })}
