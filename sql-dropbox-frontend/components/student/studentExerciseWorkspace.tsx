@@ -127,8 +127,8 @@ export default function StudentExerciseWorkspace({
                                 chapter?.chapterNameNL ||
                                 t("chapterFallback", { chapterId })
                             }
-                            schemaName={chapter?.schemaName || ""}
-                            schemaImage={chapter?.schemaImage || null}
+                            schemaName={chapter?.schema?.schemaName || ""}
+                            schemaImage={chapter?.schema?.schemaImage || null}
                         />
                     ) : (
                         <div className="bg-surface-2 border border-dashed border-border px-6 py-10 font-mono text-sm text-muted">

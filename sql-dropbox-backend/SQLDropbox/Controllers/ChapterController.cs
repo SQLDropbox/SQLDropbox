@@ -392,7 +392,14 @@ public class ChapterController(AppDbContext db, AuthorizationService authorizati
                                 })
                                 .ToList()
                         })
-                        .ToList()
+                        .ToList(),
+
+                    Schema = new
+                    {
+                        c.Schema.SchemaId,
+                        c.Schema.SchemaName,
+                        c.Schema.SchemaImage
+                    }
                 })
                 .FirstOrDefaultAsync();
 
