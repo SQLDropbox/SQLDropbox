@@ -115,10 +115,12 @@ export default function StudentExerciseWorkspace({
                     ) : activeExercise ? (
                         <ExercisePanel
                                 key={activeExercise.exerciseId}
-                                exercise={activeExercise}
-                                chapterName={chapter?.chapterNameEN || chapter?.chapterNameNL || t("chapterFallback", { chapterId })}
-                                schemaName={chapter?.schemaName || ""}
-                                schemaImage={chapter?.schemaImage || null} chapterId={""}                        />
+                                    exercise={activeExercise}
+                                    chapterName={chapter?.chapterNameEN || chapter?.chapterNameNL || `Chapter ${chapterId}`}
+                                    schemaName={chapter?.schemaName || ""}
+                                    schemaImage={chapter?.schemaImage || null}
+                                    chapterId={chapterId}                        
+                            />
                     ) : (
                         <div className="bg-surface-2 border border-dashed border-border px-6 py-10 font-mono text-sm text-muted">
                             {t("noExercises")}
