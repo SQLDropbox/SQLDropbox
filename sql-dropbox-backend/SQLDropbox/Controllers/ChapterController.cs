@@ -5,20 +5,25 @@ using SQLDropbox.Data;
 using SQLDropbox.DTO;
 using SQLDropbox.Enums;
 using SQLDropbox.Models;
+using SQLDropbox.Services;
 
 namespace SQLDropbox.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class ChapterController(AppDbContext db) : BaseController
+public class ChapterController(AppDbContext db, AuthorizationService authorizationService) : BaseController
 {
     private readonly AppDbContext _db = db;
+    private readonly AuthorizationService _aS = authorizationService;
     private string BaseUrl => $"{Request.Scheme}://{Request.Host}";
 
+    [Authorize(Roles = "Admin")]
     [HttpGet]
-    public ActionResult GetChapters()
+    public async Task<IActionResult> GetChapters()
     {
-        var chapters = _db.Chapters
+        try
+        {
+            var chapters = _db.Chapters
             .OrderBy(x => x.Order)
             .Select(x => new
             {
@@ -34,114 +39,178 @@ public class ChapterController(AppDbContext db) : BaseController
                 x.Course.CourseId,
                 SchemaImage = string.IsNullOrEmpty(x.Schema.SchemaImage) ? null : $"{BaseUrl}/schema-images/{x.Schema.SchemaImage}",
             }).ToList();
-        return Ok(chapters);
+            return Ok(chapters);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized(new { message = "You're not authorized to access this resource." });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex);
+        }
     }
 
+    [Authorize]
     [HttpGet("{id}")]
     public async Task<ActionResult> GetChapterByChapterId(int id)
     {
-        var chapter = await _db.Chapters.Where(x => x.ChapterId == id).Select(x => new
+        try
         {
-            x.ChapterId,
-            x.ChapterNameNL,
-            x.ChapterNameEN,
-            x.ChapterDescriptionNL,
-            x.ChapterDescriptionEN,
-            x.Schema.SchemaId,
-            x.Schema.SchemaName,
-            x.AmountOfExercises,
-            x.CreatedAt,
-            SchemaImage = string.IsNullOrEmpty(x.Schema.SchemaImage) ? null : $"{BaseUrl}/schema-images/{x.Schema.SchemaImage}",
+            var (userId, role) = IsAuthenticated();
+            await _aS.UserHasAccessToChapter(userId, role, id);
 
-        }).FirstOrDefaultAsync();
-        if (chapter == null)
-        {
-            return NotFound(new { message = $"Chapter with ID {id} not found." });
+            var chapter = await _db.Chapters.Where(x => x.ChapterId == id).Select(x => new
+            {
+                x.ChapterId,
+                x.ChapterNameNL,
+                x.ChapterNameEN,
+                x.ChapterDescriptionNL,
+                x.ChapterDescriptionEN,
+                x.Schema.SchemaId,
+                x.Schema.SchemaName,
+                x.AmountOfExercises,
+                x.CreatedAt,
+                SchemaImage = string.IsNullOrEmpty(x.Schema.SchemaImage) ? null : $"{BaseUrl}/schema-images/{x.Schema.SchemaImage}",
+
+            }).FirstOrDefaultAsync();
+            if (chapter == null)
+            {
+                return NotFound(new { message = $"Chapter with ID {id} not found." });
+            }
+
+            return Ok(chapter);
         }
-
-        return Ok(chapter);
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized(new { message = "You're not authorized to access this resource." });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex);
+        }
     }
 
+    [Authorize(Roles = "Admin,Lecturer")]
     [HttpPost("course/{courseId}")]
     public async Task<ActionResult> CreateChapter(string courseId, [FromBody] ChapterDTO dto)
     {
-        var course = await _db.Courses.FirstOrDefaultAsync(x => x.CourseId == courseId);
-
-        if (course == null)
-            return BadRequest("Course does not exist");
-
-        var schema = await _db.Schemas.FirstOrDefaultAsync(x => x.SchemaId == dto.SchemaId);
-
-        if (schema == null)
-            return BadRequest("Schema does not exist");
-
-        var maxOrder = await _db.Chapters.Where(c => c.Course.CourseId == courseId).MaxAsync(c => c.Order);
-
-        int nextOrder = (maxOrder ?? -1) + 1;
-
-        var newChapter = new Chapter
+        try
         {
-            ChapterNameNL = dto.ChapterNameNL,
-            ChapterNameEN = dto.ChapterNameEN,
-            ChapterDescriptionNL = dto.ChapterDescriptionNL,
-            ChapterDescriptionEN = dto.ChapterDescriptionEN,
-            AmountOfExercises = dto.AmountOfExercises,
-            Order = nextOrder,
-            Course = course,
-            Schema = schema,
-            CreatedAt = DateTime.UtcNow
-        };
+            var (userId, role) = IsAuthenticated();
+            await _aS.UserHasAccessToCourse(userId, role, courseId);
 
-        _db.Chapters.Add(newChapter);
-        await _db.SaveChangesAsync();
+            Course? course = await _db.Courses.FirstOrDefaultAsync(x => x.CourseId == courseId);
 
-        return Ok(newChapter);
+            if (course == null)
+                return NotFound(new { message = "Course not found." });
+
+            Schema? schema = await _db.Schemas.FirstOrDefaultAsync(x => x.SchemaId == dto.SchemaId);
+
+            if (schema == null)
+                return BadRequest(new { message = "Schema not found." });
+
+            var maxOrder = await _db.Chapters.Where(c => c.Course.CourseId == courseId).MaxAsync(c => c.Order);
+
+            int nextOrder = (maxOrder ?? -1) + 1;
+
+            var newChapter = new Chapter
+            {
+                ChapterNameNL = dto.ChapterNameNL,
+                ChapterNameEN = dto.ChapterNameEN,
+                ChapterDescriptionNL = dto.ChapterDescriptionNL,
+                ChapterDescriptionEN = dto.ChapterDescriptionEN,
+                AmountOfExercises = dto.AmountOfExercises,
+                Order = nextOrder,
+                Course = course,
+                Schema = schema,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _db.Chapters.Add(newChapter);
+            await _db.SaveChangesAsync();
+
+            return Ok(newChapter);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized(new { message = "You're not authorized to access this resource." });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex);
+        }
     }
 
+    [Authorize(Roles = "Admin,Lecturer")]
     [HttpPut("{id}")]
     public async Task<ActionResult> UpdateChapter(int id, [FromBody] UpdateChapterDTO dto)
     {
-        var chapter = await _db.Chapters.FirstOrDefaultAsync(x => x.ChapterId == id);
-
-        if (chapter == null)
+        try
         {
-            return NotFound(new { message = $"Chapter with ID {id} not found." });
+            var (userId, role) = IsAuthenticated();
+            await _aS.UserHasAccessToChapter(userId, role, id);
+
+            Chapter? chapter = await _db.Chapters.Include(c => c.Course).FirstOrDefaultAsync(x => x.ChapterId == id);
+            if (chapter == null)
+                return NotFound(new { message = $"Chapter not found." });
+
+            if (dto.ChapterNameNL != null) chapter.ChapterNameNL = dto.ChapterNameNL;
+            if (dto.ChapterNameEN != null) chapter.ChapterNameEN = dto.ChapterNameEN;
+            if (dto.ChapterDescriptionNL != null) chapter.ChapterDescriptionNL = dto.ChapterDescriptionNL;
+            if (dto.ChapterDescriptionEN != null) chapter.ChapterDescriptionEN = dto.ChapterDescriptionEN;
+            if (dto.AmountOfExercises.HasValue) chapter.AmountOfExercises = dto.AmountOfExercises.Value;
+
+            if (dto.SchemaId.HasValue)
+            {
+                Schema? schema = await _db.Schemas.FirstOrDefaultAsync(x => x.SchemaId == dto.SchemaId.Value);
+
+                if (schema == null)
+                    return NotFound(new { message = "Schema not found." });
+
+                chapter.Schema = schema;
+            }
+
+            chapter.UpdatedAt = DateTime.UtcNow;
+            await _db.SaveChangesAsync();
+            return Ok(chapter);
         }
-
-        if (dto.ChapterNameNL != null) chapter.ChapterNameNL = dto.ChapterNameNL;
-        if (dto.ChapterNameEN != null) chapter.ChapterNameEN = dto.ChapterNameEN;
-        if (dto.ChapterDescriptionNL != null) chapter.ChapterDescriptionNL = dto.ChapterDescriptionNL;
-        if (dto.ChapterDescriptionEN != null) chapter.ChapterDescriptionEN = dto.ChapterDescriptionEN;
-        if (dto.AmountOfExercises.HasValue) chapter.AmountOfExercises = dto.AmountOfExercises.Value;
-
-        if (dto.SchemaId.HasValue)
+        catch (UnauthorizedAccessException)
         {
-            var schema = await _db.Schemas.FirstOrDefaultAsync(x => x.SchemaId == dto.SchemaId.Value);
-
-            if (schema == null)
-                return BadRequest("Schema does not exist");
-
-            chapter.Schema = schema;
+            return Unauthorized(new { message = "You're not authorized to access this resource." });
         }
-
-        chapter.UpdatedAt = DateTime.UtcNow;
-        await _db.SaveChangesAsync();
-        return Ok(chapter);
+        catch (Exception ex)
+        {
+            return BadRequest(ex);
+        }
     }
 
+    [Authorize(Roles = "Admin,Lecturer")]
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteChapter(int id)
     {
-        var chapter = await _db.Chapters.FirstOrDefaultAsync(x => x.ChapterId == id);
-
-        if (chapter == null)
+        try
         {
-            return NotFound(new { message = $"Chapter with ID {id} not found." });
-        }
+            var (userId, role) = IsAuthenticated();
+            await _aS.UserHasAccessToChapter(userId, role, id);
 
-        chapter.DeletedAt = DateTime.UtcNow;
-        await _db.SaveChangesAsync();
-        return Ok(new { message = $"Chapter with ID {id} successfully deleted." });
+            Chapter? chapter = await _db.Chapters.FirstOrDefaultAsync(x => x.ChapterId == id);
+
+            if (chapter == null)
+                return NotFound(new { message = "Chapter not found." });
+
+            chapter.DeletedAt = DateTime.UtcNow;
+            await _db.SaveChangesAsync();
+            return Ok(new { message = $"Chapter with ID {id} successfully deleted." });
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized(new { message = "You're not authorized to access this resource." });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex);
+        }
     }
 
     [Authorize]
@@ -150,18 +219,11 @@ public class ChapterController(AppDbContext db) : BaseController
     {
         try
         {
-            var userId = GetUserId();
-            var role = GetUserRole();
-            if (userId == null || role == null)
-                return Unauthorized();
+            var (userId, role) = IsAuthenticated();
 
             if (role == Role.Student)
             {
-                // TODO -> needed? Check if the student has access to the course this chapter is part of
-                //bool studentHasAccess = await _db.Chapters.AnyAsync(c => c.ChapterId == chapterId && c.Course.Students.Any(s => s.UserId == userId));
-
-                //if (!studentHasAccess)
-                //    return Unauthorized("You're not registerd as a student for this course.");
+                await _aS.UserHasAccessToChapter(userId, role, chapterId);
 
                 User? student = await _db.Users
                     .Where(u => u.UserId == userId)
@@ -228,14 +290,13 @@ public class ChapterController(AppDbContext db) : BaseController
                 return Ok(exercises);
             }
 
-            // TODO -> needed? Check if the lecturer has access to the course this chapter is part of
-            //if (role == Role.Lecturer)
-            //{
-            //    bool lecturerHasAccess = await _db.Chapters.AnyAsync(c => c.ChapterId == chapterId && c.Course.Lecturers.Any(l => l.UserId == userId));
+            if (role == Role.Lecturer)
+            {
+                bool lecturerHasAccess = await _db.Chapters.AnyAsync(c => c.ChapterId == chapterId && c.Course.Lecturers.Any(l => l.UserId == userId));
 
-            //    if (!lecturerHasAccess)
-            //        return Unauthorized("You're not registerd as a lecturer for this course.");
-            //}
+                if (!lecturerHasAccess)
+                    return Unauthorized(new { message = "You're not registerd as a lecturer for this course." });
+            }
 
             Chapter? chapter = await _db.Chapters
                 .Where(c => c.ChapterId == chapterId)
@@ -246,9 +307,13 @@ public class ChapterController(AppDbContext db) : BaseController
                 .FirstOrDefaultAsync();
 
             if (chapter == null)
-                return BadRequest($"Chapter with ID {chapterId} not found.");
+                return NotFound(new { message = "Chapter not found." });
 
             return Ok(chapter.Exercises);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized(new { message = "You're not authorized to access this resource." });
         }
         catch (Exception ex)
         {
@@ -256,31 +321,44 @@ public class ChapterController(AppDbContext db) : BaseController
         }
     }
 
+    [Authorize(Roles = "Admin,Lecturer")]
     [HttpPost("course/{courseId}/reorder")]
     public async Task<ActionResult> ReorderChapter(string courseId, [FromBody] ReorderChaptersDTO dto)
     {
-        var chapters = await _db.Chapters.Where(c => c.Course.CourseId == courseId).ToListAsync();
-
-        if (chapters.Count == 0)
+        try
         {
-            return NotFound(new { message = $"Chapter with ID {courseId} not found." });
-        }
+            var (userId, role) = IsAuthenticated();
+            await _aS.UserHasAccessToCourse(userId, role, courseId);
 
-        for (int i = 0; i < dto.OrderedIds.Count; i++)
-        {
-            if (int.TryParse(dto.OrderedIds[i], out int chapterId))
+            List<Chapter> chapters = await _db.Chapters.Where(c => c.Course.CourseId == courseId).ToListAsync();
+
+            if (chapters.Count == 0)
+                return NotFound(new { message = "Chapter not found." });
+
+            for (int i = 0; i < dto.OrderedIds.Count; i++)
             {
-                var chapterToUpdate = chapters.FirstOrDefault(c => c.ChapterId == chapterId);
-
-                if (chapterToUpdate != null)
+                if (int.TryParse(dto.OrderedIds[i], out int chapterId))
                 {
-                    chapterToUpdate.Order = i;
-                    chapterToUpdate.UpdatedAt = DateTime.UtcNow;
+                    var chapterToUpdate = chapters.FirstOrDefault(c => c.ChapterId == chapterId);
+
+                    if (chapterToUpdate != null)
+                    {
+                        chapterToUpdate.Order = i;
+                        chapterToUpdate.UpdatedAt = DateTime.UtcNow;
+                    }
                 }
             }
-        }
-        await _db.SaveChangesAsync();
+            await _db.SaveChangesAsync();
 
-        return Ok(chapters);
+            return Ok(chapters);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized(new { message = "You're not authorized to access this resource." });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex);
+        }
     }
 }
