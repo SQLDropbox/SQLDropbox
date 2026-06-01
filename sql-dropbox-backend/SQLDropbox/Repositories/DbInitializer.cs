@@ -345,8 +345,9 @@ namespace SQLDropbox.Repositories
                 FirstName = "Lander",
                 LastName = "Dirix",
                 Email = "r0933070@ucll.be",
-                Password = null,
+                Password = ps.HashPassword("r0933070"),
                 Role = Role.Student,
+                StudentCourses = [course1],
                 CreatedAt = DateTime.UtcNow,
             };
 
@@ -791,8 +792,9 @@ namespace SQLDropbox.Repositories
                 FirstName = "Lander",
                 LastName = "Dirix",
                 Email = "r0933070@ucll.be",
-                Password = null,
+                Password = ps.HashPassword("Kf55L5=0tr@Qd~dk"),
                 Role = Role.Student,
+                StudentCourses = [course1],
                 CreatedAt = DateTime.UtcNow,
             };
 
