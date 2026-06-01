@@ -1,16 +1,15 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
-import { FaArrowLeft, FaBookOpen, FaCircleInfo, FaLightbulb, FaPlay } from "react-icons/fa6";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Chapter, Course, Exercise } from "@/types/types";
+import { FaCircleInfo, FaLightbulb, FaPlay } from "react-icons/fa6";
+import { useQueryClient } from "@tanstack/react-query";
+import { Chapter, Exercise } from "@/types/types";
 import { useTranslations } from "next-intl";
-import { courseService } from "@/services/courseService";
 import { queryService } from "@/services/queryService";
 import QueryResult from "@/components/student/QueryResult";
 import ExerciseSidebar from "@/components/student/exerciseSidebar";
 import { exerciseService } from "@/services/exerciseService";
+import ExercisePanel from "./exercisePanel";
 
 interface StudentExerciseWorkspaceProps {
     courseId: string;
@@ -36,12 +35,6 @@ export default function StudentExerciseWorkspace({
         null,
     );
 
-    const { data: course } = useQuery<Course>({
-        queryKey: ["course", courseId],
-        queryFn: () => courseService.getCourseByCourseId(courseId),
-        enabled: !!courseId,
-    });
-
     useEffect(() => {
         setActiveExerciseId((currentActiveId) => {
             if (exercises.length === 0) return null;
@@ -58,14 +51,6 @@ export default function StudentExerciseWorkspace({
         exercises.find(
             (exercise) => exercise.exerciseId === activeExerciseId,
         ) || exercises[0];
-
-    const totalExercises = exercises.length;
-    const completedCount = exercises.filter((exercise) =>
-        completedExerciseIds.includes(exercise.exerciseId),
-    ).length;
-
-    const progressPercentage =
-        totalExercises > 0 ? (completedCount / totalExercises) * 100 : 0;
 
     if (error) {
         return (
@@ -91,9 +76,7 @@ export default function StudentExerciseWorkspace({
                 completedExerciseIds={completedExerciseIds}
             />
 
-            {/* Main content */}
-            <main className="flex-1 flex flex-col bg-paper text-ink overflow-y-auto">
-                {/* Chapter heading */}
+            <main className="flex-1 flex flex-col bg-surface-2 overflow-y-auto">
                 <div className="border-b-2 border-border px-8 py-8 bg-surface-2">
                     <h1 className="font-display text-4xl font-bold mb-2">
                         {chapter?.chapterNameEN ||
@@ -106,7 +89,7 @@ export default function StudentExerciseWorkspace({
                 </div>
 
                 {/* Exercise panel */}
-                <div className="flex-1 px-6 py-8 md:px-10">
+                <div className="flex-1 px-6 py-8 md:px-10 mx-10">
                     {isLoading ? (
                         <div className="space-y-4 animate-pulse">
                             <div className="h-6 w-48 bg-surface-2 border border-border" />
@@ -115,13 +98,17 @@ export default function StudentExerciseWorkspace({
                         </div>
                     ) : activeExercise ? (
                         <ExercisePanel
-                                key={activeExercise.exerciseId}
-                                    exercise={activeExercise}
-                                    chapterName={chapter?.chapterNameEN || chapter?.chapterNameNL || `Chapter ${chapterId}`}
-                                    schemaName={chapter?.schemaName || ""}
-                                    schemaImage={chapter?.schemaImage || null}
-                                    chapterId={chapterId}                        
-                            />
+                            key={activeExercise.exerciseId}
+                            exercise={activeExercise}
+                            chapterName={
+                                chapter?.chapterNameEN ||
+                                chapter?.chapterNameNL ||
+                                `Chapter ${chapterId}`
+                            }
+                            schemaName={chapter?.schemaName || ""}
+                            schemaImage={chapter?.schemaImage || null}
+                            chapterId={chapterId}
+                        />
                     ) : (
                         <div className="bg-surface-2 border border-dashed border-border px-6 py-10 font-mono text-sm text-muted">
                             {t("noExercises")}
@@ -139,383 +126,6 @@ export default function StudentExerciseWorkspace({
                     </span>
                 </div>
             </main>
-        </div>
-    );
-}
-
-type PanelTab = "question" | "schema" | "output";
-
-const PANEL_TABS: { id: PanelTab; label: string }[] = [
-    { id: "question", label: "Question" },
-    { id: "schema", label: "Database Schema" },
-    { id: "output", label: "Expected Output" },
-];
-
-function ExercisePanel({
-    exercise,
-    chapterName,
-    schemaName,
-    schemaImage,
-    chapterId,
-}: {
-    exercise: Exercise;
-    chapterName: string;
-    schemaName: string;
-    schemaImage?: string | null;
-    chapterId: string;
-}) {
-    const t = useTranslations("ChapterExercisePage");
-    const [activeTab, setActiveTab] = useState<PanelTab>("question");
-    const [showHint, setShowHint] = useState(false);
-    const [queryValue, setQueryValue] = useState("");
-    const [queryResult, setQueryResult] = useState<any>(null);
-    const imageContainerRef = useRef<HTMLDivElement | null>(null);
-    const [scale, setScale] = useState(1);
-    const [isHoveringImage, setIsHoveringImage] = useState(false);
-    const [position, setPosition] = useState({ x: 0, y: 0 });
-    const [isDragging, setIsDragging] = useState(false);
-    const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-    const [queryError, setQueryError] = useState<string | null>(null);
-    const [isExecuting, setIsExecuting] = useState(false);
-    const queryClient = useQueryClient();
-    const normalizedQuery = queryValue.toLowerCase();
-
-    const requirements = (exercise.requirements ?? []).filter(
-        (r) => r.use === true,
-    );
-
-    const missingRequirements = requirements.filter(
-        (requirement) =>
-            !normalizedQuery.includes(requirement.statement.toLowerCase()),
-    );
-
-    const queryMeetsRequirements = missingRequirements.length === 0;
-
-    useEffect(() => {
-        const el = imageContainerRef.current;
-        if (!el) return;
-
-        const handleWheelEvent = (e: WheelEvent) => {
-            if (!isHoveringImage) return;
-            e.preventDefault();
-            const delta = -e.deltaY * 0.0015;
-            setScale((prev) => Math.min(Math.max(prev + delta, 0.5), 4));
-        };
-
-        el.addEventListener("wheel", handleWheelEvent, { passive: false });
-        return () => el.removeEventListener("wheel", handleWheelEvent);
-    }, [isHoveringImage]);
-
-    const handleRunQuery = async () => {
-        if (!queryValue.trim()) return;
-
-        if (!schemaName) {
-            setQueryError(t("noSchemaLinkedError"));
-            return;
-        }
-
-        if (!queryMeetsRequirements) {
-            const list = missingRequirements
-                .map((r) => `"${r.statement}"`)
-                .join(", ");
-            setQueryError(t("missingSyntax", { list }));
-            return;
-        }
-
-        try {
-            setIsExecuting(true);
-            setQueryError(null);
-            setQueryResult(null);
-
-            // 1. run SQL (for preview output)
-            const preview = await queryService.executeQuery({
-                schema: schemaName,
-                query: queryValue,
-            });
-
-            setQueryResult(preview);
-
-            // 2. submit for validation (IMPORTANT PART)
-            const submission = await exerciseService.submitSolution(exercise.exerciseId, queryValue);
-
-            if (submission.correct) {
-                queryClient.invalidateQueries({
-                    queryKey: ["chapter", chapterId],
-                });
-            } else {
-                setQueryError(submission.message);
-            }
-        } catch (err) {
-            setQueryError(err instanceof Error ? err.message : "Something went wrong");
-        } finally {
-            setIsExecuting(false);
-        }
-    };
-
-    const zoomIn = () => setScale((prev) => Math.min(prev + 0.2, 4));
-    const zoomOut = () => setScale((prev) => Math.max(prev - 0.2, 0.5));
-    const resetZoom = () => {
-        setScale(1);
-        setPosition({ x: 0, y: 0 });
-    };
-
-    const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-        setIsDragging(true);
-        setDragStart({
-            x: e.clientX - position.x,
-            y: e.clientY - position.y,
-        });
-    };
-
-    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-        if (!isDragging) return;
-        setPosition({
-            x: e.clientX - dragStart.x,
-            y: e.clientY - dragStart.y,
-        });
-    };
-
-    const handleMouseUp = () => setIsDragging(false);
-
-    return (
-        <div className="space-y-6">
-            <div className="flex flex-wrap gap-2 border-b border-border pb-3">
-                {PANEL_TABS.map(({ id, label }) => (
-                    <button
-                        key={id}
-                        type="button"
-                        onClick={() => setActiveTab(id)}
-                        className={`px-4 py-2 border font-mono text-[10px] uppercase tracking-[0.2em] transition-colors ${
-                            activeTab === id
-                                ? "bg-paper border-border text-ink"
-                                : "bg-surface-2 border-transparent text-muted hover:border-border hover:text-ink"
-                        }`}
-                    >
-                        {t(`panel.${id}`)}
-                    </button>
-                ))}
-            </div>
-
-            <div className="bg-paper border border-border shadow-[0px_-3px_0px_0px_var(--color-border)] p-6">
-                {activeTab === "question" && (
-                    <div className="space-y-4">
-                        <div>
-                            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted mb-2">
-                                {t("exercisePrompt")}
-                            </p>
-                            <h3 className="font-display text-2xl font-bold text-ink">
-                                {exercise.questionNL ||
-                                    t("exerciseQuestionFallback")}
-                            </h3>
-                        </div>
-
-                        <p className="font-mono text-sm leading-7 text-muted max-w-3xl">
-                            {exercise.questionEN || exercise.questionNL}
-                        </p>
-
-                        <div className="border border-border bg-surface-2 px-4 py-4">
-                            <div className="flex items-start gap-3">
-                                <FaCircleInfo className="mt-0.5 text-accent" />
-                                <p className="font-mono text-sm text-muted">
-                                    {t("hintInstructions")}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {activeTab === "schema" && (
-                    <div className="space-y-4">
-                        <h3 className="font-display text-2xl font-bold text-ink">
-                            {t("panel.schema")}
-                        </h3>
-
-                        <div className="border border-border bg-surface-2 p-4">
-                            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted">
-                                {t("activeSchema")}
-                            </p>
-
-                            <code className="mt-3 block border border-border bg-paper px-3 py-2 font-mono text-sm text-ink">
-                                {schemaName || t("noSchemaLinked")}
-                            </code>
-
-                            {schemaImage ? (
-                                <div className="mt-4">
-                                    <div className="mb-3 flex flex-wrap items-center gap-2">
-                                        <button
-                                            onClick={zoomIn}
-                                            className="border border-border px-3 py-1 font-mono text-xs uppercase tracking-widest text-muted hover:text-ink hover:border-ink"
-                                        >
-                                            +
-                                        </button>
-                                        <button
-                                            onClick={zoomOut}
-                                            className="border border-border px-3 py-1 font-mono text-xs uppercase tracking-widest text-muted hover:text-ink hover:border-ink"
-                                        >
-                                            -
-                                        </button>
-                                        <button
-                                            onClick={resetZoom}
-                                            className="border border-border px-3 py-1 font-mono text-xs uppercase tracking-widest text-muted hover:text-ink hover:border-ink"
-                                        >
-                                            {t("zoomReset")}
-                                        </button>
-                                        <span className="ml-2 font-mono text-xs uppercase tracking-widest text-muted">
-                                            {Math.round(scale * 100)}%
-                                        </span>
-                                    </div>
-
-                                    <div
-                                        ref={imageContainerRef}
-                                        className="relative h-[600px] overflow-hidden border border-border bg-paper touch-none"
-                                        style={{
-                                            overscrollBehavior: "contain",
-                                        }}
-                                        onMouseEnter={() =>
-                                            setIsHoveringImage(true)
-                                        }
-                                        onMouseLeave={() =>
-                                            setIsHoveringImage(false)
-                                        }
-                                        onMouseMove={handleMouseMove}
-                                        onMouseUp={handleMouseUp}
-                                    >
-                                        <div
-                                            onMouseDown={handleMouseDown}
-                                            className="flex h-full w-full cursor-grab items-center justify-center active:cursor-grabbing"
-                                        >
-                                            <img
-                                                src={schemaImage}
-                                                alt={`Database schema for ${schemaName}`}
-                                                draggable={false}
-                                                className="select-none object-contain transition-transform duration-75"
-                                                style={{
-                                                    transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
-                                                    maxWidth: "none",
-                                                }}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            ) : (
-                                <p className="mt-4 font-mono text-sm text-muted">
-                                    {t("noSchemaImage")}
-                                </p>
-                            )}
-                        </div>
-                    </div>
-                )}
-
-                {activeTab === "output" && (
-                    <div className="space-y-3">
-                        <h3 className="font-display text-2xl font-bold text-ink">
-                            {t("panel.output")}
-                        </h3>
-
-                        <div className="min-h-40 border border-dashed border-border bg-surface-2 p-4">
-                            {exercise.queryOutput ? (
-                                <pre className="whitespace-pre-wrap font-mono text-sm leading-6 text-ink">
-                                    {exercise.queryOutput}
-                                </pre>
-                            ) : (
-                                <p className="font-mono text-sm text-muted">
-                                    {t("noExpectedOutput")}
-                                </p>
-                            )}
-                        </div>
-                    </div>
-                )}
-            </div>
-
-            <div className="bg-paper border border-border p-6 shadow-[0px_-3px_0px_0px_var(--color-border)] space-y-4">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted mb-2">
-                            {t("workspaceLabel")}
-                        </p>
-                        <h3 className="font-display text-2xl font-bold text-ink">
-                            {t("yourSqlQuery")}
-                        </h3>
-                    </div>
-
-                    {exercise.hintNL && (
-                        <button
-                            type="button"
-                            onClick={() => setShowHint((current) => !current)}
-                            className="inline-flex items-center gap-2 border-2 border-accent text-accent px-4 py-2 font-mono text-xs uppercase tracking-widest hover:bg-accent hover:text-paper transition-colors"
-                        >
-                            <FaLightbulb />
-                            {showHint ? t("hideHint") : t("showHint")}
-                        </button>
-                    )}
-                </div>
-
-                {showHint && exercise.hintNL && (
-                    <div className="border border-border bg-warning px-4 py-3 font-mono text-sm text-muted">
-                        {exercise.hintNL}
-                    </div>
-                )}
-
-                {requirements.length > 0 && (
-                    <div className="border border-border bg-surface-2 px-4 py-4">
-                        <div className="flex items-center gap-2 mb-3">
-                            <FaCircleInfo className="text-accent text-sm" />
-                            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted">
-                                {t("requiredSyntax")}
-                            </p>
-                        </div>
-
-                        <div className="flex flex-wrap gap-2">
-                            {requirements.map((requirement) => {
-                                const isSatisfied = normalizedQuery.includes(
-                                    requirement.statement.toLowerCase(),
-                                );
-
-                                return (
-                                    <div
-                                        key={requirement.requirementId}
-                                        className={`border px-3 py-2 font-mono text-xs uppercase tracking-widest transition-colors ${
-                                            isSatisfied
-                                                ? "border-accent bg-accent text-paper"
-                                                : "border-border bg-paper text-muted"
-                                        }`}
-                                    >
-                                        {isSatisfied ? "✓ " : ""}
-                                        {requirement.statement}
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-                )}
-
-                <textarea
-                    value={queryValue}
-                    onChange={(event) => setQueryValue(event.target.value)}
-                    placeholder={t("textareaPlaceholder")}
-                    rows={12}
-                    spellCheck={false}
-                    className="min-h-64 w-full border border-border bg-surface-2 px-5 py-4 font-mono text-sm text-ink outline-none transition focus:border-accent"
-                />
-
-                <button
-                    type="button"
-                    onClick={handleRunQuery}
-                    disabled={isExecuting || !queryMeetsRequirements}
-                    className="inline-flex items-center gap-2 border-2 border-accent text-accent px-6 py-3 font-mono text-xs uppercase tracking-widest hover:bg-accent hover:text-paper transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                    <FaPlay />
-                    {isExecuting ? t("running") : t("runQuery")}
-                </button>
-
-                {queryError && (
-                    <div className="border border-error bg-paper px-4 py-3 font-mono text-sm text-error">
-                        {queryError}
-                    </div>
-                )}
-
-                {queryResult && <QueryResult result={queryResult} />}
-            </div>
         </div>
     );
 }

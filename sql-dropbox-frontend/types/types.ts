@@ -58,6 +58,7 @@ export interface Exercise {
     queryAction: QueryAction;
     solutionQuery?: string;
     validationQuery?: string;
+    
     requirements?: Requirement[];
     solutions?: { solutionId?: number; query: string }[];
 }
