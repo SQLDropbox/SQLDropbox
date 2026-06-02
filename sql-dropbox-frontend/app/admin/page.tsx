@@ -11,6 +11,7 @@ import CourseCard from "@/components/admin/course/courseCard";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslations } from "next-intl";
 import AddLecturerDialog from "@/components/admin/lecturer/addLecturerDialog";
+import AddSchemaDialog from "@/components/admin/schema/addSchemaDialog";
 
 export default function Page() {
     const { isAdmin } = useAuth();
@@ -18,7 +19,8 @@ export default function Page() {
 
     const [editDialogOpen, setEditDialogOpen] = useState(false);
     const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
-        const [addLecturerDialogOpen, setAddLecturerDialogOpen] = useState(false);
+    const [addLecturerDialogOpen, setAddLecturerDialogOpen] = useState(false);
+    const [addSchemaDialogOpen, setAddSchemaDialogOpen] = useState(false);
 
     const { data, isLoading, error, refetch } = useQuery<Course[]>({
         queryKey: ["courses"],
@@ -74,6 +76,22 @@ export default function Page() {
                                 <FaPlus />
                                 {t("newCourse")}
                             </button>
+
+                            {/* NEW SCHEMA */}
+                            <button
+                                onClick={() => setAddSchemaDialogOpen(true)}
+                                className="
+                                    flex items-center gap-2
+                                    border-2 border-accent text-accent
+                                    px-4 py-2
+                                    font-mono text-xs uppercase tracking-widest
+                                    hover:bg-accent hover:text-paper
+                                    transition-colors
+                                "
+                            >
+                                <FaPlus />
+                                NEW SCHEMA
+                            </button>
                         </div>
                     )}
                 </div>
@@ -127,6 +145,10 @@ export default function Page() {
              <AddLecturerDialog
                 open={addLecturerDialogOpen}
                 onClose={() => setAddLecturerDialogOpen(false)}
+            />
+            <AddSchemaDialog
+                open={addSchemaDialogOpen}
+                onClose={() => setAddSchemaDialogOpen(false)}
             />
         </div>
     );
