@@ -147,7 +147,7 @@ export default function ChapterCard({
                         onClick={(e) => e.stopPropagation()}
                     >
                         <HiOutlineClipboardList className="w-3 h-3" />
-                        Questions
+                        Exercises
                     </Link>
 
                     {/* Edit button */}
