@@ -112,10 +112,8 @@ export default function EditChapterDialog({
                 chapterDescriptionNL: form.chapterDescriptionNL ?? "",
                 chapterDescriptionEN: form.chapterDescriptionEN ?? "",
                 amountOfExercises: form.amountOfExercises ?? 0,
-                schema: {
-                    schemaId: form.schema?.schemaId ?? null,
-                    schemaName: form.schema?.schemaName ?? "",
-                },
+                schemaId: form.schema?.schemaId ?? null,
+                schemaName: form.schema?.schemaName ?? "",
             };
 
             if (isEdit && chapter) {
@@ -271,8 +269,10 @@ export default function EditChapterDialog({
                                 if (value === "") {
                                     setForm((prev) => ({
                                         ...prev,
-                                        schemaId: null,
-                                        schemaName: "",
+                                        schema: {
+                                            schemaId: null,
+                                            schemaName: "",
+                                        },
                                     }));
                                     return;
                                 }
@@ -284,9 +284,11 @@ export default function EditChapterDialog({
 
                                 setForm((prev) => ({
                                     ...prev,
-                                    schemaId: selectedId,
-                                    schemaName:
-                                        selectedSchema?.schemaName ?? "",
+                                    schema: {
+                                        schemaId: selectedId,
+                                        schemaName:
+                                            selectedSchema?.schemaName ?? "",
+                                    },
                                 }));
                             }}
                             className="w-full bg-transparent border-b border-border py-1 text-sm outline-none focus:border-accent"

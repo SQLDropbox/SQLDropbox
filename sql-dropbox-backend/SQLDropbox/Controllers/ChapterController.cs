@@ -67,11 +67,15 @@ public class ChapterController(AppDbContext db, AuthorizationService authorizati
                 x.ChapterNameEN,
                 x.ChapterDescriptionNL,
                 x.ChapterDescriptionEN,
-                x.Schema.SchemaId,
-                x.Schema.SchemaName,
                 x.AmountOfExercises,
                 x.CreatedAt,
-                SchemaImage = string.IsNullOrEmpty(x.Schema.SchemaImage) ? null : $"{BaseUrl}/schema-images/{x.Schema.SchemaImage}",
+
+                Schema = new
+                {
+                    x.Schema.SchemaId,
+                    x.Schema.SchemaName,
+                    SchemaImage = string.IsNullOrEmpty(x.Schema.SchemaImage) ? null : $"{BaseUrl}/schema-images/{x.Schema.SchemaImage}",
+                }
 
             }).FirstOrDefaultAsync();
             if (chapter == null)

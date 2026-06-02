@@ -40,7 +40,9 @@ export interface Chapter {
     amountOfExercises?: number;
     order?: number | null;
     dbSchema?: string;
-    schema?: Schema
+    schema?: Schema;
+    schemaId?: number | null;
+    schemaName?: string;
     completedAmount?: number;
 
     exercises?: Exercise[];
@@ -64,7 +66,7 @@ export interface Exercise {
     queryAction: QueryAction;
     solutionQuery?: string;
     validationQuery?: string;
-    
+
     requirements?: Requirement[];
     solutions?: { solutionId?: number; query: string }[];
     userExercises?: UserExercise[];
