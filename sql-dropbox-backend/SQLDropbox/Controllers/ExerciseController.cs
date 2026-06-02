@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SQLDropbox.Data;
@@ -11,35 +10,26 @@ namespace SQLDropbox.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class ExerciseController(AppDbContext db, AuthorizationService authorizationService, SolutionService solutionService, SchemaService schemaService) : BaseController
+public class ExerciseController(AppDbContext db, SolutionService solutionService, SchemaService schemaService) : BaseController
 {
     private readonly AppDbContext _db = db;
-    private readonly AuthorizationService _aS = authorizationService;
     private readonly SolutionService _soS = solutionService;
     private readonly SchemaService _scS = schemaService;
 
-
-    [Authorize(Roles = "Admin")]
     [HttpGet]
     public async Task<IActionResult> GetAllExercises()
     {
-        List<Exercise> exercises = await _db.Exercises
+        var exercises = await _db.Exercises
             .Include(e => e.Solutions.OrderBy(s => s.SolutionId).FirstOrDefault())
             .ToListAsync();
-
         return Ok(exercises);
     }
 
-
-    [Authorize(Roles = "Admin,Lecturer")]
     [HttpPost]
     public async Task<IActionResult> CreateExercise([FromBody] ExerciseDTO dto)
     {
         try
         {
-            var (userId, role) = IsAuthenticated();
-            await _aS.UserHasAccessToChapter(userId, role, dto.ChapterId);
-
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
@@ -53,7 +43,7 @@ public class ExerciseController(AppDbContext db, AuthorizationService authorizat
                 .FirstOrDefaultAsync(c => c.ChapterId == dto.ChapterId);
 
             if (chapter == null)
-                return NotFound(new { message = "Chapter not found." });
+                return BadRequest(new { message = $"Chapter with ID {dto.ChapterId} could not be found." });
 
             string formattedQuery = _soS.FormatQuery(dto.SolutionQuery);
             uint queryHash = await _soS.HashSolution(formattedQuery);
@@ -61,7 +51,7 @@ public class ExerciseController(AppDbContext db, AuthorizationService authorizat
             //If this returns an error, that error should be shown
             string queryOutput = await _scS.ExecuteSelectOnSchemaAsync(chapter.Schema.SchemaName, formattedQuery);
 
-            Exercise newExercise = new()
+            var newExercise = new Exercise
             {
                 QuestionNL = dto.QuestionNL,
                 QuestionEN = dto.QuestionEN,
@@ -87,82 +77,46 @@ public class ExerciseController(AppDbContext db, AuthorizationService authorizat
 
             return CreatedAtAction(nameof(CreateExercise), new { id = newExercise.ExerciseId }, newExercise);
         }
-        catch (UnauthorizedAccessException)
-        {
-            return Unauthorized(new { message = "You're not authorized to access this resource." });
-        }
         catch (Exception ex)
         {
-            return BadRequest(ex);
+            return BadRequest(new
+            {
+                message = ex.Message
+            });
         }
     }
 
-    [Authorize(Roles = "Admin,Lecturer")]
     [HttpGet("{id}")]
     public async Task<IActionResult> GetExerciseById(int id)
     {
-        try
-        {
-            var (userId, role) = IsAuthenticated();
-            await _aS.UserHasAccessToChapter(userId, role, id);
+        var exercise = await _db.Exercises.Include(e => e.Solutions).FirstOrDefaultAsync(e => e.ExerciseId == id);
 
-            Exercise? exercise = await _db.Exercises.Include(e => e.Solutions).FirstOrDefaultAsync(e => e.ExerciseId == id);
-
-            if (exercise == null)
-                return NotFound(new { message = "Exercise not found." });
-
-            return Ok(exercise);
-        }
-        catch (UnauthorizedAccessException)
+        if (exercise == null)
         {
-            return Unauthorized(new { message = "You're not authorized to access this resource." });
+            return NotFound(new { message = $"Exercise with ID {id} not found." });
         }
-        catch (Exception ex)
-        {
-            return BadRequest(ex);
-        }
+        return Ok(exercise);
     }
 
-
-    [Authorize(Roles = "Admin,Lecturer")]
     [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteExercise(int id)
+    public ActionResult DeleteExercise(int id)
     {
-        try
+        var exercise = _db.Exercises.FirstOrDefault(x => x.ExerciseId == id);
+
+        if (exercise == null)
         {
-            var (userId, role) = IsAuthenticated();
-
-            Exercise? exercise = _db.Exercises.Include(e => e.Chapter).FirstOrDefault(x => x.ExerciseId == id);
-
-            await _aS.UserHasAccessToChapter(userId, role, exercise?.Chapter.ChapterId);
-
-            if (exercise == null)
-                return NotFound(new { message = "Exercise not found." });
-
-            exercise.DeletedAt = DateTime.UtcNow;
-            _db.SaveChanges();
-            return Ok();
+            return BadRequest(new { message = "Exercise not found." });
         }
-        catch (UnauthorizedAccessException)
-        {
-            return Unauthorized(new { message = "You're not authorized to access this resource." });
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(ex);
-        }
+        exercise.DeletedAt = DateTime.UtcNow;
+        _db.SaveChanges();
+        return Ok();
     }
 
-
-    [Authorize(Roles = "Admin,Lecturer")]
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateExercise(int id, [FromBody] ExerciseUpdateDTO dto)
     {
         try
         {
-            var (userId, role) = IsAuthenticated();
-            await _aS.UserHasAccessToChapter(userId, role, id);
-
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
@@ -228,13 +182,9 @@ public class ExerciseController(AppDbContext db, AuthorizationService authorizat
 
             return Ok(exercise);
         }
-        catch (UnauthorizedAccessException)
-        {
-            return Unauthorized(new { message = "You're not authorized to access this resource." });
-        }
         catch (Exception ex)
         {
-            return BadRequest(ex);
+            return BadRequest(new { message = ex.Message });
         }
     }
 
