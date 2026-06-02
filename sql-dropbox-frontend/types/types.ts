@@ -42,6 +42,8 @@ export interface Chapter {
     dbSchema?: string;
     schema?: Schema
     completedAmount?: number;
+
+    exercises?: Exercise[];
 }
 
 export enum QueryAction {
@@ -65,6 +67,7 @@ export interface Exercise {
     
     requirements?: Requirement[];
     solutions?: { solutionId?: number; query: string }[];
+    userExercises?: UserExercise[];
 }
 
 export interface Requirement {
@@ -118,4 +121,9 @@ export interface Lecturer {
     userCode: string;
     firstName: string;
     lastName: string;
+}
+
+export interface UserExercise {
+    userExerciseId: number;
+    isCompleted: boolean;
 }

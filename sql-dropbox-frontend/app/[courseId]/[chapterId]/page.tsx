@@ -8,6 +8,7 @@ import Header from "@/components/header";
 import { chapterService } from "@/services/chapterService";
 import { exerciseService } from "@/services/exerciseService";
 import StudentExerciseWorkspace from "@/components/student/studentExerciseWorkspace";
+import { Chapter } from "@/types/types";
 
 export default function Page() {
     const t = useTranslations("ChapterExercisePage");
@@ -17,9 +18,9 @@ export default function Page() {
 
     const {
         data: chapter,
-        isLoading: isChapterLoading,
+        isLoading,
         error: chapterError,
-    } = useQuery({
+    } = useQuery<Chapter>({
         queryKey: ["chapter", chapterId],
         queryFn: () =>
             exerciseService.getExercisesByChapterId(chapterId as string),
@@ -37,8 +38,16 @@ export default function Page() {
     //     enabled: !!chapterId,
     // });
 
-    const isLoading = isChapterLoading; /*|| isExercisesLoading*/
     const error = chapterError; /*|| exercisesError*/
+
+    const completedExerciseIds =
+        chapter?.exercises
+            ?.filter(
+                (exercise) => exercise.userExercises?.[0]?.isCompleted === true,
+            )
+            .map((exercise) => exercise.exerciseId) ?? [];
+
+    console.log("Completed Exercise IDs:", completedExerciseIds);
 
     if (!chapterId || !courseId) {
         return (
@@ -64,7 +73,7 @@ export default function Page() {
                     exercises={chapter?.exercises ?? []}
                     isLoading={isLoading}
                     error={error as Error | null}
-                    completedExerciseIds={[]}
+                    completedExerciseIds={completedExerciseIds}
                 />
             </div>
         </div>

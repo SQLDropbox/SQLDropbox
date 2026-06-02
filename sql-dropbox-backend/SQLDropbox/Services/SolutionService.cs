@@ -42,36 +42,48 @@ namespace SQLDropbox.Services
             return (true, "The query is correct.");
         }
 
-        public async Task RegisterUserSolution(string formattedQuery, Exercise exercise, User user, string? errorMessage)
+        public async Task RegisterUserSolution(
+            string formattedQuery,
+            Exercise exercise,
+            User user,
+            string? errorMessage)
         {
-            UserExercise? userExercise = await _db.UserExercises.FirstOrDefaultAsync(ue => ue.Exercise == exercise && ue.User == user);
+            bool isCorrect = errorMessage == null;
+
+            UserExercise? userExercise = await _db.UserExercises
+                .FirstOrDefaultAsync(ue => ue.Exercise == exercise && ue.User == user);
+
             if (userExercise == null)
             {
-                userExercise = new UserExercise()
+                userExercise = new UserExercise
                 {
-                    IsCompleted = errorMessage == null,
+                    IsCompleted = isCorrect,
                     Exercise = exercise,
                     User = user,
-                    CreatedAt = DateTime.Now,
+                    CreatedAt = DateTime.UtcNow,
                 };
             }
             else
             {
-                if (userExercise.IsCompleted) return;
+                // Don't store additional solutions once completed
+                if (userExercise.IsCompleted)
+                    return;
+
+                userExercise.IsCompleted = isCorrect;
                 userExercise.UpdatedAt = DateTime.UtcNow;
             }
 
             UserSolution userSolution = new()
             {
                 Query = formattedQuery,
-                IsCorrect = errorMessage == null,
+                IsCorrect = isCorrect,
                 ErrorMessage = errorMessage,
                 CreatedAt = DateTime.UtcNow,
             };
 
             userExercise.UserSolutions.Add(userSolution);
 
-            if (userExercise.UpdatedAt == null)
+            if (userExercise.UserExerciseId == 0)
             {
                 _db.UserExercises.Add(userExercise);
             }
@@ -81,7 +93,6 @@ namespace SQLDropbox.Services
             }
 
             await _db.SaveChangesAsync();
-            return;
         }
     }
 }
