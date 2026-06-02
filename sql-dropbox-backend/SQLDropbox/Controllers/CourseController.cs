@@ -322,6 +322,7 @@ public class CourseController(AppDbContext db, AuthorizationService authorizatio
                     Order = chapter.Order,
                     Deadline = chapter.Deadline,
                     Schema = chapter.Schema,
+                    StartDate = chapter.StartDate,
                     CreatedAt = DateTime.Now,
                     Exercises = []
                 };

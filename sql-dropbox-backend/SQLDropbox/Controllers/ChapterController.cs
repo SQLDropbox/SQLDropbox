@@ -128,6 +128,7 @@ public class ChapterController(AppDbContext db, AuthorizationService authorizati
                 Order = nextOrder,
                 Course = course,
                 Schema = schema,
+                StartDate = dto.StartDate,
                 CreatedAt = DateTime.UtcNow
             };
 
