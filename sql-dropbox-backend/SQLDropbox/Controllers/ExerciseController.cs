@@ -20,7 +20,7 @@ public class ExerciseController(AppDbContext db, SolutionService solutionService
     public async Task<IActionResult> GetAllExercises()
     {
         var exercises = await _db.Exercises
-            .Include(e => e.Solutions.OrderBy(s => s.SolutionId).FirstOrDefault())
+            .Include(e => e.Solutions)
             .ToListAsync();
         return Ok(exercises);
     }
