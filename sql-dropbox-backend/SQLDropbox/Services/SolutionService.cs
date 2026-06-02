@@ -51,7 +51,10 @@ namespace SQLDropbox.Services
             bool isCorrect = errorMessage == null;
 
             UserExercise? userExercise = await _db.UserExercises
-                .FirstOrDefaultAsync(ue => ue.Exercise == exercise && ue.User == user);
+                .Include(ue => ue.UserSolutions)
+                .FirstOrDefaultAsync(ue =>
+                    ue.Exercise.ExerciseId == exercise.ExerciseId &&
+                    ue.User.UserId == user.UserId);
 
             if (userExercise == null)
             {
@@ -62,10 +65,11 @@ namespace SQLDropbox.Services
                     User = user,
                     CreatedAt = DateTime.UtcNow,
                 };
+
+                _db.UserExercises.Add(userExercise);
             }
             else
             {
-                // Don't store additional solutions once completed
                 if (userExercise.IsCompleted)
                     return;
 
@@ -73,24 +77,13 @@ namespace SQLDropbox.Services
                 userExercise.UpdatedAt = DateTime.UtcNow;
             }
 
-            UserSolution userSolution = new()
+            userExercise.UserSolutions.Add(new()
             {
                 Query = formattedQuery,
                 IsCorrect = isCorrect,
                 ErrorMessage = errorMessage,
                 CreatedAt = DateTime.UtcNow,
-            };
-
-            userExercise.UserSolutions.Add(userSolution);
-
-            if (userExercise.UserExerciseId == 0)
-            {
-                _db.UserExercises.Add(userExercise);
-            }
-            else
-            {
-                _db.UserExercises.Update(userExercise);
-            }
+            });
 
             await _db.SaveChangesAsync();
         }
