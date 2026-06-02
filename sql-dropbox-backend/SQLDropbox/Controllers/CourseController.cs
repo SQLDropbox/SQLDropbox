@@ -77,6 +77,7 @@ public class CourseController(AppDbContext db, AuthorizationService authorizatio
             .Include(x => x.Chapters)
             .ThenInclude(c => c.Exercises)
             .ThenInclude(e => e.UserExercises)
+            .ThenInclude(u => u.User)
             .Include(x => x.Students)
             .AsQueryable();
 
@@ -119,7 +120,7 @@ public class CourseController(AppDbContext db, AuthorizationService authorizatio
                     x.ChapterDescriptionNL,
                     x.AmountOfExercises,
                     x.Course.CourseId,
-                    completedAmount = (role == Role.Student) ? x.Exercises.Sum(e => e.UserExercises.Count(ue => ue.User.UserId == userId && ue.IsCompleted)) : 0
+                    completedAmount = x.Exercises.Sum(e => e.UserExercises.Count(ue => ue.User.UserId == userId && ue.IsCompleted))
                 })
             });
         }

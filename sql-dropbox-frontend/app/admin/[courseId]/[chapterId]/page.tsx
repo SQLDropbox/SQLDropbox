@@ -27,17 +27,11 @@ export default function ChapterExercisesPage() {
         Exercise | undefined
     >(undefined);
 
-    const { data: chapter } = useQuery<Chapter>({
-        queryKey: ["chapter", chapterId],
-        queryFn: () => chapterService.getChapterByChapterId(chapterId),
-        enabled: !!chapterId,
-    });
-
     const {
-        data: exercises = [],
+        data: chapter,
         isLoading,
         error,
-    } = useQuery<Exercise[]>({
+    } = useQuery<Chapter>({
         queryKey: ["exercises", chapterIdNumber],
         queryFn: () => exerciseService.getExercisesByChapterId(chapterId),
         enabled: !!chapterId,
@@ -101,13 +95,13 @@ export default function ChapterExercisesPage() {
                     </button>
                 </div>
 
-                {exercises.length === 0 ? (
+                {chapter?.exercises?.length === 0 ? (
                     <p className="text-gray-500 bg-gray-50 border border-gray-200 rounded-lg p-4">
                         Er zijn nog geen oefeningen gekoppeld aan dit hoofdstuk.
                     </p>
                 ) : (
                     <div className="flex flex-col gap-4">
-                        {exercises.map((exercise) => (
+                        {chapter?.exercises?.map((exercise) => (
                             <AdminExerciseCard
                                 key={exercise.exerciseId}
                                 exercise={exercise}
