@@ -3,7 +3,7 @@
 import { Course } from "@/types/types";
 import { useTranslations, useLocale } from "next-intl";
 
-const STAMP_ROTS = [-6, 5, -2, -5, 6, -4, 2, -5, 4, 6];
+const STAMP_ROTS = [-4, 3, -2, -2, 6, -4, 2, -4, 3, 6];
 const stRot = (i: number) => STAMP_ROTS[Math.abs(i) % STAMP_ROTS.length];
 
 const COL_CODE_W = "w-[100px] min-w-[100px]";
