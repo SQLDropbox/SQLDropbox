@@ -647,17 +647,17 @@ namespace SQLDropbox.Repositories
             };
 
             /* SCHEMAS */
-            var schema1 = new Schema { SchemaName = "animals", CreatedAt = DateTime.UtcNow };
+            var schema1 = new Schema { SchemaName = "animals", CreatedAt = DateTime.UtcNow, SchemaImage = "02fe567c-4e83-4db8-8eab-e2f8ca2c3804.png" };
             var schema2 = new Schema { SchemaName = "rooms", CreatedAt = DateTime.UtcNow };
 
             /* CHAPTERS */
             var chapter1 = new Chapter
             {
-                ChapterNameNL = "JOINS Gevorderd",
-                ChapterNameEN = "JOINS Advanced",
-                ChapterDescriptionNL = "Leer werken met verschillende soorten JOINS.",
-                ChapterDescriptionEN = "Learn to use different types of JOINS.",
-                AmountOfExercises = 10,
+                ChapterNameNL = "SELECT",
+                ChapterNameEN = "SELECT",
+                ChapterDescriptionNL = "Leer werken met SELECT.",
+                ChapterDescriptionEN = "Learn to use SELECT.",
+                AmountOfExercises = 3,
                 Order = 1,
                 Deadline = DateTime.UtcNow.AddDays(7),
                 Course = course1,
