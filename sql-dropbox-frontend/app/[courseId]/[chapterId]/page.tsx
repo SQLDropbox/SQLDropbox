@@ -5,7 +5,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 
 import Header from "@/components/header";
-import { chapterService } from "@/services/chapterService";
 import { exerciseService } from "@/services/exerciseService";
 import StudentExerciseWorkspace from "@/components/student/studentExerciseWorkspace";
 import { Chapter } from "@/types/types";
@@ -20,6 +19,7 @@ export default function Page() {
         data: chapter,
         isLoading,
         error: chapterError,
+        refetch,
     } = useQuery<Chapter>({
         queryKey: ["chapter", chapterId],
         queryFn: () =>
@@ -27,18 +27,7 @@ export default function Page() {
         enabled: !!chapterId,
     });
 
-    // const {
-    //     data: exercises = [],
-    //     isLoading: isExercisesLoading,
-    //     error: exercisesError,
-    // } = useQuery({
-    //     queryKey: ["exercises", chapterId],
-    //     queryFn: () =>
-    //         exerciseService.getExercisesByChapterId(chapterId as string),
-    //     enabled: !!chapterId,
-    // });
-
-    const error = chapterError; /*|| exercisesError*/
+    const error = chapterError;
 
     const completedExerciseIds =
         chapter?.exercises
@@ -74,6 +63,10 @@ export default function Page() {
                     isLoading={isLoading}
                     error={error as Error | null}
                     completedExerciseIds={completedExerciseIds}
+                    onUpdate={() => {
+                        console.log("Exercise updated, refetching chapter...");
+                        refetch();
+                    }}
                 />
             </div>
         </div>

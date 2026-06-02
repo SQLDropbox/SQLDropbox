@@ -14,10 +14,12 @@ export default function ExerciseWorkspaceCard({
     exercise,
     schemaName,
     chapterId,
+    onUpdate,
 }: {
     exercise: Exercise;
     schemaName: string;
     chapterId: string;
+    onUpdate: () => void;
 }) {
     const t = useTranslations("ChapterExercisePage");
     const [showHint, setShowHint] = useState(false);
@@ -63,7 +65,7 @@ export default function ExerciseWorkspaceCard({
             );
 
             if (submission.correct) {
-                queryClient.invalidateQueries({
+                await queryClient.invalidateQueries({
                     queryKey: ["chapter", chapterId],
                 });
             } else {
@@ -77,6 +79,8 @@ export default function ExerciseWorkspaceCard({
             );
         } finally {
             setIsExecuting(false);
+
+            onUpdate();
         }
     };
 
