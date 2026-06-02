@@ -100,6 +100,16 @@ public class SolutionController(AppDbContext db, SolutionService solutionService
                 Exercise = exercise,
             };
 
+            var userExercise = await _db.UserExercises.FirstOrDefaultAsync(ue =>
+                ue.Exercise.ExerciseId == exercise.ExerciseId &&
+                ue.User.UserId == user.UserId);
+
+            if (userExercise != null)
+            {
+                userExercise.IsCompleted = true;
+                userExercise.UpdatedAt = DateTime.UtcNow;
+            }
+
             _db.Solutions.Add(solution);
             await _db.SaveChangesAsync();
 
