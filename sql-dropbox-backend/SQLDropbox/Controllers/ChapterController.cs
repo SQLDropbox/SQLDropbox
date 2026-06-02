@@ -360,6 +360,8 @@ public class ChapterController(AppDbContext db, AuthorizationService authorizati
 
                     Exercises = c.Exercises
                         .Where(e => e.UserExercises.Any(ue => ue.User == user))
+                        .OrderBy(e => e.ExerciseId)
+                        .Take(c.AmountOfExercises ?? 0)
                         .Select(e => new
                         {
                             e.ExerciseId,
@@ -396,7 +398,7 @@ public class ChapterController(AppDbContext db, AuthorizationService authorizati
                                         .ToList()
                                 })
                                 .ToList()
-                        })
+                        })                        
                         .ToList(),
 
                     Schema = new

@@ -120,7 +120,7 @@ public class CourseController(AppDbContext db, AuthorizationService authorizatio
                     x.ChapterDescriptionNL,
                     x.AmountOfExercises,
                     x.Course.CourseId,
-                    completedAmount = x.Exercises.Sum(e => e.UserExercises.Count(ue => ue.User.UserId == userId && ue.IsCompleted))
+                    completedAmount = x.Exercises.Take(x.AmountOfExercises ?? 0).Sum(e => e.UserExercises.Count(ue => ue.User.UserId == userId && ue.IsCompleted))
                 })
             });
         }

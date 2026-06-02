@@ -29,7 +29,7 @@ namespace SQLDropbox.Services
                     .Where(e => e.UserExercises.Any(se => se.User == user))
                     .OrderBy(e => e.ExerciseId)];
 
-            if (currentExercises.Count == amount)
+            if (currentExercises.Count >= amount)
                 return (true, null);
 
             int amountNeeded = amount - currentExercises.Count;
@@ -42,11 +42,8 @@ namespace SQLDropbox.Services
 
             for (int i = 0; i < amount; i++)
             {
-                if (amountNeeded == 0)
+                if (amountNeeded == 0 || possibleExercises.Count == 0)
                     break;
-
-                if (possibleExercises.Count == 0)
-                    return (false, "No possible exercise left for this chapter.");
 
                 int random = Random.Shared.Next(possibleExercises.Count);
                 Exercise randomExercise = possibleExercises[random];
