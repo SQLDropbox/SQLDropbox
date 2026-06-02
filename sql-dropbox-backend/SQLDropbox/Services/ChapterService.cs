@@ -32,15 +32,19 @@ namespace SQLDropbox.Services
             if (currentExercises.Count == amount)
                 return (true, null);
 
+            int amountNeeded = amount - currentExercises.Count;
+
             List<Exercise> possibleExercises = [.. chapter.Exercises
                     .Where(e => !e.UserExercises.Any(se => se.User == user))
                     .OrderBy(e => e.ExerciseId)];
-
-            List<Exercise> exercises = currentExercises;
+            
             List<UserExercise> userExercises = [];
 
             for (int i = 0; i < amount; i++)
             {
+                if (amountNeeded == 0)
+                    break;
+
                 if (possibleExercises.Count == 0)
                     return (false, "No possible exercise left for this chapter.");
 
@@ -58,7 +62,7 @@ namespace SQLDropbox.Services
                     CreatedAt = DateTime.UtcNow,
                 });
 
-                exercises.Add(randomExercise);
+                amountNeeded--;
                 possibleExercises.RemoveAll(e => e.ExerciseId == randomExercise.ExerciseId);
             }
 
