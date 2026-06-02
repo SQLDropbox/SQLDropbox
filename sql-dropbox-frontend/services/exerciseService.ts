@@ -20,6 +20,12 @@ const getExercisesByChapterId = async (chapterId: string) => {
     });
 };
 
+const getAllExercisesByChapterId = async (chapterId: string) => {
+    return api.privateFetch(`/Chapter/${chapterId}/all-exercises`, {
+        method: "GET",
+    });
+};
+
 const addExercise = async (exercise: Partial<Exercise>) => {
     const payload = mapToExerciseDto(exercise);
 
@@ -65,6 +71,7 @@ const submitSolution = async (exerciseId: number, query: string) => {
 
 export const exerciseService = {
     getExercisesByChapterId,
+    getAllExercisesByChapterId,
     addExercise,
     updateExercise,
     deleteExercise,

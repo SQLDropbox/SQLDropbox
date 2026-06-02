@@ -33,7 +33,7 @@ export default function ChapterExercisesPage() {
         error,
     } = useQuery<Chapter>({
         queryKey: ["exercises", chapterIdNumber],
-        queryFn: () => exerciseService.getExercisesByChapterId(chapterId),
+        queryFn: () => exerciseService.getAllExercisesByChapterId(chapterId),
         enabled: !!chapterId,
     });
 

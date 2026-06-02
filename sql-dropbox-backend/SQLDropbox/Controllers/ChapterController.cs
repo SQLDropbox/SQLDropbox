@@ -323,7 +323,7 @@ public class ChapterController(AppDbContext db, AuthorizationService authorizati
 
     [Authorize]
     [HttpGet("{chapterId}/exercises")]
-    public async Task<IActionResult> GetExercisesByChapter(int chapterId)
+    public async Task<IActionResult> GetRandomExercisesByChapter(int chapterId)
     {
         try
         {
@@ -392,6 +392,80 @@ public class ChapterController(AppDbContext db, AuthorizationService authorizati
                                         .ToList()
                                 })
                                 .ToList()
+                        })
+                        .ToList(),
+
+                    Schema = new
+                    {
+                        c.Schema.SchemaId,
+                        c.Schema.SchemaName,
+                        c.Schema.SchemaImage
+                    }
+                })
+                .FirstOrDefaultAsync();
+
+            if (chapter == null)
+                return NotFound(new { message = "Chapter not found." });
+
+            return Ok(chapter);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized(new { message = "You're not authorized to access this resource." });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex);
+        }
+    }
+
+    [Authorize(Roles = "Admin,Lecturer")]
+    [HttpGet("{chapterId}/all-exercises")]
+    public async Task<IActionResult> GetAllExercisesByChapter(int chapterId)
+    {
+        try
+        {
+            var (userId, role) = IsAuthenticated();
+            await _aS.UserHasAccessToChapter(userId, role, chapterId);
+
+            User? user = await _db.Users
+                    .Where(u => u.UserId == userId)
+                    .FirstOrDefaultAsync();
+
+            if (user == null)
+                return NotFound("User not found.");           
+
+            var chapter = await _db.Chapters
+                .Where(c => c.ChapterId == chapterId)
+                .Select(c => new
+                {
+                    c.ChapterId,
+                    c.ChapterNameEN,
+                    c.ChapterNameNL,
+                    c.ChapterDescriptionEN,
+                    c.ChapterDescriptionNL,
+                    c.AmountOfExercises,
+                    c.Order,
+                    c.Deadline,
+
+                    Exercises = c.Exercises
+                        .Select(e => new
+                        {
+                            e.ExerciseId,
+                            e.QuestionNL,
+                            e.QuestionEN,
+                            e.HintNL,
+                            e.HintEN,
+                            e.QueryOutput,
+                            e.QueryAction,
+
+                            Requirements = e.Requirements
+                                .Select(r => new
+                                {
+                                    r.Statement,
+                                    r.Use
+                                })
+                                .ToList(),                           
                         })
                         .ToList(),
 
