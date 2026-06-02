@@ -1,14 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { FaCircleInfo, FaLightbulb, FaPlay } from "react-icons/fa6";
-import { useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { Chapter, Exercise } from "@/types/types";
 import { useTranslations } from "next-intl";
-import { queryService } from "@/services/queryService";
-import QueryResult from "@/components/student/QueryResult";
 import ExerciseSidebar from "@/components/student/exerciseSidebar";
-import { exerciseService } from "@/services/exerciseService";
 import ExercisePanel from "./exercisePanel";
 
 interface StudentExerciseWorkspaceProps {
@@ -19,6 +14,7 @@ interface StudentExerciseWorkspaceProps {
     isLoading?: boolean;
     error?: Error | null;
     completedExerciseIds?: number[];
+    onUpdate: () => void;
 }
 
 export default function StudentExerciseWorkspace({
@@ -29,6 +25,7 @@ export default function StudentExerciseWorkspace({
     isLoading = false,
     error = null,
     completedExerciseIds = [],
+    onUpdate,
 }: StudentExerciseWorkspaceProps) {
     const t = useTranslations("ChapterExercisePage");
     const [activeExerciseId, setActiveExerciseId] = useState<number | null>(
@@ -105,9 +102,10 @@ export default function StudentExerciseWorkspace({
                                 chapter?.chapterNameNL ||
                                 `Chapter ${chapterId}`
                             }
-                            schemaName={chapter?.schemaName || ""}
-                            schemaImage={chapter?.schemaImage || null}
+                            schemaName={chapter?.schema?.schemaName || ""}
+                            schemaImage={chapter?.schema?.schemaImage || null}
                             chapterId={chapterId}
+                            onUpdate={onUpdate}
                         />
                     ) : (
                         <div className="bg-surface-2 border border-dashed border-border px-6 py-10 font-mono text-sm text-muted">

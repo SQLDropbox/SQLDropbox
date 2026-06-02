@@ -1,11 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-    useMutation,
-    useQuery,
-    useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { FaTimes } from "react-icons/fa";
 import { useTranslations } from "next-intl";
 
@@ -36,8 +32,10 @@ const emptyForm: Partial<Chapter> = {
     chapterDescriptionNL: "",
     chapterDescriptionEN: "",
     amountOfExercises: 0,
-    schemaId: null,
-    schemaName: "",
+    schema: {
+        schemaId: null,
+        schemaName: "",
+    },
 };
 
 export default function EditChapterDialog({
@@ -59,16 +57,16 @@ export default function EditChapterDialog({
 
     const [form, setForm] = useState<Partial<Chapter>>(emptyForm);
     const [errors, setErrors] = useState<FormErrors>({});
-    const [confirmDeleteDialogOpen, setConfirmDeleteDialogOpen] = useState(false);
+    const [confirmDeleteDialogOpen, setConfirmDeleteDialogOpen] =
+        useState(false);
 
     useEffect(() => {
         if (!open || !chapter || !isEdit) return;
 
         async function loadChapter() {
-            const fullChapter =
-                await chapterService.getChapterByChapterId(
-                    chapter!.chapterId.toString(),
-                );
+            const fullChapter = await chapterService.getChapterByChapterId(
+                chapter!.chapterId.toString(),
+            );
 
             setForm({
                 chapterId: fullChapter.chapterId,
@@ -78,8 +76,10 @@ export default function EditChapterDialog({
                 chapterDescriptionEN: fullChapter.chapterDescriptionEN ?? "",
                 amountOfExercises: fullChapter.amountOfExercises ?? 0,
                 courseId: courseId,
-                schemaId: fullChapter.schemaId ?? null,
-                schemaName: fullChapter.schemaName ?? "",
+                schema: {
+                    schemaId: fullChapter.schema.schemaId ?? null,
+                    schemaName: fullChapter.schema.schemaName ?? "",
+                },
             });
         }
 
@@ -97,8 +97,8 @@ export default function EditChapterDialog({
             newErrors.chapterNameEN = t("errors.chapterNameENRequired");
         }
 
-        if (!form.schemaId) {
-            newErrors.schemaId = "schema fout";
+        if (!form.schema?.schemaId) {
+            newErrors.schema = "schema fout";
         }
 
         return newErrors;
@@ -112,8 +112,10 @@ export default function EditChapterDialog({
                 chapterDescriptionNL: form.chapterDescriptionNL ?? "",
                 chapterDescriptionEN: form.chapterDescriptionEN ?? "",
                 amountOfExercises: form.amountOfExercises ?? 0,
-                schemaId: form.schemaId ?? null,
-                schemaName: form.schemaName ?? "",
+                schema: {
+                    schemaId: form.schema?.schemaId ?? null,
+                    schemaName: form.schema?.schemaName ?? "",
+                },
             };
 
             if (isEdit && chapter) {
@@ -260,9 +262,9 @@ export default function EditChapterDialog({
                         />
                     </Field>
 
-                    <Field label={"schema"} error={errors.schemaId}>
+                    <Field label={"schema"} error={errors.schema}>
                         <select
-                            value={form.schemaId ?? ""}
+                            value={form.schema?.schemaId ?? ""}
                             onChange={(e) => {
                                 const value = e.target.value;
 
@@ -283,7 +285,8 @@ export default function EditChapterDialog({
                                 setForm((prev) => ({
                                     ...prev,
                                     schemaId: selectedId,
-                                    schemaName: selectedSchema?.schemaName ?? "",
+                                    schemaName:
+                                        selectedSchema?.schemaName ?? "",
                                 }));
                             }}
                             className="w-full bg-transparent border-b border-border py-1 text-sm outline-none focus:border-accent"

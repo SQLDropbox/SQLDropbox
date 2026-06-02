@@ -24,6 +24,12 @@ export interface DBSchema {
     schemaImage?: string | null;
 }
 
+export interface Schema {
+    schemaId?: number | null;
+    schemaName?: string;
+    schemaImage?: string;
+}
+
 export interface Chapter {
     chapterId: number;
     chapterNameNL: string;
@@ -34,10 +40,10 @@ export interface Chapter {
     amountOfExercises?: number;
     order?: number | null;
     dbSchema?: string;
-    schemaId?: number | null;
+    schema?: Schema
     completedAmount?: number;
-    schemaName?: string;
-    schemaImage?: string | null;
+
+    exercises?: Exercise[];
 }
 
 export enum QueryAction {
@@ -61,6 +67,7 @@ export interface Exercise {
     
     requirements?: Requirement[];
     solutions?: { solutionId?: number; query: string }[];
+    userExercises?: UserExercise[];
 }
 
 export interface Requirement {
@@ -114,4 +121,9 @@ export interface Lecturer {
     userCode: string;
     firstName: string;
     lastName: string;
+}
+
+export interface UserExercise {
+    userExerciseId: number;
+    isCompleted: boolean;
 }

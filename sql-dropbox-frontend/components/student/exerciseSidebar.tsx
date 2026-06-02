@@ -83,7 +83,7 @@ export default function ExerciseSidebar({
             </div>
 
             {/* EXERCISE LIST */}
-            <div className="flex-1 space-y-0 overflow-y-auto flex flex-col">
+            <div className="flex-1 space-y-0 flex flex-col">
                 <p className="font-mono text-[12px] uppercase tracking-widest text-muted mb-4">
                     {t("exerciseList")}
                 </p>

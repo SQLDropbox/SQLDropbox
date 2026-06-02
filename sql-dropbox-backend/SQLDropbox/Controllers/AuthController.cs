@@ -65,7 +65,7 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
 
             return NotFound(new { message = "This account does not exist." });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return BadRequest(new { message = "Error occured during account setup." });
         }

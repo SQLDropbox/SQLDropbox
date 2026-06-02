@@ -19,12 +19,14 @@ export default function ExercisePanel({
     schemaName,
     schemaImage,
     chapterId,
+    onUpdate,
 }: {
     exercise: Exercise;
     chapterName: string;
     schemaName: string;
     schemaImage?: string | null;
     chapterId: string;
+    onUpdate: () => void;
 }) {
     const t = useTranslations("ChapterExercisePage");
     const [activeTab, setActiveTab] = useState<PanelTab>("question");
@@ -63,6 +65,7 @@ export default function ExercisePanel({
                             exercise={exercise}
                             schemaName={schemaName}
                             chapterId={chapterId}
+                            onUpdate={onUpdate}
                         />
                     </>
                 )}

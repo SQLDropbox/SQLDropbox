@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -27,6 +28,7 @@ public class UtilitiesController(AppDbContext db, PasswordService passwordServic
         return Ok("The DB should have been seeded.");
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpGet("empty-db")]
     public async Task<IActionResult> EmptyTheDb()
     {
@@ -34,6 +36,7 @@ public class UtilitiesController(AppDbContext db, PasswordService passwordServic
         return Ok("The DB should have been emptied.");
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPost("format")]
     public async Task<IActionResult> Format([FromBody] FormatDTO format)
     {
@@ -47,6 +50,7 @@ public class UtilitiesController(AppDbContext db, PasswordService passwordServic
         return Ok(formatted);
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPost("check")]
     public async Task<IActionResult> Check([FromBody] FormatDTO format)
     {
@@ -73,6 +77,7 @@ public class UtilitiesController(AppDbContext db, PasswordService passwordServic
         return Ok($"{Valid}: {Message}");
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpGet("me")]
     public async Task<IActionResult> Me()
     {
@@ -81,6 +86,7 @@ public class UtilitiesController(AppDbContext db, PasswordService passwordServic
         return Ok(result.Value.ToString());
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpGet("random-exercise/{chapterIdStr}/{userIdStr}")]
     public async Task<IActionResult> GetRandomExercise(string chapterIdStr, string userIdStr)
     {
@@ -175,6 +181,7 @@ public class UtilitiesController(AppDbContext db, PasswordService passwordServic
         }
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPost("seed-exercise-create-helper")]
     public async Task<IActionResult> GetExerciseCreateData([FromBody] SolutionDTO dto)
     {
@@ -192,6 +199,7 @@ public class UtilitiesController(AppDbContext db, PasswordService passwordServic
         }
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPost("test-select")]
     public async Task<IActionResult> TestSelect([FromBody] TempTestSolutionDTO dto)
     {
@@ -310,6 +318,7 @@ public class UtilitiesController(AppDbContext db, PasswordService passwordServic
         }
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPost("test-insert-update-delete")]
     public async Task<IActionResult> TestInsertUpdateDelete([FromBody] TempTestSolutionDTO dto)
     {
