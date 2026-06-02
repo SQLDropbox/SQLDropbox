@@ -90,6 +90,10 @@ public class SolutionController(AppDbContext db, SolutionService solutionService
                 await _soS.RegisterUserSolution(formattedQuery, exercise, user, "This is wrong, an error should be saved (work in progress)!");
                 return Ok(new { message = "This is wrong, an error should be returned (work in progress)!", queryResult = queryOutput });
             }
+            else
+            {
+                await _soS.RegisterUserSolution(formattedQuery, exercise, user, null);
+            }
 
             //If correct, save solution
             Solution solution = new()
@@ -99,16 +103,6 @@ public class SolutionController(AppDbContext db, SolutionService solutionService
                 CreatedAt = DateTime.UtcNow,
                 Exercise = exercise,
             };
-
-            var userExercise = await _db.UserExercises.FirstOrDefaultAsync(ue =>
-                ue.Exercise.ExerciseId == exercise.ExerciseId &&
-                ue.User.UserId == user.UserId);
-
-            if (userExercise != null)
-            {
-                userExercise.IsCompleted = true;
-                userExercise.UpdatedAt = DateTime.UtcNow;
-            }
 
             _db.Solutions.Add(solution);
             await _db.SaveChangesAsync();
