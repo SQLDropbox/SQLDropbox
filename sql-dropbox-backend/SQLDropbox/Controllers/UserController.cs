@@ -11,13 +11,14 @@ namespace SQLDropbox.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class UserController(AppDbContext db, AuthorizationService authorizationService, PasswordService passwordService, CsvService csvService, UserService userService) : BaseController
+    public class UserController(AppDbContext db, AuthorizationService authorizationService, PasswordService passwordService, CsvService csvService, UserService userService, EmailService emailService) : BaseController
     {
         private readonly AppDbContext _db = db;
         private readonly AuthorizationService _aS = authorizationService;
         private readonly PasswordService _passwordService = passwordService;
         private readonly CsvService _csvService = csvService;
         private readonly UserService _userService = userService;
+        private readonly EmailService _emailService = emailService;
 
         [Authorize(Roles = "Admin,Lecturer")]
         [HttpPost("studentCourse/{courseId}")]
@@ -319,6 +320,49 @@ namespace SQLDropbox.Controllers
             });
         }
 
+        [Authorize(Roles = "Admin")]
+        [HttpPost("invite/{userId}")]
+        public async Task<IActionResult> InviteUser(string userId)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.UserId.ToString() == userId);
+
+            if (user == null)
+            {
+                return BadRequest("User not found.");
+            }
+
+            if (user.Password != null)
+            {
+                return BadRequest("Account already set up.");
+            }
+
+            if (user.InvitedAt != null)
+            {
+                return BadRequest("User has already been invited.");
+            }
+
+            string fullName = user.FirstName + " " + user.LastName;
+
+            try
+            {
+                await _emailService.SendEmailAsync(
+                                toEmail: user.Email,
+                                toName: fullName,
+                                subject: "You're invited!",
+                                htmlContent: $"<h1>Hello {fullName},</h1><p>You have been invited to SQLDropbox. <a href='http://localhost:3000/activate/{user.UserId}'>Click here to activate your account.</a></p>"
+                            );
+
+                user.InvitedAt = DateTime.UtcNow;
+                await _db.SaveChangesAsync();
+
+                return Ok();
+            } catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }
