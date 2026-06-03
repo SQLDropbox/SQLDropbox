@@ -15,6 +15,7 @@ export default function SchemaTab({
     const [position, setPosition] = useState({ x: 0, y: 0 });
     const [isDragging, setIsDragging] = useState(false);
     const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 
     useEffect(() => {
         const el = imageContainerRef.current;
@@ -107,7 +108,7 @@ export default function SchemaTab({
                                 className="flex h-full w-full cursor-grab items-center justify-center active:cursor-grabbing"
                             >
                                 <img
-                                    src={schemaImage}
+                                    src={`${API_BASE}/schema-images/${schemaImage}`}
                                     alt={`Database schema for ${schemaName}`}
                                     draggable={false}
                                     className="select-none object-contain transition-transform duration-75"
