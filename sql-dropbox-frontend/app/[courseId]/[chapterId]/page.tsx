@@ -151,29 +151,43 @@ export default function Page() {
                                 ))}
                             </div>
 
-                            <div>
-                                {activeTab === "question" && (
-                                    <QuestionTab
-                                        exercise={activeExercise}
-                                        question={question}
-                                        schemaName={
-                                            chapter?.schema?.schemaName ?? ""
-                                        }
-                                        chapterId={chapterId}
-                                        onUpdate={refetch}
-                                    />
-                                )}
-                                {activeTab === "schema" && (
-                                    <SchemaTab
-                                        schemaName={
-                                            chapter?.schema?.schemaName ?? ""
-                                        }
-                                        schemaImage={
-                                            chapter?.schema?.schemaImage ?? null
-                                        }
-                                    />
-                                )}
-                                {activeTab === "history" && <HistoryTab />}
+                            <div
+                                className={
+                                    activeTab === "question"
+                                        ? "block"
+                                        : "hidden"
+                                }
+                            >
+                                <QuestionTab
+                                    exercise={activeExercise}
+                                    question={question}
+                                    schemaName={
+                                        chapter?.schema?.schemaName ?? ""
+                                    }
+                                    chapterId={chapterId}
+                                    onUpdate={refetch}
+                                />
+                            </div>
+                            <div
+                                className={
+                                    activeTab === "schema" ? "block" : "hidden"
+                                }
+                            >
+                                <SchemaTab
+                                    schemaName={
+                                        chapter?.schema?.schemaName ?? ""
+                                    }
+                                    schemaImage={
+                                        chapter?.schema?.schemaImage ?? null
+                                    }
+                                />
+                            </div>
+                            <div
+                                className={
+                                    activeTab === "history" ? "block" : "hidden"
+                                }
+                            >
+                                <HistoryTab />
                             </div>
                         </div>
                     ) : (
