@@ -166,11 +166,15 @@ export default function ExerciseWorkspaceCard({
                 theme={createTheme({
                     theme: "light",
                     settings: {
+
                         background: "var(--color-paper)",
                         gutterBackground: "var(--color-surface-3)",
-                        lineHighlight: "var(--color-surface-2)",
+                        lineHighlight: "rgba(0, 0, 0, 0.06)",
                         gutterActiveForeground: "var(--color-ink)",
                         caret: "var(--color-accent)",
+
+                        selection: "#b4d5fe",
+                        selectionMatch: "transparent",
                     },
                     styles: [],
                 })}
@@ -193,7 +197,9 @@ export default function ExerciseWorkspaceCard({
                 </div>
             )}
 
-            {queryResult && <QueryResult result={{ type: "csv", data: queryResult }} />}
+            {queryResult && (
+                <QueryResult result={{ type: "csv", data: queryResult }} />
+            )}
         </div>
     );
 }
