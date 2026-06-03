@@ -33,6 +33,8 @@ public class ChapterController(AppDbContext db, AuthorizationService authorizati
                 x.ChapterDescriptionNL,
                 x.ChapterDescriptionEN,
                 x.AmountOfExercises,
+                x.StartDate,
+                x.Deadline,
                 x.Order,
                 x.Schema.SchemaId,
                 x.Schema.SchemaName,
@@ -69,7 +71,8 @@ public class ChapterController(AppDbContext db, AuthorizationService authorizati
                 x.ChapterDescriptionEN,
                 x.AmountOfExercises,
                 x.CreatedAt,
-
+                x.StartDate,
+                x.Deadline,
                 Schema = new
                 {
                     x.Schema.SchemaId,
@@ -129,6 +132,7 @@ public class ChapterController(AppDbContext db, AuthorizationService authorizati
                 Course = course,
                 Schema = schema,
                 StartDate = dto.StartDate,
+                Deadline = dto.Deadline,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -165,6 +169,9 @@ public class ChapterController(AppDbContext db, AuthorizationService authorizati
             if (dto.ChapterDescriptionNL != null) chapter.ChapterDescriptionNL = dto.ChapterDescriptionNL;
             if (dto.ChapterDescriptionEN != null) chapter.ChapterDescriptionEN = dto.ChapterDescriptionEN;
             if (dto.AmountOfExercises.HasValue) chapter.AmountOfExercises = dto.AmountOfExercises.Value;
+
+            chapter.StartDate = dto.StartDate;
+            chapter.Deadline = dto.Deadline;
 
             if (dto.SchemaId.HasValue)
             {

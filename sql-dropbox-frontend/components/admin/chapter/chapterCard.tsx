@@ -54,6 +54,11 @@ export default function ChapterCard({
 
     const rotation = ROTATIONS[index % ROTATIONS.length];
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const isPastDeadline = !!chapter.deadline && new Date(chapter.deadline) < today;
+
     // DnD kit sortable — only active in admin mode
     const {
         attributes,
@@ -126,9 +131,23 @@ export default function ChapterCard({
                 >
                     {name}
                 </h2>
+
                 <p className="font-mono text-xs text-muted line-clamp-2">
                     {desc}
                 </p>
+
+                {chapter.deadline && (
+                    <p
+                        className={`font-mono text-[10px] mt-2 ${
+                            isPastDeadline
+                                ? "text-error"
+                                : "text-muted"
+                        }`}
+                    >
+                        Deadline:{" "}
+                        {new Date(chapter.deadline).toLocaleDateString(locale)}
+                    </p>
+                )}
             </div>
 
             {/* Right-side controls */}
