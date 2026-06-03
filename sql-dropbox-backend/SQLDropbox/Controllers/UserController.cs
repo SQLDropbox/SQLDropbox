@@ -211,6 +211,7 @@ namespace SQLDropbox.Controllers
                 .Include(c => c.Chapters)
                     .ThenInclude(ch => ch.Exercises)
                         .ThenInclude(e => e.UserExercises)
+                            .ThenInclude(ue => ue.User)
                 .Where(c => c.CourseId == courseId)
                 .FirstOrDefault();
 
