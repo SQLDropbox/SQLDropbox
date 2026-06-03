@@ -130,14 +130,13 @@ export default function QueryWorkspace({
                     queryKey: ["chapter", chapterId],
                 });
             } else {
-                setQueryError(submission.message);
+                setQueryError(formatErrorMessage(submission.message));
             }
 
             setQueryResult(submission.queryResult);
         } catch (err) {
-            setQueryError(
-                err instanceof Error ? err.message : "Something went wrong",
-            );
+            const rawMessage = err instanceof Error ? err.message : "Something went wrong";
+            setQueryError(formatErrorMessage(rawMessage));
         } finally {
             setIsExecuting(false);
             onUpdate();
@@ -147,6 +146,16 @@ export default function QueryWorkspace({
     const hasRequirements =
         exercise.requirements && exercise.requirements.length > 0;
 
+
+    const formatErrorMessage = (rawMessage: string | null | undefined): string => {
+    if (!rawMessage) return "Something went wrong";
+        try {
+            const parsed = JSON.parse(rawMessage);
+            return parsed.message ? parsed.message : rawMessage;
+        } catch {
+            return rawMessage;
+        }
+    };    
     return (
         <div>
             <div className="flex">
