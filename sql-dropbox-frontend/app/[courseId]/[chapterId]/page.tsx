@@ -187,7 +187,7 @@ export default function Page() {
                                     activeTab === "history" ? "block" : "hidden"
                                 }
                             >
-                                <HistoryTab />
+                                <HistoryTab exercise={activeExercise} />
                             </div>
                         </div>
                     ) : (
