@@ -24,8 +24,7 @@ namespace SQLDropbox.Services
         }
 
         public async Task<string> ExportQueryAsync(NpgsqlConnection conn, string query)
-        {
-
+        {            
             var copySql = $@"COPY ({query}) TO STDOUT WITH (FORMAT CSV, HEADER true)";
             using var reader = conn.BeginTextExport(copySql);
             var sb = new StringBuilder();
