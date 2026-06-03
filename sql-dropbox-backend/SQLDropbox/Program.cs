@@ -117,6 +117,25 @@ if (app.Environment.IsDevelopment())
     AsyncServiceScope scope = app.Services.CreateAsyncScope();
     AppDbContext db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await db.Database.MigrateAsync();
+
+    // If no users yet, create admin user (so seed can be used)
+    if (!await db.Users.AnyAsync(u => u.Email == "admin@ucll.be"))
+    {
+        PasswordService ps = scope.ServiceProvider.GetRequiredService<PasswordService>();
+
+        var admin = new User
+        {
+            UserCode = "admin",
+            FirstName = "Admin",
+            Email = "Admin@ucll.be",
+            Password = ps.HashPassword("Admin"),
+            Role = Role.Admin,
+            CreatedAt = DateTime.UtcNow,
+        };
+
+        db.Users.Add(admin);
+        await db.SaveChangesAsync();
+    }
 }
 
 if (app.Environment.IsProduction())

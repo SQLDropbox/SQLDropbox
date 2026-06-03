@@ -19,12 +19,12 @@ namespace SQLDropbox.Repositories
             await context.Schemas.ExecuteDeleteAsync();
             await context.Chapters.ExecuteDeleteAsync();
             await context.Courses.ExecuteDeleteAsync();
-            await context.Users.ExecuteDeleteAsync();
+            await context.Users.Where(u => u.Role != Role.Admin).ExecuteDeleteAsync();
         }
 
         public static async Task SeedAsyncDev(AppDbContext context, PasswordService ps)
         {
-            /* ADMINS */
+            /* ADMIN */
             var admin = new User
             {
                 UserCode = "admin",
