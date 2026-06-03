@@ -93,10 +93,10 @@ function TableSheet({
             <table className="min-w-full border-collapse font-mono text-sm text-ink">
                 <thead className="bg-surface-2">
                     <tr>
-                        {headers.map((header) => (
+                        {headers.map((header, i) => (
                             <th
-                                key={header}
-                                className="border-b border-r border-border px-4 py-3 text-left text-[10px] uppercase tracking-[0.2em] text-muted last:border-r-0"
+                                key={i}
+                                className="border-b border-r border-border p-2 text-left text-[10px] uppercase tracking-[0.2em] text-muted last:border-r-0"
                             >
                                 {header}
                             </th>
@@ -108,12 +108,12 @@ function TableSheet({
                         {rows.map((row, i) => (
                             <tr
                                 key={i}
-                                className="odd:bg-paper even:bg-surface-2/40"
+                                className="odd:bg-paper even:bg-surface-2/20"
                             >
                                 {row.map((cell, j) => (
                                     <td
                                         key={j}
-                                        className="border-r border-t border-border px-4 py-3 align-top last:border-r-0"
+                                        className="border-r border-t border-border p-2 align-top last:border-r-0"
                                     >
                                         {cell || "—"}
                                     </td>

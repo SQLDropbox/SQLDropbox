@@ -38,7 +38,7 @@ export default function ExerciseSidebar({
     return (
         <aside className="flex flex-col w-72 border-r-2 border-border bg-surface-3 px-6 py-8 gap-6">
             {/* HEADER */}
-            <div>
+            <div className="min-h-20">
                 <Link
                     href={`/${courseId}`}
                     className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-muted mb-6"

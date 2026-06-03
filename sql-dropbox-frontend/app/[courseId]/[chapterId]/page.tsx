@@ -63,6 +63,9 @@ export default function Page() {
             ? (activeExercise?.questionNL ?? activeExercise?.questionEN)
             : (activeExercise?.questionEN ?? activeExercise?.questionNL);
 
+    const chapterName =
+        locale === "nl" ? chapter?.chapterNameNL : chapter?.chapterNameEN;
+
     if (!chapterId || !courseId) {
         return (
             <div>
@@ -104,88 +107,87 @@ export default function Page() {
                     completedExerciseIds={completedExerciseIds}
                 />
 
-                <main className="flex-1 flex flex-col overflow-y-auto bg-surface-2">
-                    <div className="border-b-2 border-border px-8 py-8 bg-surface-2">
-                        <h1 className="font-display text-4xl font-bold mb-2">
-                            {chapter?.chapterNameEN ??
-                                chapter?.chapterNameNL ??
-                                t("chapterFallback", { chapterId })}
-                        </h1>
-                        <p className="font-mono text-sm text-muted max-w-2xl">
-                            {t("pageDescription")}
-                        </p>
-                    </div>
+                <main className="flex-1 flex flex-col">
+                    {isLoading ? (
+                        <div className="flex flex-col gap-6 bg-paper bg-ruled p-6 flex-1 animate-pulse">
+                            {/* Title */}
+                            <div className="h-8 w-64 bg-surface-2 border border-border" />
 
-                    <div className="flex-1 px-6 py-8 md:px-10 mx-10">
-                        {isLoading ? (
-                            <div className="space-y-4 animate-pulse">
-                                <div className="h-6 w-48 bg-surface-2 border border-border" />
-                                <div className="h-40 w-full bg-surface-2 border border-border" />
-                                <div className="h-64 w-full bg-surface-2 border border-border" />
+                            {/* Tab bar */}
+                            <div className="flex gap-2 border-b border-border pb-3">
+                                <div className="h-8 w-24 bg-surface-2 border border-border" />
+                                <div className="h-8 w-20 bg-surface-2 border border-border" />
+                                <div className="h-8 w-20 bg-surface-2 border border-border" />
                             </div>
-                        ) : activeExercise ? (
-                            <div
-                                key={activeExercise.exerciseId}
-                                className="space-y-6 bg-paper bg-ruled p-6"
-                            >
-                                <div className="flex flex-wrap gap-2 border-b border-border pb-3">
-                                    {PANEL_TABS.map((id) => (
-                                        <button
-                                            key={id}
-                                            type="button"
-                                            onClick={() => setActiveTab(id)}
-                                            className={`px-4 py-2 border font-mono text-[10px] uppercase tracking-[0.2em] transition-colors ${
-                                                activeTab === id
-                                                    ? "bg-paper border-border text-ink"
-                                                    : "bg-surface-2 border-transparent text-muted hover:border-border hover:text-ink"
-                                            }`}
-                                        >
-                                            {t(`panel.${id}`)}
-                                        </button>
-                                    ))}
-                                </div>
 
-                                <div>
-                                    {activeTab === "question" && (
-                                        <QuestionTab
-                                            exercise={activeExercise}
-                                            question={question}
-                                            schemaName={
-                                                chapter?.schema?.schemaName ??
-                                                ""
-                                            }
-                                            chapterId={chapterId}
-                                            onUpdate={refetch}
-                                        />
-                                    )}
-                                    {activeTab === "schema" && (
-                                        <SchemaTab
-                                            schemaName={
-                                                chapter?.schema?.schemaName ??
-                                                ""
-                                            }
-                                            schemaImage={
-                                                chapter?.schema?.schemaImage ??
-                                                null
-                                            }
-                                        />
-                                    )}
-                                    {activeTab === "history" && <HistoryTab />}
-                                </div>
+                            {/* Question text */}
+                            <div className="space-y-2">
+                                <div className="h-30 w-full bg-surface-2 border border-border" />
                             </div>
-                        ) : (
-                            <div className="border border-dashed border-border px-6 py-10 font-mono text-sm text-muted">
-                                {t("noExercises")}
-                            </div>
-                        )}
-                    </div>
+                        </div>
+                    ) : activeExercise ? (
+                        <div
+                            key={activeExercise.exerciseId}
+                            className="flex flex-col gap-6 bg-paper bg-ruled p-6 flex-1 pb-20"
+                        >
+                            <h1 className="font-display text-2xl font-bold">
+                                {chapterName}: Exercise {activeExerciseId}
+                            </h1>
 
-                    <div className="border-t border-border bg-surface-2 px-8 py-4 flex justify-between items-center">
+                            <div className="flex flex-wrap gap-2 border-b border-border pb-3">
+                                {PANEL_TABS.map((id) => (
+                                    <button
+                                        key={id}
+                                        type="button"
+                                        onClick={() => setActiveTab(id)}
+                                        className={`px-4 py-2 border font-mono text-[10px] uppercase tracking-[0.2em] transition-colors ${
+                                            activeTab === id
+                                                ? "bg-paper border-border text-ink"
+                                                : "bg-surface-2 border-transparent text-muted hover:border-border hover:text-ink"
+                                        }`}
+                                    >
+                                        {t(`panel.${id}`)}
+                                    </button>
+                                ))}
+                            </div>
+
+                            <div>
+                                {activeTab === "question" && (
+                                    <QuestionTab
+                                        exercise={activeExercise}
+                                        question={question}
+                                        schemaName={
+                                            chapter?.schema?.schemaName ?? ""
+                                        }
+                                        chapterId={chapterId}
+                                        onUpdate={refetch}
+                                    />
+                                )}
+                                {activeTab === "schema" && (
+                                    <SchemaTab
+                                        schemaName={
+                                            chapter?.schema?.schemaName ?? ""
+                                        }
+                                        schemaImage={
+                                            chapter?.schema?.schemaImage ?? null
+                                        }
+                                    />
+                                )}
+                                {activeTab === "history" && <HistoryTab />}
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="border border-dashed border-border px-6 py-10 font-mono text-sm text-muted">
+                            {t("noExercises")}
+                        </div>
+                    )}
+
+                    <div className="border-t border-border bg-paper/50 px-8 py-4 flex justify-between items-center">
                         <span className="font-mono text-[10px] uppercase tracking-widest text-muted">
                             {courseId.toUpperCase()}
                         </span>
                         <span className="font-mono text-[10px] uppercase tracking-widest text-muted">
-                            Chapter {chapterId}
+                            Chapter ID: {chapterId}
                         </span>
                     </div>
                 </main>

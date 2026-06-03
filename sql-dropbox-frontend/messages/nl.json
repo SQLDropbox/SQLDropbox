@@ -190,7 +190,8 @@
         "genericError": "Er is iets misgegaan",
         "expectedOutput": "Verwachte output",
         "expand": "Uitvouwen",
-        "collapse": "Inklappen"
+        "collapse": "Inklappen",
+        "noHistory": "Nog geen query-geschiedenis. Voer je eerste query uit om het hier te zien!"
     },
     "ExerciseSidebar": {
         "title": "Vragen",

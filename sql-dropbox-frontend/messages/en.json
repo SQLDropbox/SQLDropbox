@@ -190,7 +190,8 @@
         "genericError": "Something went wrong",
         "expectedOutput": "Expected output",
         "expand": "Expand",
-        "collapse": "Collapse"
+        "collapse": "Collapse",
+        "noHistory": "No query history yet. Run your first query to see it here!"
     },
     "ExerciseSidebar": {
         "title": "Questions",
