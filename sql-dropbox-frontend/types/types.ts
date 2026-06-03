@@ -129,4 +129,14 @@ export interface Lecturer {
 export interface UserExercise {
     userExerciseId: number;
     isCompleted: boolean;
+
+    userSolutions?: UserSolution[];
+}
+
+export interface UserSolution {
+    userSolutionId: number;
+    query: string;
+    createdAt: string;
+    isCorrect: boolean;
+    errorMessage?: string | null;
 }

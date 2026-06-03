@@ -401,7 +401,8 @@ public class ChapterController(AppDbContext db, AuthorizationService authorizati
                                             us.UserSolutionId,
                                             us.Query,
                                             us.IsCorrect,
-                                            us.ErrorMessage
+                                            us.ErrorMessage,
+                                            us.CreatedAt
                                         })
                                         .ToList()
                                 })

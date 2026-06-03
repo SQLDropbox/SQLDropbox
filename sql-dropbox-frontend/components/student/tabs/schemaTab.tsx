@@ -1,7 +1,7 @@
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 
-export default function DatabaseSchemaCard({
+export default function SchemaTab({
     schemaName,
     schemaImage,
 }: {
@@ -20,15 +20,16 @@ export default function DatabaseSchemaCard({
         const el = imageContainerRef.current;
         if (!el) return;
 
-        const handleWheelEvent = (e: WheelEvent) => {
+        const handleWheel = (e: WheelEvent) => {
             if (!isHoveringImage) return;
             e.preventDefault();
-            const delta = -e.deltaY * 0.0015;
-            setScale((prev) => Math.min(Math.max(prev + delta, 0.5), 4));
+            setScale((prev) =>
+                Math.min(Math.max(prev + -e.deltaY * 0.0015, 0.5), 4),
+            );
         };
 
-        el.addEventListener("wheel", handleWheelEvent, { passive: false });
-        return () => el.removeEventListener("wheel", handleWheelEvent);
+        el.addEventListener("wheel", handleWheel, { passive: false });
+        return () => el.removeEventListener("wheel", handleWheel);
     }, [isHoveringImage]);
 
     const zoomIn = () => setScale((prev) => Math.min(prev + 0.2, 4));
@@ -40,21 +41,13 @@ export default function DatabaseSchemaCard({
 
     const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
         setIsDragging(true);
-        setDragStart({
-            x: e.clientX - position.x,
-            y: e.clientY - position.y,
-        });
+        setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
     };
 
     const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
         if (!isDragging) return;
-        setPosition({
-            x: e.clientX - dragStart.x,
-            y: e.clientY - dragStart.y,
-        });
+        setPosition({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
     };
-
-    const handleMouseUp = () => setIsDragging(false);
 
     return (
         <div className="space-y-4">
@@ -102,9 +95,12 @@ export default function DatabaseSchemaCard({
                             className="relative h-[600px] overflow-hidden border border-border bg-paper touch-none"
                             style={{ overscrollBehavior: "contain" }}
                             onMouseEnter={() => setIsHoveringImage(true)}
-                            onMouseLeave={() => setIsHoveringImage(false)}
+                            onMouseLeave={() => {
+                                setIsHoveringImage(false);
+                                setIsDragging(false);
+                            }}
                             onMouseMove={handleMouseMove}
-                            onMouseUp={handleMouseUp}
+                            onMouseUp={() => setIsDragging(false)}
                         >
                             <div
                                 onMouseDown={handleMouseDown}

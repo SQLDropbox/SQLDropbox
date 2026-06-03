@@ -167,7 +167,7 @@
         "panel": {
             "question": "Vraag",
             "schema": "Databaseschema",
-            "output": "Verwachte output"
+            "history": "Geschiedenis"
         },
         "exercisePrompt": "Oefening",
         "exerciseQuestionFallback": "Oefingsvraag",
@@ -187,7 +187,11 @@
         "running": "Running...",
         "noSchemaLinkedError": "Er is geen databaseschema gekoppeld aan dit hoofdstuk.",
         "missingSyntax": "Ontbrekende vereiste SQL-syntaxis: {list}",
-        "genericError": "Er is iets misgegaan"
+        "genericError": "Er is iets misgegaan",
+        "expectedOutput": "Verwachte output",
+        "expand": "Uitvouwen",
+        "collapse": "Inklappen",
+        "noHistory": "Nog geen query-geschiedenis. Voer je eerste query uit om het hier te zien!"
     },
     "ExerciseSidebar": {
         "title": "Vragen",

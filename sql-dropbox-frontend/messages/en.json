@@ -167,7 +167,7 @@
         "panel": {
             "question": "Question",
             "schema": "Database Schema",
-            "output": "Expected Output"
+            "history": "History"
         },
         "exercisePrompt": "Exercise prompt",
         "exerciseQuestionFallback": "Exercise question",
@@ -187,7 +187,11 @@
         "running": "Running...",
         "noSchemaLinkedError": "No database schema is linked to this chapter.",
         "missingSyntax": "Missing required SQL syntax: {list}",
-        "genericError": "Something went wrong"
+        "genericError": "Something went wrong",
+        "expectedOutput": "Expected output",
+        "expand": "Expand",
+        "collapse": "Collapse",
+        "noHistory": "No query history yet. Run your first query to see it here!"
     },
     "ExerciseSidebar": {
         "title": "Questions",
