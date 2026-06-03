@@ -25,6 +25,21 @@ export default function QuestionTab({
         <div className="flex flex-col gap-10">
             <p className="font-mono text-ink">{question}</p>
 
+            <div>
+                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted mb-2">
+                    {t("workspaceLabel")}
+                </p>
+                <h3 className="font-mono font-bold text-ink mb-1">
+                    {t("yourSqlQuery")}
+                </h3>
+                <QueryWorkspace
+                    exercise={exercise}
+                    schemaName={schemaName}
+                    chapterId={chapterId}
+                    onUpdate={onUpdate}
+                />
+            </div>
+
             {exercise.queryOutput && (
                 <div className="flex flex-col gap-2">
                     <div className="flex items-center justify-between">
@@ -50,21 +65,6 @@ export default function QuestionTab({
                     />
                 </div>
             )}
-
-            <div>
-                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted mb-2">
-                    {t("workspaceLabel")}
-                </p>
-                <h3 className="font-mono font-bold text-ink mb-1">
-                    {t("yourSqlQuery")}
-                </h3>
-                <QueryWorkspace
-                    exercise={exercise}
-                    schemaName={schemaName}
-                    chapterId={chapterId}
-                    onUpdate={onUpdate}
-                />
-            </div>
         </div>
     );
 }

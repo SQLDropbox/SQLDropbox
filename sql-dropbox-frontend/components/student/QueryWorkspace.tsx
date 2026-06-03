@@ -118,6 +118,7 @@ export default function QueryWorkspace({
             setIsExecuting(true);
             setQueryError(null);
             setQueryResult(null);
+            setShowHint(false);
 
             const submission = await exerciseService.submitSolution(
                 exercise.exerciseId,
@@ -229,6 +230,12 @@ export default function QueryWorkspace({
                 )}
             </div>
 
+            {queryError && (
+                <div className="border-l-4 border-error my-2 bg-surface-2 px-4 py-3 font-mono text-sm text-error mb-0">
+                    {queryError}
+                </div>
+            )}
+
             {showHint && hint && (
                 <div className="border-l-4 border-warning my-2 bg-surface-2 px-4 py-3 font-mono text-sm text-muted mb-0">
                     {hint}
@@ -257,12 +264,6 @@ export default function QueryWorkspace({
                     </button>
                 )}
             </div>
-
-            {queryError && (
-                <div className="py-3 font-mono text-sm text-error mt-2">
-                    {queryError}
-                </div>
-            )}
 
             {queryResult && (
                 <QueryResult result={{ type: "csv", data: queryResult }} />
