@@ -168,7 +168,7 @@ namespace SQLDropbox.Services
                 @"SET LOCAL ROLE sqldropbox_select_exercise_user;", conn, tx))
             {
                 await setRole.ExecuteNonQueryAsync();
-            }            
+            }
 
             await using (var cmd = new NpgsqlCommand(
                 $@"SET search_path TO ""{schemaName}"";", conn, tx))

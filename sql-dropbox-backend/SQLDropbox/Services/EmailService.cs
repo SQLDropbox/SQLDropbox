@@ -1,7 +1,5 @@
 ﻿using brevo_csharp.Api;
-using brevo_csharp.Client;
 using brevo_csharp.Model;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace SQLDropbox.Services
 {

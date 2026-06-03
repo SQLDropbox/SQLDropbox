@@ -359,7 +359,8 @@ namespace SQLDropbox.Controllers
                 await _db.SaveChangesAsync();
 
                 return Ok();
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }

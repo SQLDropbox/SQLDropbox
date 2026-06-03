@@ -37,7 +37,7 @@ namespace SQLDropbox.Services
             List<Exercise> possibleExercises = [.. chapter.Exercises
                     .Where(e => !e.UserExercises.Any(se => se.User == user))
                     .OrderBy(e => e.ExerciseId)];
-            
+
             List<UserExercise> userExercises = [];
 
             for (int i = 0; i < amount; i++)

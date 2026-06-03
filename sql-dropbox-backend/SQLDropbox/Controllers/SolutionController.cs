@@ -63,12 +63,12 @@ public class SolutionController(AppDbContext db, SolutionService solutionService
             {
                 await _soS.RegisterUserSolution(formattedQuery, exercise, user, null);
                 return Ok(new { message = "Well done, this query was correct!" });
-            }           
+            }
 
             if (exercise.QueryAction != QueryAction.Select)
                 return BadRequest(new { message = "The solution must be a select query." });
 
-            string queryOutput = await _scS.ExecuteSelectOnSchemaAsync(exercise.Chapter.Schema.SchemaName, formattedQuery);            
+            string queryOutput = await _scS.ExecuteSelectOnSchemaAsync(exercise.Chapter.Schema.SchemaName, formattedQuery);
 
             // TODO -> If the query above fails, or the output doesn't match, a specific error should be returned here
             // TODO -> ask if teammember's function returns a specific error? SHould it be caught in the catch? Return the output regardless?
@@ -196,7 +196,7 @@ public class SolutionController(AppDbContext db, SolutionService solutionService
             if (exercise.ValidationQuery == null)
                 return BadRequest(new { message = $"This {exercise.QueryAction} query cannot be validated." });
 
-            string queryOutput = await _scS.ExecuteInsertUpdateDeleteOnSchemaAsync(exercise.Chapter.Schema.SchemaName, formattedQuery, exercise.ValidationQuery);            
+            string queryOutput = await _scS.ExecuteInsertUpdateDeleteOnSchemaAsync(exercise.Chapter.Schema.SchemaName, formattedQuery, exercise.ValidationQuery);
 
             // TODO -> If the query above fails, or the output doesn't match, a specific error should be returned here
             // TODO -> ask if teammember's function returns a specific error? SHould it be caught in the catch? Return the output regardless?
