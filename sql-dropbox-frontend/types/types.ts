@@ -44,8 +44,9 @@ export interface Chapter {
     schemaId?: number | null;
     schemaName?: string;
     completedAmount?: number;
-
     exercises?: Exercise[];
+    startDate?: string | null;
+    deadline?: string | null;
 }
 
 export enum QueryAction {

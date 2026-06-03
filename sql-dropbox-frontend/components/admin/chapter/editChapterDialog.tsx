@@ -32,6 +32,8 @@ const emptyForm: Partial<Chapter> = {
     chapterDescriptionNL: "",
     chapterDescriptionEN: "",
     amountOfExercises: 0,
+    startDate: null,
+    deadline: null,
     schema: {
         schemaId: null,
         schemaName: "",
@@ -75,6 +77,8 @@ export default function EditChapterDialog({
                 chapterDescriptionNL: fullChapter.chapterDescriptionNL ?? "",
                 chapterDescriptionEN: fullChapter.chapterDescriptionEN ?? "",
                 amountOfExercises: fullChapter.amountOfExercises ?? 0,
+                startDate: fullChapter.startDate ? fullChapter.startDate.split("T")[0]: null,
+                deadline: fullChapter.deadline ? fullChapter.deadline.split("T")[0]: null,
                 courseId: courseId,
                 schema: {
                     schemaId: fullChapter.schema.schemaId ?? null,
@@ -112,6 +116,8 @@ export default function EditChapterDialog({
                 chapterDescriptionNL: form.chapterDescriptionNL ?? "",
                 chapterDescriptionEN: form.chapterDescriptionEN ?? "",
                 amountOfExercises: form.amountOfExercises ?? 0,
+                startDate: form.startDate || null,
+                deadline: form.deadline || null,
                 schemaId: form.schema?.schemaId ?? null,
                 schemaName: form.schema?.schemaName ?? "",
             };
@@ -254,6 +260,34 @@ export default function EditChapterDialog({
                                         e.target.value === ""
                                             ? 0
                                             : Number(e.target.value),
+                                }))
+                            }
+                            className="w-full bg-transparent border-b border-border py-1 text-sm focus:border-accent outline-none"
+                        />
+                    </Field>
+
+                    <Field label={"startDate"}>
+                        <input
+                            type="date"
+                            value={form.startDate ?? ""}
+                            onChange={(e) =>
+                                setForm((prev) => ({
+                                    ...prev,
+                                    startDate: e.target.value || null,
+                                }))
+                            }
+                            className="w-full bg-transparent border-b border-border py-1 text-sm focus:border-accent outline-none"
+                        />
+                    </Field>
+
+                    <Field label={"deadline"}>
+                        <input
+                            type="date"
+                            value={form.deadline ?? ""}
+                            onChange={(e) =>
+                                setForm((prev) => ({
+                                    ...prev,
+                                    deadline: e.target.value || null,
                                 }))
                             }
                             className="w-full bg-transparent border-b border-border py-1 text-sm focus:border-accent outline-none"

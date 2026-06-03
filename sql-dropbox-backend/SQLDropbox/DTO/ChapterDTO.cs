@@ -10,5 +10,6 @@ namespace SQLDropbox.DTO
         public int SchemaId { get; set; } = 2;
         public string? SchemaName { get; set; }
         public DateTime? StartDate { get; set; }
+        public DateTime? Deadline { get; set; }
     }
 }

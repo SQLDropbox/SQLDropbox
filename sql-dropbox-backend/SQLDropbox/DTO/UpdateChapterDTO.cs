@@ -8,4 +8,6 @@ public class UpdateChapterDTO
     public string? ChapterDescriptionEN { get; set; }
     public int? AmountOfExercises { get; set; }
     public int? SchemaId { get; set; }
+    public DateTime? StartDate { get; set; }
+    public DateTime? Deadline { get; set; }
 }
