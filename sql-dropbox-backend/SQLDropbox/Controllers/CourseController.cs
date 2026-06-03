@@ -111,17 +111,22 @@ public class CourseController(AppDbContext db, AuthorizationService authorizatio
                 course.IsActive,
                 totalCourseCount,
                 chapters = course.Chapters
-                .Select(x => new
-                {
-                    x.ChapterId,
-                    x.ChapterNameEN,
-                    x.ChapterNameNL,
-                    x.ChapterDescriptionEN,
-                    x.ChapterDescriptionNL,
-                    x.AmountOfExercises,
-                    x.Course.CourseId,
-                    completedAmount = x.Exercises.Take(x.AmountOfExercises ?? 0).Sum(e => e.UserExercises.Count(ue => ue.User.UserId == userId && ue.IsCompleted))
-                })
+                    .Where(c => role != Role.Student || !c.StartDate.HasValue || c.StartDate.Value.Date <= DateTime.UtcNow.Date)
+                    .OrderBy(c => c.Order)
+                    .Select(x => new
+                    {
+                        x.ChapterId,
+                        x.ChapterNameEN,
+                        x.ChapterNameNL,
+                        x.ChapterDescriptionEN,
+                        x.ChapterDescriptionNL,
+                        x.AmountOfExercises,
+                        x.Course.CourseId,
+                        x.StartDate,
+                        x.Deadline,
+
+                        completedAmount = x.Exercises.Take(x.AmountOfExercises ?? 0).Sum(e => e.UserExercises.Count(ue => ue.User.UserId == userId && ue.IsCompleted))
+                    })
             });
         }
         catch (UnauthorizedAccessException)
