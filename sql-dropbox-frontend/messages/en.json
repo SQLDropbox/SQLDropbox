@@ -167,7 +167,7 @@
         "panel": {
             "question": "Question",
             "schema": "Database Schema",
-            "output": "Expected Output"
+            "history": "History"
         },
         "exercisePrompt": "Exercise prompt",
         "exerciseQuestionFallback": "Exercise question",
