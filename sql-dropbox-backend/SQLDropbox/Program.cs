@@ -127,14 +127,8 @@ if (app.Environment.IsProduction())
     // Delete the passwordservice
     PasswordService pass = scope.ServiceProvider.GetRequiredService<PasswordService>();
 
-    // Delete the delete
-    await db.Database.EnsureDeletedAsync();
-
     // Keep the migration
     await db.Database.MigrateAsync();
-
-    // Delete the seed
-    await DbInitializer.SeedAsyncProd(db, pass);
 
     app.UseHttpsRedirection();
     app.UsePathBase("/api");
