@@ -187,7 +187,10 @@
         "running": "Running...",
         "noSchemaLinkedError": "Er is geen databaseschema gekoppeld aan dit hoofdstuk.",
         "missingSyntax": "Ontbrekende vereiste SQL-syntaxis: {list}",
-        "genericError": "Er is iets misgegaan"
+        "genericError": "Er is iets misgegaan",
+        "expectedOutput": "Verwachte output",
+        "expand": "Uitvouwen",
+        "collapse": "Inklappen"
     },
     "ExerciseSidebar": {
         "title": "Vragen",

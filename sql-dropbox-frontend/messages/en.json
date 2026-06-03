@@ -187,7 +187,10 @@
         "running": "Running...",
         "noSchemaLinkedError": "No database schema is linked to this chapter.",
         "missingSyntax": "Missing required SQL syntax: {list}",
-        "genericError": "Something went wrong"
+        "genericError": "Something went wrong",
+        "expectedOutput": "Expected output",
+        "expand": "Expand",
+        "collapse": "Collapse"
     },
     "ExerciseSidebar": {
         "title": "Questions",
