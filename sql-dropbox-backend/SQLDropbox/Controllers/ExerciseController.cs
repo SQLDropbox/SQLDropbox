@@ -195,6 +195,7 @@ public class ExerciseController(AppDbContext db, AuthorizationService authorizat
                 .Include(e => e.Chapter)
                 .ThenInclude(c => c.Schema)
                 .Include(e => e.Solutions)
+                .Include(e => e.Requirements)
                 .FirstOrDefaultAsync(e => e.ExerciseId == id);
 
             if (exercise == null) return BadRequest(new { message = "Exercise not found." });
@@ -239,14 +240,20 @@ public class ExerciseController(AppDbContext db, AuthorizationService authorizat
                 ];
             }
 
-            exercise.Requirements.Clear();
-            exercise.Requirements = [.. dto.Requirements.Select(r => new Requirement
+            _db.Requirements.RemoveRange(exercise.Requirements); 
+            
+            if (dto.Requirements != null)
+            {
+                foreach (var r in dto.Requirements)
+                {
+                    exercise.Requirements.Add(new Requirement
                     {
                         Statement = r.Statement,
                         IsBlacklist = r.IsBlacklist,
-                        IsHidden = r.IsHidden,
-                    })
-            ];
+                        IsHidden = r.IsHidden
+                    });
+                }
+            }
 
             if (exercise.QueryAction != QueryAction.Select && dto.ValidationQuery != null)
             {
