@@ -13,9 +13,9 @@ import { FiTrash2, FiPlus } from "react-icons/fi";
 interface Props {
     open: boolean;
     onClose: () => void;
-    onSuccess: () => void;
     mode: "add" | "edit";
     exercise?: Exercise;
+    onSuccess: () => void;
 }
 
 type FormErrors = Partial<Record<keyof Exercise, string>>;
@@ -34,9 +34,9 @@ const emptyForm: Omit<Exercise, "exerciseId"> = {
 export default function EditExerciseDialog({
     open,
     onClose,
-    onSuccess,
     mode,
     exercise,
+    onSuccess,
 }: Props) {
     const isEdit = mode === "edit";
     const { isAdmin } = useAuth();
@@ -117,8 +117,8 @@ export default function EditExerciseDialog({
             } else {
                 await exerciseService.addExercise(form);
             }
-            onSuccess();
             onClose();
+            onSuccess();
         } catch (err: any) {
             setErrorDialog(err?.message || "Failed to save exercise");
         }

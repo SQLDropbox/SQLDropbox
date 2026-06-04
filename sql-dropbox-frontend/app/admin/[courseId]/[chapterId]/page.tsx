@@ -31,6 +31,7 @@ export default function ChapterExercisesPage() {
         data: chapter,
         isLoading,
         error,
+        refetch,
     } = useQuery<Chapter>({
         queryKey: ["exercises", chapterIdNumber],
         queryFn: () => exerciseService.getAllExercisesByChapterId(chapterId),
@@ -116,7 +117,7 @@ export default function ChapterExercisesPage() {
                 onClose={() => setIsDialogOpen(false)}
                 mode={dialogMode}
                 exercise={selectedExercise}
-                onSuccess={() => {console.error("DO THIS PLEASE")}}
+                onSuccess={refetch}
             />
         </div>
     );
