@@ -366,6 +366,10 @@ public class ChapterController(AppDbContext db, AuthorizationService authorizati
                             e.HintEN,
                             e.QueryOutput,
                             e.QueryAction,
+                            solutionQuery = e.Solutions
+                                .OrderBy(x => x.SolutionId)
+                                .Select(x => x.Query)
+                                .FirstOrDefault(),
 
                             Requirements = e.Requirements
                                 .Select(r => new
