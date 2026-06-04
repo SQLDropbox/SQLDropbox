@@ -80,7 +80,8 @@ public class ExerciseController(AppDbContext db, AuthorizationService authorizat
                 Requirements = [.. dto.Requirements.Select(r => new Requirement
                     {
                         Statement = r.Statement,
-                        Use = r.Use,
+                        IsBlacklist = r.IsBlacklist,
+                        IsHidden = r.IsHidden,
                     })
                 ]
             };
@@ -209,7 +210,8 @@ public class ExerciseController(AppDbContext db, AuthorizationService authorizat
             exercise.Requirements = [.. dto.Requirements.Select(r => new Requirement
                     {
                         Statement = r.Statement,
-                        Use = r.Use,
+                        IsBlacklist = r.IsBlacklist,
+                        IsHidden = r.IsHidden,
                     })
             ];
 

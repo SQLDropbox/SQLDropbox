@@ -30,13 +30,13 @@ namespace SQLDropbox.Services
             {
                 bool containsStatement = formattedQuery.Contains(requirement.Statement, StringComparison.CurrentCultureIgnoreCase);
 
-                if (requirement.Use && !containsStatement)
-                {
-                    return (false, $"You must use {requirement.Statement}.");
-                }
-                if (!requirement.Use && containsStatement)
+                if (requirement.IsBlacklist && containsStatement)
                 {
                     return (false, $"You can't use {requirement.Statement}.");
+                }
+                if (!requirement.IsBlacklist && !containsStatement)
+                {
+                    return (false, $"You must use {requirement.Statement}.");
                 }
             }
             return (true, "The query is correct.");
