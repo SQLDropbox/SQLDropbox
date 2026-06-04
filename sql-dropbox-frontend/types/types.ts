@@ -75,7 +75,7 @@ export interface Requirement {
     requirementId: number;
     statement: string;
     isBlacklist: boolean;
-    hidden: boolean;
+    isHidden: boolean;
     exerciseId?: number;
     createdAt?: string;
     updatedAt?: string | null;

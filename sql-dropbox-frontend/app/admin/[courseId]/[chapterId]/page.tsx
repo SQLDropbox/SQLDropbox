@@ -115,8 +115,8 @@ export default function ChapterExercisesPage() {
                 open={isDialogOpen}
                 onClose={() => setIsDialogOpen(false)}
                 mode={dialogMode}
-                chapterId={chapterIdNumber}
                 exercise={selectedExercise}
+                onSuccess={() => {console.error("DO THIS PLEASE")}}
             />
         </div>
     );

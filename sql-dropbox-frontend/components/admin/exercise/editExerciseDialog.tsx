@@ -24,7 +24,7 @@ interface RequirementDraft {
     _localId: string;
     statement: string;
     isBlacklist: boolean;
-    hidden: boolean;
+    isHidden: boolean;
 }
 
 const emptyForm: Omit<Exercise, "exerciseId"> = {
@@ -69,6 +69,8 @@ export default function EditExerciseDialog({
         return errs;
     }
 
+    console.log(exercise)
+
     useEffect(() => {
         if (!open) return;
         setErrors({});
@@ -91,7 +93,7 @@ export default function EditExerciseDialog({
                     _localId: String(r.requirementId),
                     statement: r.statement,
                     isBlacklist: r.isBlacklist,
-                    hidden: r.hidden,
+                    isHidden: r.isHidden,
                 })),
             );
         } else {
@@ -259,9 +261,7 @@ export default function EditExerciseDialog({
                                         <input
                                             type="radio"
                                             name="queryAction"
-                                            checked={
-                                                QueryAction.Select === value
-                                            }
+                                            checked={form.queryAction === value}
                                             onChange={() =>
                                                 setForm((p) => ({
                                                     ...p,
@@ -286,7 +286,7 @@ export default function EditExerciseDialog({
                             name="solutionQuery"
                             value={form.solutionQuery ?? ""}
                             onChange={handleChange}
-                            rows={6}w
+                            rows={6}
                             placeholder="SELECT ..."
                             className="w-full bg-transparent border border-border p-2 text-sm resize-none focus:border-accent outline-none font-mono placeholder:text-muted/40"
                         />
@@ -336,7 +336,7 @@ export default function EditExerciseDialog({
                                             _localId: crypto.randomUUID(),
                                             statement: "",
                                             isBlacklist: false,
-                                            hidden: false,
+                                            isHidden: false,
                                         },
                                     ])
                                 }
@@ -446,7 +446,7 @@ export default function EditExerciseDialog({
                                                     <div className="relative flex items-center justify-center w-4 h-4 shrink-0">
                                                         <input
                                                             type="checkbox"
-                                                            checked={req.hidden}
+                                                            checked={req.isHidden}
                                                             onChange={(e) =>
                                                                 setRequirements(
                                                                     (prev) =>
@@ -458,7 +458,7 @@ export default function EditExerciseDialog({
                                                                                 req._localId
                                                                                     ? {
                                                                                           ...r,
-                                                                                          hidden: e
+                                                                                          isHidden: e
                                                                                               .target
                                                                                               .checked,
                                                                                       }
