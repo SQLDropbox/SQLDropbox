@@ -47,6 +47,8 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
             {
                 if (user.Password != null)
                     return BadRequest("This account is already set up.");
+                
+                dto.Password = dto.Password.Trim();
 
                 string hashedPassword = _pS.HashPassword(dto.Password);
                 user.Password = hashedPassword;
@@ -78,6 +80,9 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
         {
             if (dto.EmailOrCode == null || dto.Password == null)
                 return BadRequest("Email or code and password are required.");
+
+            dto.EmailOrCode = dto.EmailOrCode.Trim();
+            dto.Password = dto.Password.Trim();
 
             User? user = dto.EmailOrCode.Contains('@') ?
                 await _db.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == dto.EmailOrCode.ToLower()) :
