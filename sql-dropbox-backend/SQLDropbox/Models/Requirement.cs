@@ -11,7 +11,8 @@ namespace SQLDropbox.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int RequirementId { get; set; }
         public required string Statement { get; set; }
-        public bool Use { get; set; } = false;
+        public bool IsBlacklist { get; set; }
+        public bool IsHidden { get; set; }
 
         [JsonIgnore]
         public Exercise Exercise { get; set; } = null!;

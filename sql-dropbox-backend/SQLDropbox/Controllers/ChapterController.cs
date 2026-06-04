@@ -225,114 +225,6 @@ public class ChapterController(AppDbContext db, AuthorizationService authorizati
         }
     }
 
-    //[Authorize]
-    //[HttpGet("{chapterId}/exercises-old")]
-    //public async Task<ActionResult<IEnumerable<Exercise>>> GetExercisesByChapterOld(int chapterId)
-    //{
-    //    try
-    //    {
-    //        var (userId, role) = IsAuthenticated();
-
-    //        if (role == Role.Student)
-    //        {
-    //            await _aS.UserHasAccessToChapter(userId, role, chapterId);
-
-    //            User? student = await _db.Users
-    //                .Where(u => u.UserId == userId)
-    //                .FirstOrDefaultAsync();
-
-    //            if (student == null)
-    //                return NotFound("Student not found.");
-
-    //            Chapter? chapterForStudent = await _db.Chapters
-    //              .Where(c => c.ChapterId == chapterId)
-    //              .Include(c => c.Exercises
-    //                  .OrderBy(e => e.ExerciseId)
-    //              )
-    //              .ThenInclude(e => e.UserExercises
-    //                .Where(ue => ue.User == student)
-    //              )
-    //              .FirstOrDefaultAsync();
-
-    //            if (chapterForStudent == null)
-    //                return BadRequest(new { message = $"Chapter with ID {chapterId} not found." });
-
-    //            int amount = chapterForStudent.AmountOfExercises ?? 0;
-
-    //            List<Exercise> currentExercises = [.. chapterForStudent.Exercises
-    //                .Where(e => e.UserExercises.Any(se => se.User == student))
-    //                .OrderBy(e => e.ExerciseId)];
-
-    //            if (currentExercises.Count == amount)
-    //                return Ok(currentExercises);
-
-    //            List<Exercise> possibleExercises = [.. chapterForStudent.Exercises
-    //                .Where(e => !e.UserExercises.Any(se => se.User == student))
-    //                .OrderBy(e => e.ExerciseId)];
-
-    //            List<Exercise> exercises = currentExercises;
-    //            List<UserExercise> userExercises = [];
-
-    //            for (int i = 0; i < amount; i++)
-    //            {
-    //                if (possibleExercises.Count == 0)
-    //                    return BadRequest(new { message = "No possible exercise left for this chapter." });
-
-    //                int random = Random.Shared.Next(possibleExercises.Count);
-    //                Exercise randomExercise = possibleExercises[random];
-
-    //                if (randomExercise == null)
-    //                    return BadRequest(new { message = "Error occured selecting a random exercise." });
-
-    //                userExercises.Add(new UserExercise
-    //                {
-    //                    IsCompleted = false,
-    //                    Exercise = randomExercise,
-    //                    User = student,
-    //                    CreatedAt = DateTime.UtcNow,
-    //                });
-
-    //                exercises.Add(randomExercise);
-    //                possibleExercises.RemoveAll(e => e.ExerciseId == randomExercise.ExerciseId);
-    //            }
-
-    //            _db.UserExercises.AddRange(userExercises);
-    //            await _db.SaveChangesAsync();
-
-    //            return Ok(exercises);
-    //        }
-
-    //        if (role == Role.Lecturer)
-    //        {
-    //            bool lecturerHasAccess = await _db.Chapters.AnyAsync(c => c.ChapterId == chapterId && c.Course.Lecturers.Any(l => l.UserId == userId));
-
-    //            if (!lecturerHasAccess)
-    //                return Unauthorized(new { message = "You're not registerd as a lecturer for this course." });
-    //        }
-
-    //        Chapter? chapter = await _db.Chapters
-    //            .Where(c => c.ChapterId == chapterId)
-    //            .Include(c => c.Exercises)
-    //                .ThenInclude(e => e.Requirements)
-    //            .Include(c => c.Exercises)
-    //                .ThenInclude(e => e.Solutions)
-    //            .FirstOrDefaultAsync();
-
-    //        if (chapter == null)
-    //            return NotFound(new { message = "Chapter not found." });
-
-    //        return Ok(chapter.Exercises);
-    //    }
-    //    catch (UnauthorizedAccessException)
-    //    {
-    //        return Unauthorized(new { message = "You're not authorized to access this resource." });
-    //    }
-    //    catch (Exception ex)
-    //    {
-    //        return BadRequest(ex);
-    //    }
-    //}
-
     [Authorize]
     [HttpGet("{chapterId}/exercises")]
     public async Task<IActionResult> GetRandomExercisesByChapter(int chapterId)
@@ -384,7 +276,8 @@ public class ChapterController(AppDbContext db, AuthorizationService authorizati
                                 .Select(r => new
                                 {
                                     r.Statement,
-                                    r.Use
+                                    r.IsBlacklist,
+                                    r.IsHidden
                                 })
                                 .ToList(),
 
@@ -473,12 +366,17 @@ public class ChapterController(AppDbContext db, AuthorizationService authorizati
                             e.HintEN,
                             e.QueryOutput,
                             e.QueryAction,
+                            solutionQuery = e.Solutions
+                                .OrderBy(x => x.SolutionId)
+                                .Select(x => x.Query)
+                                .FirstOrDefault(),
 
                             Requirements = e.Requirements
                                 .Select(r => new
                                 {
                                     r.Statement,
-                                    r.Use
+                                    r.IsBlacklist,
+                                    r.IsHidden
                                 })
                                 .ToList(),
                         })

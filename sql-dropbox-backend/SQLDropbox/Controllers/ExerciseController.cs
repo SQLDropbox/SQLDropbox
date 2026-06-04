@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SQLDropbox.Data;
@@ -10,9 +11,10 @@ namespace SQLDropbox.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class ExerciseController(AppDbContext db, SolutionService solutionService, SchemaService schemaService) : BaseController
+public class ExerciseController(AppDbContext db, AuthorizationService authorizationService, SolutionService solutionService, SchemaService schemaService) : BaseController
 {
     private readonly AppDbContext _db = db;
+    private readonly AuthorizationService _aS = authorizationService;
     private readonly SolutionService _soS = solutionService;
     private readonly SchemaService _scS = schemaService;
 
@@ -25,11 +27,15 @@ public class ExerciseController(AppDbContext db, SolutionService solutionService
         return Ok(exercises);
     }
 
+    [Authorize(Roles = "Admin,Lecturer")]
     [HttpPost]
     public async Task<IActionResult> CreateExercise([FromBody] ExerciseDTO dto)
     {
         try
         {
+            var (userId, role) = IsAuthenticated();
+            await _aS.UserHasAccessToChapter(userId, role, dto.ChapterId);
+
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
@@ -43,7 +49,7 @@ public class ExerciseController(AppDbContext db, SolutionService solutionService
                 .FirstOrDefaultAsync(c => c.ChapterId == dto.ChapterId);
 
             if (chapter == null)
-                return BadRequest(new { message = $"Chapter with ID {dto.ChapterId} could not be found." });
+                return BadRequest(new { message = "Chapter not be found." });
 
             string formattedQuery = _soS.FormatQuery(dto.SolutionQuery);
             uint queryHash = await _soS.HashSolution(formattedQuery);
@@ -51,7 +57,7 @@ public class ExerciseController(AppDbContext db, SolutionService solutionService
             //If this returns an error, that error should be shown
             string queryOutput = await _scS.ExecuteSelectOnSchemaAsync(chapter.Schema.SchemaName, formattedQuery);
 
-            var newExercise = new Exercise
+            var exercise = new Exercise
             {
                 QuestionNL = dto.QuestionNL,
                 QuestionEN = dto.QuestionEN,
@@ -69,54 +75,86 @@ public class ExerciseController(AppDbContext db, SolutionService solutionService
                         QueryHash = queryHash,
                         CreatedAt = DateTime.UtcNow
                     }
+                ],
+
+                Requirements = [.. dto.Requirements.Select(r => new Requirement
+                    {
+                        Statement = r.Statement,
+                        IsBlacklist = r.IsBlacklist,
+                        IsHidden = r.IsHidden,
+                    })
                 ]
             };
 
-            await _db.Exercises.AddAsync(newExercise);
+            await _db.Exercises.AddAsync(exercise);
             await _db.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(CreateExercise), new { id = newExercise.ExerciseId }, newExercise);
+            return CreatedAtAction(nameof(CreateExercise), new { id = exercise.ExerciseId }, exercise);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized(new { message = "You're not authorized to access this resource." });
         }
         catch (Exception ex)
         {
-            return BadRequest(new
-            {
-                message = ex.Message
-            });
+            return BadRequest(ex);
         }
     }
 
+    [Authorize]
     [HttpGet("{id}")]
     public async Task<IActionResult> GetExerciseById(int id)
     {
-        var exercise = await _db.Exercises.Include(e => e.Solutions).FirstOrDefaultAsync(e => e.ExerciseId == id);
+        var exercise = await _db.Exercises
+            .Include(e => e.Solutions)
+            .Include(e => e.Requirements)
+            .FirstOrDefaultAsync(e => e.ExerciseId == id);
 
         if (exercise == null)
         {
-            return NotFound(new { message = $"Exercise with ID {id} not found." });
+            return NotFound(new { message = "Exercise not found." });
         }
         return Ok(exercise);
     }
 
+    [Authorize(Roles = "Admin,Lecturer")]
     [HttpDelete("{id}")]
-    public ActionResult DeleteExercise(int id)
+    public async Task<IActionResult> DeleteExercise(int id)
     {
-        var exercise = _db.Exercises.FirstOrDefault(x => x.ExerciseId == id);
-
-        if (exercise == null)
+        try
         {
-            return BadRequest(new { message = "Exercise not found." });
+            var (userId, role) = IsAuthenticated();
+            await _aS.UserHasAccessToExercise(userId, role, id);
+
+            var exercise = _db.Exercises.FirstOrDefault(x => x.ExerciseId == id);
+
+            if (exercise == null)
+            {
+                return BadRequest(new { message = "Exercise not found." });
+            }
+            exercise.DeletedAt = DateTime.UtcNow;
+            _db.SaveChanges();
+            return Ok();
         }
-        exercise.DeletedAt = DateTime.UtcNow;
-        _db.SaveChanges();
-        return Ok();
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized(new { message = "You're not authorized to access this resource." });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex);
+        }
     }
 
+    [Authorize(Roles = "Admin,Lecturer")]
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateExercise(int id, [FromBody] ExerciseUpdateDTO dto)
     {
         try
         {
+            var (userId, role) = IsAuthenticated();
+            await _aS.UserHasAccessToExercise(userId, role, id);
+
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
@@ -168,6 +206,15 @@ public class ExerciseController(AppDbContext db, SolutionService solutionService
                 ];
             }
 
+            exercise.Requirements.Clear();
+            exercise.Requirements = [.. dto.Requirements.Select(r => new Requirement
+                    {
+                        Statement = r.Statement,
+                        IsBlacklist = r.IsBlacklist,
+                        IsHidden = r.IsHidden,
+                    })
+            ];
+
             if (exercise.QueryAction != QueryAction.Select && dto.ValidationQuery != null)
             {
                 string formattedQuery = _soS.FormatQuery(dto.ValidationQuery);
@@ -182,9 +229,13 @@ public class ExerciseController(AppDbContext db, SolutionService solutionService
 
             return Ok(exercise);
         }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized(new { message = "You're not authorized to access this resource." });
+        }
         catch (Exception ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(ex);
         }
     }
 
