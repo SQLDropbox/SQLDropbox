@@ -108,11 +108,11 @@ namespace SQLDropbox.Services
             await using var conn = await OpenConnectionAsync();
             await using var tx = await conn.BeginTransactionAsync();
 
-            await using (var setRole = new NpgsqlCommand(
-                @"SET LOCAL ROLE sqldropbox_exercise_user;", conn, tx))
-            {
-                await setRole.ExecuteNonQueryAsync();
-            }
+            //await using (var setRole = new NpgsqlCommand(
+            //    @"SET LOCAL ROLE sqldropbox_exercise_user;", conn, tx))
+            //{
+            //    await setRole.ExecuteNonQueryAsync();
+            //}
 
             await using (var setPath = new NpgsqlCommand(
                 $@"SET LOCAL search_path TO ""{schemaName}"";", conn, tx))
@@ -185,6 +185,27 @@ namespace SQLDropbox.Services
             return result;
         }
 
+        // TODO --> integrate this functions needed version into insert update delete...
+        public async Task<string> ExecuteValidationSelectOnSchemaAsync(string schemaName, string selectQuery)
+        {
+            await using var conn = await OpenConnectionAsync();
+            await using var tx = await conn.BeginTransactionAsync();
+           
+            await using (var setPath = new NpgsqlCommand(
+                $@"SET LOCAL search_path TO ""{schemaName}"";", conn, tx))
+            {
+                await setPath.ExecuteNonQueryAsync();
+            }
+
+            var trimmed = selectQuery.Trim();
+            if (trimmed.EndsWith(';')) trimmed = trimmed[..^1];
+
+            var result = await _csv.ExportValidationQueryAsync(conn, tx, trimmed);
+
+            await tx.CommitAsync();
+            return result;
+        }
+
         public async Task<string> ExecuteInsertUpdateDeleteOnSchemaAsync(string sourceSchema, string query, string validationQuery)
         {
             string? cloned = null;
@@ -193,7 +214,7 @@ namespace SQLDropbox.Services
             {
                 cloned = await CloneSchemaAsync(sourceSchema);
                 await ExecuteQueryOnSchemaAsync(cloned, query);
-                return await ExecuteSelectOnSchemaAsync(cloned, validationQuery);
+                return await ExecuteValidationSelectOnSchemaAsync(cloned, validationQuery);
             }
             finally
             {

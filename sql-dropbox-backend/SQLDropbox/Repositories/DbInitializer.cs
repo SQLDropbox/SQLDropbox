@@ -24,158 +24,64 @@ namespace SQLDropbox.Repositories
 
         public static async Task SeedAsyncDev(AppDbContext context, PasswordService ps)
         {
-            await context.Database.ExecuteSqlRawAsync("""
-                /*
-                 CREATE UTIL SCHEMA
-                 */
+
+            await context.Database.ExecuteSqlRawAsync(@"
                 CREATE SCHEMA IF NOT EXISTS util;
-                /*
-                 CREATE CLONE PROCEDURE IN UTIL SCHEMA
-                 */
-                CREATE SCHEMA IF NOT EXISTS util;
+            ");
+
+            await context.Database.ExecuteSqlRawAsync(@"
                 CREATE OR REPLACE PROCEDURE util.sp_clone_schema(
-                        source_schema TEXT,
-                        target_schema TEXT
-                    ) LANGUAGE plpgsql SECURITY DEFINER AS $$
-                DECLARE r RECORD;
-                BEGIN EXECUTE format('CREATE SCHEMA IF NOT EXISTS %I', target_schema);
-                EXECUTE format(
-                    'ALTER SCHEMA %I OWNER TO sqldropbox_exercise_user',
-                    target_schema
-                );
-                FOR r IN
-                SELECT tablename
-                FROM pg_tables
-                WHERE schemaname = target_schema LOOP EXECUTE format(
-                        'DROP TABLE IF EXISTS %I.%I CASCADE',
-                        target_schema,
-                        r.tablename
-                    );
-                END LOOP;
-                FOR r IN
-                SELECT tablename
-                FROM pg_tables
-                WHERE schemaname = source_schema LOOP EXECUTE format(
-                        'CREATE TABLE %I.%I (LIKE %I.%I INCLUDING ALL INCLUDING IDENTITY)',
-                        target_schema,
-                        r.tablename,
-                        source_schema,
-                        r.tablename
-                    );
-                EXECUTE format(
-                    'ALTER TABLE %I.%I OWNER TO sqldropbox_exercise_user',
-                    target_schema,
-                    r.tablename
-                );
-                END LOOP;
-                FOR r IN
-                SELECT tablename
-                FROM pg_tables
-                WHERE schemaname = source_schema LOOP EXECUTE format(
-                        'INSERT INTO %I.%I SELECT * FROM %I.%I',
-                        target_schema,
-                        r.tablename,
-                        source_schema,
-                        r.tablename
-                    );
-                END LOOP;
-                FOR r IN
-                SELECT table_name,
-                    column_name
-                FROM information_schema.columns
-                WHERE table_schema = target_schema
-                    AND column_default LIKE 'nextval%' LOOP EXECUTE format(
-                        'SELECT setval(
-                                pg_get_serial_sequence(%L, %L),
-                                COALESCE((SELECT MAX(%I) FROM %I.%I), 1),
-                                true
-                            )',
-                        target_schema || '.' || r.table_name,
-                        r.column_name,
-                        r.column_name,
-                        target_schema,
-                        r.table_name
-                    );
-                END LOOP;
-                EXECUTE format(
-                    'GRANT USAGE ON SCHEMA %I TO sqldropbox_exercise_user',
-                    target_schema
-                );
-                EXECUTE format(
-                    'GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA %I TO sqldropbox_exercise_user',
-                    target_schema
-                );
-                EXECUTE format(
-                    'GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA %I TO sqldropbox_exercise_user',
-                    target_schema
-                );
+                    source_schema TEXT,
+                    target_schema TEXT
+                )
+                LANGUAGE plpgsql
+                AS $$
+                DECLARE
+                    table_record RECORD;
+                BEGIN
+                    EXECUTE format('CREATE SCHEMA IF NOT EXISTS %I', target_schema);
+
+                    FOR table_record IN
+                        SELECT tablename
+                        FROM pg_tables
+                        WHERE schemaname = source_schema
+                    LOOP
+                        EXECUTE format(
+                            'CREATE TABLE %I.%I (LIKE %I.%I INCLUDING ALL)',
+                            target_schema,
+                            table_record.tablename,
+                            source_schema,
+                            table_record.tablename
+                        );
+
+                        EXECUTE format(
+                            'INSERT INTO %I.%I SELECT * FROM %I.%I',
+                            target_schema,
+                            table_record.tablename,
+                            source_schema,
+                            table_record.tablename
+                        );
+                    END LOOP;
                 END;
                 $$;
-                /*
-                 CREATE DELETE PROCEDURE IN UTIL SCHEMA
-                 */
-                CREATE OR REPLACE PROCEDURE util.sp_delete_schema(schema_name TEXT) LANGUAGE plpgsql AS $$ BEGIN EXECUTE format(
+            ");
+
+            await context.Database.ExecuteSqlRawAsync(@"
+                CREATE OR REPLACE PROCEDURE util.sp_delete_schema(
+                    schema_name TEXT
+                )
+                LANGUAGE plpgsql
+                AS $$
+                BEGIN
+                    EXECUTE format(
                         'DROP SCHEMA IF EXISTS %I CASCADE',
                         schema_name
                     );
                 END;
                 $$;
-                /*
-                 CREATE sqldropbox_select_exercise_user USER
-                 */
-                DO $$ BEGIN IF NOT EXISTS (
-                    SELECT
-                    FROM pg_catalog.pg_roles
-                    WHERE rolname = 'sqldropbox_select_exercise_user'
-                ) THEN CREATE ROLE sqldropbox_select_exercise_user WITH LOGIN PASSWORD 'QJn3I7ube4JfZ57d';
-                END IF;
-                END $$;
-                /*
-                 ASSIGN PRIVILEGES TO sqldropbox_select_exercise_user USER
-                 */
-                REVOKE CONNECT ON DATABASE sqldropbox
-                FROM sqldropbox_select_exercise_user;
-                REVOKE ALL ON SCHEMA public
-                FROM sqldropbox_select_exercise_user;
-                DO $$
-                DECLARE r RECORD;
-                BEGIN FOR r IN
-                SELECT schema_name
-                FROM information_schema.schemata
-                WHERE schema_name NOT IN ('pg_catalog', 'information_schema', 'public') LOOP EXECUTE format(
-                        'GRANT USAGE ON SCHEMA %I TO sqldropbox_select_exercise_user',
-                        r.schema_name
-                    );
-                EXECUTE format(
-                    'GRANT SELECT ON ALL TABLES IN SCHEMA %I TO sqldropbox_select_exercise_user',
-                    r.schema_name
-                );
-                END LOOP;
-                END $$;
-                /*
-                 CREATE sqldropbox_exercise_user USER
-                 */
-                DO $$ BEGIN IF NOT EXISTS (
-                    SELECT
-                    FROM pg_catalog.pg_roles
-                    WHERE rolname = 'sqldropbox_exercise_user'
-                ) THEN CREATE ROLE sqldropbox_exercise_user WITH LOGIN PASSWORD '49Do86HmuoPRoVo5';
-                END IF;
-                END $$;
-                /*
-                 ASSIGN PRIVILEGES TO sqldropbox_exercise_user USER
-                 */
-                REVOKE CONNECT ON DATABASE sqldropbox
-                FROM sqldropbox_exercise_user;
-                REVOKE ALL ON SCHEMA public
-                FROM sqldropbox_exercise_user;
-                REVOKE ALL ON SCHEMA util
-                FROM sqldropbox_exercise_user;
-                GRANT EXECUTE ON PROCEDURE util.sp_clone_schema(TEXT, TEXT) TO sqldropbox_exercise_user;
-                GRANT EXECUTE ON PROCEDURE util.sp_delete_schema(TEXT) TO sqldropbox_exercise_user;
-                /*
-                 CREATE TABLES
-                 */
+            ");
+
+            await context.Database.ExecuteSqlRawAsync(@"
                 CREATE SCHEMA IF NOT EXISTS animals;
                 CREATE TABLE IF NOT EXISTS animals.food (
                     id SERIAL PRIMARY KEY,
@@ -188,9 +94,9 @@ namespace SQLDropbox.Repositories
                     food_id INT NOT NULL,
                     CONSTRAINT fk_mammal_food FOREIGN KEY (food_id) REFERENCES animals.food(id) ON DELETE RESTRICT
                 );
-                /*
-                 INSERT DUMMY DATA
-                 */
+            ");
+
+            await context.Database.ExecuteSqlRawAsync(@"
                 INSERT INTO animals.food (name)
                 VALUES ('Nuts'),
                     ('Meat'),
@@ -233,7 +139,36 @@ namespace SQLDropbox.Repositories
                     ('Snow Leopard', 'Mountain', 2),
                     ('Mountain Goat', 'Mountain', 7),
                     ('Camel', 'Desert', 7),
-                    ('Meerkat', 'Desert', 5);                                         
+                    ('Meerkat', 'Desert', 5);  
+            ");
+
+            await context.Database.ExecuteSqlRawAsync("""
+                DO $$ BEGIN IF NOT EXISTS (
+                    SELECT
+                    FROM pg_catalog.pg_roles
+                    WHERE rolname = 'sqldropbox_select_exercise_user'
+                ) THEN CREATE ROLE sqldropbox_select_exercise_user WITH LOGIN PASSWORD 'QJn3I7ube4JfZ57d';
+                END IF;
+                END $$;
+                REVOKE CONNECT ON DATABASE sqldropbox
+                FROM sqldropbox_select_exercise_user;
+                REVOKE ALL ON SCHEMA public
+                FROM sqldropbox_select_exercise_user;
+                DO $$
+                DECLARE r RECORD;
+                BEGIN FOR r IN
+                SELECT schema_name
+                FROM information_schema.schemata
+                WHERE schema_name NOT IN ('pg_catalog', 'information_schema', 'public') LOOP EXECUTE format(
+                        'GRANT USAGE ON SCHEMA %I TO sqldropbox_select_exercise_user',
+                        r.schema_name
+                    );
+                EXECUTE format(
+                    'GRANT SELECT ON ALL TABLES IN SCHEMA %I TO sqldropbox_select_exercise_user',
+                    r.schema_name
+                );
+                END LOOP;
+                END $$;                                                            
                 """);
 
             /* COURSES */
@@ -380,8 +315,8 @@ namespace SQLDropbox.Repositories
             var solution5 = new Solution { Query = "SELECT * FROM mammals AS m JOIN food AS f ON m.food_id = f.id WHERE f.name LIKE '%a%'", QueryHash = 1059124326, Exercise = exercise5, CreatedAt = DateTime.UtcNow };
 
             /* REQUIREMENTS */
-            var requirement1 = new Requirement { Statement = "SELECT", IsBlacklist = false, IsHidden = false, Exercise = exercise1 };
-            var requirement2 = new Requirement { Statement = "LIKE", IsBlacklist = true, IsHidden = false, Exercise = exercise1 };
+            var requirement1 = new Requirement { Statement = "SELECT", IsBlacklist = false, IsHidden = false, Exercise = exercise1, CreatedAt = DateTime.UtcNow };
+            var requirement2 = new Requirement { Statement = "LIKE", IsBlacklist = true, IsHidden = false, Exercise = exercise1, CreatedAt = DateTime.UtcNow };
 
             /* LECTURERS */
             var lecturer1 = new User

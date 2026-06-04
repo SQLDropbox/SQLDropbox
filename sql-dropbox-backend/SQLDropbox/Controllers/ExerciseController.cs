@@ -62,10 +62,10 @@ public class ExerciseController(AppDbContext db, AuthorizationService authorizat
 
             if (queryAction == QueryAction.Manipulation && dto.ValidationQuery != null)
             {
-                return Ok(new { message = "This is being worked on" });
-                //formattedValidationQuery = _soS.FormatQuery(dto.ValidationQuery);
-                ////If this returns an error, that error should be shown
-                //queryOutput = await _scS.ExecuteInsertUpdateDeleteOnSchemaAsync(chapter.Schema.SchemaName, formattedQuery, formattedValidationQuery);
+                //return Ok(new { message = "This is being worked on" });
+                formattedValidationQuery = _soS.FormatQuery(dto.ValidationQuery);
+                //If this returns an error, that error should be shown
+                queryOutput = await _scS.ExecuteInsertUpdateDeleteOnSchemaAsync(chapter.Schema.SchemaName, formattedQuery, formattedValidationQuery);
             }
 
             if (queryAction == QueryAction.Manipulation && dto.ValidationQuery == null)
