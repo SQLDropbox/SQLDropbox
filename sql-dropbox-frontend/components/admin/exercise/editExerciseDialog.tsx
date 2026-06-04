@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { FaTimes } from "react-icons/fa";
 import { useParams } from "next/navigation";
-import { Exercise, QueryAction, RequirementDTO } from "@/types/types";
+import { Exercise, QueryAction, Requirement } from "@/types/types";
 import { exerciseService } from "@/services/exerciseService";
 import ConfirmDialog from "@/components/dialog/confirmDialog";
 import AlertDialog from "@/components/dialog/alertDialog";
@@ -70,10 +70,10 @@ export default function EditExerciseDialog({
         if (isEdit && exercise) {
             setForm({
                 chapterId: exercise.chapterId,
-                questionNL: exercise.questionNL,
-                questionEN: exercise.questionEN,
-                hintNL: exercise.hintNL,
-                hintEN: exercise.hintEN,
+                questionNL: exercise.questionNL ?? "",
+                questionEN: exercise.questionEN ?? "",
+                hintNL: exercise.hintNL ?? "",
+                hintEN: exercise.hintEN ?? "",
                 queryOutput: exercise.queryOutput,
                 queryAction: exercise.queryAction,
                 solutionQuery: exercise.solutionQuery,
@@ -313,7 +313,7 @@ export default function EditExerciseDialog({
                             <button
                                 type="button"
                                 onClick={() => {
-                                    const newReq: RequirementDTO = {
+                                    const newReq: Requirement = {
                                         statement: "",
                                         isBlacklist: false,
                                         isHidden: false,
@@ -321,7 +321,7 @@ export default function EditExerciseDialog({
                                     setForm({
                                         ...form,
                                         requirements: [
-                                            ...form.requirements,
+                                            ...form.requirements ?? [],
                                             newReq,
                                         ],
                                     });
@@ -353,7 +353,7 @@ export default function EditExerciseDialog({
                                                     value={req.statement}
                                                     onChange={(e) => {
                                                         const updatedReqs = [
-                                                            ...form.requirements,
+                                                            ...form.requirements ?? [],
                                                         ];
                                                         updatedReqs[i] = {
                                                             ...updatedReqs[i],
@@ -395,7 +395,7 @@ export default function EditExerciseDialog({
                                                                     onClick={() => {
                                                                         const updatedReqs =
                                                                             [
-                                                                                ...form.requirements,
+                                                                                ...form.requirements ?? [],
                                                                             ];
                                                                         updatedReqs[
                                                                             i
@@ -442,7 +442,7 @@ export default function EditExerciseDialog({
                                                                 ) => {
                                                                     const updatedReqs =
                                                                         [
-                                                                            ...form.requirements,
+                                                                            ...form.requirements ?? [],
                                                                         ];
                                                                     updatedReqs[
                                                                         i
@@ -489,10 +489,10 @@ export default function EditExerciseDialog({
                                                     type="button"
                                                     onClick={() => {
                                                         const updatedReqs =
-                                                            form.requirements.filter(
+                                                            form.requirements?.filter(
                                                                 (_, idx) =>
                                                                     idx !== i,
-                                                            );
+                                                            ) ?? [];
                                                         setForm({
                                                             ...form,
                                                             requirements:
