@@ -20,13 +20,6 @@ interface Props {
 
 type FormErrors = Partial<Record<keyof Exercise, string>>;
 
-interface RequirementDraft {
-    _localId: string;
-    statement: string;
-    isBlacklist: boolean;
-    isHidden: boolean;
-}
-
 const emptyForm: Omit<Exercise, "exerciseId"> = {
     questionNL: "",
     questionEN: "",
@@ -34,6 +27,7 @@ const emptyForm: Omit<Exercise, "exerciseId"> = {
     hintEN: "",
     queryOutput: "",
     queryAction: QueryAction.Select,
+    requirements: [],
     chapterId: 0,
 };
 
@@ -58,7 +52,6 @@ export default function EditExerciseDialog({
     const [confirmDeleteDialogOpen, setConfirmDeleteDialogOpen] =
         useState(false);
     const [errorDialog, setErrorDialog] = useState<string | null>(null);
-    const [requirements, setRequirements] = useState<RequirementDraft[]>([]);
 
     function validateForm(f: Omit<Exercise, "exerciseId">): FormErrors {
         const errs: FormErrors = {};
@@ -68,8 +61,6 @@ export default function EditExerciseDialog({
             errs.questionNL = "Dutch question is required";
         return errs;
     }
-
-    console.log(exercise)
 
     useEffect(() => {
         if (!open) return;
@@ -87,18 +78,10 @@ export default function EditExerciseDialog({
                 queryAction: exercise.queryAction,
                 solutionQuery: exercise.solutionQuery,
                 validationQuery: exercise.validationQuery,
+                requirements: exercise.requirements || [],
             });
-            setRequirements(
-                (exercise.requirements ?? []).map((r) => ({
-                    _localId: String(r.requirementId),
-                    statement: r.statement,
-                    isBlacklist: r.isBlacklist,
-                    isHidden: r.isHidden,
-                })),
-            );
         } else {
             setForm({ ...emptyForm, chapterId });
-            setRequirements([]);
         }
     }, [open, mode, exercise, chapterId]);
 
@@ -329,17 +312,20 @@ export default function EditExerciseDialog({
                             </label>
                             <button
                                 type="button"
-                                onClick={() =>
-                                    setRequirements((prev) => [
-                                        ...prev,
-                                        {
-                                            _localId: crypto.randomUUID(),
-                                            statement: "",
-                                            isBlacklist: false,
-                                            isHidden: false,
-                                        },
-                                    ])
-                                }
+                                onClick={() => {
+                                    const newReq: RequirementDTO = {
+                                        statement: "",
+                                        isBlacklist: false,
+                                        isHidden: false,
+                                    };
+                                    setForm({
+                                        ...form,
+                                        requirements: [
+                                            ...form.requirements,
+                                            newReq,
+                                        ],
+                                    });
+                                }}
                                 className="flex items-center gap-1.5 px-2 py-1 border border-accent text-accent text-[11px] uppercase tracking-widest hover:bg-accent hover:text-paper transition"
                             >
                                 <FiPlus className="text-[12px]" />
@@ -347,85 +333,87 @@ export default function EditExerciseDialog({
                             </button>
                         </div>
 
-                        {requirements.length === 0 ? (
+                        {form.requirements && form.requirements.length === 0 ? (
                             <p className="text-[11px] text-muted italic uppercase tracking-widest py-3 border border-dashed border-border text-center">
                                 No requirements
                             </p>
                         ) : (
                             <div className="flex flex-col gap-2">
-                                {requirements.map((req) => (
-                                    <div
-                                        key={req._localId}
-                                        className="flex gap-3 border border-border bg-surface-1 px-3 py-2"
-                                    >
-                                        {/* LEFT: two rows */}
-                                        <div className="flex flex-col gap-2 flex-1 min-w-0">
-                                            {/* ROW 1 — STATEMENT */}
-                                            <input
-                                                type="text"
-                                                value={req.statement}
-                                                onChange={(e) =>
-                                                    setRequirements((prev) =>
-                                                        prev.map((r) =>
-                                                            r._localId ===
-                                                            req._localId
-                                                                ? {
-                                                                      ...r,
-                                                                      statement:
-                                                                          e
-                                                                              .target
-                                                                              .value,
-                                                                  }
-                                                                : r,
-                                                        ),
-                                                    )
-                                                }
-                                                placeholder="Requirement statement..."
-                                                className="w-full bg-transparent border-b border-border focus:border-accent outline-none text-sm py-0.5 placeholder:text-muted/40"
-                                            />
+                                {form.requirements &&
+                                    form.requirements.map((req, i) => (
+                                        <div
+                                            key={i}
+                                            className="flex gap-3 border border-border bg-surface-1 px-3 py-2"
+                                        >
+                                            {/* LEFT: two rows */}
+                                            <div className="flex flex-col gap-2 flex-1 min-w-0">
+                                                {/* ROW 1 — STATEMENT */}
+                                                <input
+                                                    type="text"
+                                                    value={req.statement}
+                                                    onChange={(e) => {
+                                                        const updatedReqs = [
+                                                            ...form.requirements,
+                                                        ];
+                                                        updatedReqs[i] = {
+                                                            ...updatedReqs[i],
+                                                            statement:
+                                                                e.target.value,
+                                                        };
+                                                        setForm({
+                                                            ...form,
+                                                            requirements:
+                                                                updatedReqs,
+                                                        });
+                                                    }}
+                                                    placeholder="Requirement statement..."
+                                                    className="w-full bg-transparent border-b border-border focus:border-accent outline-none text-sm py-0.5 placeholder:text-muted/40"
+                                                />
 
-                                            {/* ROW 2 — WHITELIST/BLACKLIST + HIDDEN */}
-                                            <div className="flex items-center gap-3">
-                                                <div className="flex items-center border border-border shrink-0">
-                                                    {[
-                                                        {
-                                                            label: "Whitelist",
-                                                            isBlacklist: false,
-                                                        },
-                                                        {
-                                                            label: "Blacklist",
-                                                            isBlacklist: true,
-                                                        },
-                                                    ].map(
-                                                        ({
-                                                            label,
-                                                            isBlacklist,
-                                                        }) => (
-                                                            <button
-                                                                key={String(
-                                                                    isBlacklist,
-                                                                )}
-                                                                type="button"
-                                                                onClick={() =>
-                                                                    setRequirements(
-                                                                        (
-                                                                            prev,
-                                                                        ) =>
-                                                                            prev.map(
-                                                                                (
-                                                                                    r,
-                                                                                ) =>
-                                                                                    r._localId ===
-                                                                                    req._localId
-                                                                                        ? {
-                                                                                              ...r,
-                                                                                              isBlacklist,
-                                                                                          }
-                                                                                        : r,
-                                                                            ),
-                                                                    )
-                                                                }
-                                                                className={`
+                                                {/* ROW 2 — WHITELIST/BLACKLIST + HIDDEN */}
+                                                <div className="flex items-center gap-3">
+                                                    <div className="flex items-center border border-border shrink-0">
+                                                        {[
+                                                            {
+                                                                label: "Whitelist",
+                                                                isBlacklist: false,
+                                                            },
+                                                            {
+                                                                label: "Blacklist",
+                                                                isBlacklist: true,
+                                                            },
+                                                        ].map(
+                                                            ({
+                                                                label,
+                                                                isBlacklist,
+                                                            }) => (
+                                                                <button
+                                                                    key={String(
+                                                                        isBlacklist,
+                                                                    )}
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        const updatedReqs =
+                                                                            [
+                                                                                ...form.requirements,
+                                                                            ];
+                                                                        updatedReqs[
+                                                                            i
+                                                                        ] = {
+                                                                            ...updatedReqs[
+                                                                                i
+                                                                            ],
+                                                                            isBlacklist,
+                                                                        };
+                                                                        setForm(
+                                                                            {
+                                                                                ...form,
+                                                                                requirements:
+                                                                                    updatedReqs,
+                                                                            },
+                                                                        );
+                                                                    }}
+                                                                    className={`
                                                                 px-2 py-1 text-[10px] uppercase tracking-widest transition
                                                                 ${
                                                                     req.isBlacklist ===
@@ -434,80 +422,90 @@ export default function EditExerciseDialog({
                                                                         : "text-muted hover:text-ink"
                                                                 }
                                                             `}
-                                                            >
-                                                                {label}
-                                                            </button>
-                                                        ),
-                                                    )}
-                                                </div>
-
-                                                {/* HIDDEN CHECKBOX */}
-                                                <label className="flex items-center gap-1.5 cursor-pointer group">
-                                                    <div className="relative flex items-center justify-center w-4 h-4 shrink-0">
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={req.isHidden}
-                                                            onChange={(e) =>
-                                                                setRequirements(
-                                                                    (prev) =>
-                                                                        prev.map(
-                                                                            (
-                                                                                r,
-                                                                            ) =>
-                                                                                r._localId ===
-                                                                                req._localId
-                                                                                    ? {
-                                                                                          ...r,
-                                                                                          isHidden: e
-                                                                                              .target
-                                                                                              .checked,
-                                                                                      }
-                                                                                    : r,
-                                                                        ),
-                                                                )
-                                                            }
-                                                            className="peer appearance-none w-4 h-4 border-2 border-border checked:bg-accent checked:border-accent cursor-pointer transition-colors"
-                                                        />
-                                                        <svg
-                                                            className="absolute text-paper pointer-events-none opacity-0 peer-checked:opacity-100 scale-50 peer-checked:scale-100 transition-transform w-2.5 h-2.5"
-                                                            viewBox="0 0 10 10"
-                                                            fill="none"
-                                                        >
-                                                            <path
-                                                                d="M1.5 5l2.5 2.5 4.5-5"
-                                                                stroke="currentColor"
-                                                                strokeWidth="1.8"
-                                                                strokeLinecap="square"
-                                                            />
-                                                        </svg>
+                                                                >
+                                                                    {label}
+                                                                </button>
+                                                            ),
+                                                        )}
                                                     </div>
-                                                    <span className="text-[10px] uppercase tracking-widest text-muted group-hover:text-ink transition">
-                                                        Hidden
-                                                    </span>
-                                                </label>
+
+                                                    {/* HIDDEN CHECKBOX */}
+                                                    <label className="flex items-center gap-1.5 cursor-pointer group">
+                                                        <div className="relative flex items-center justify-center w-4 h-4 shrink-0">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={
+                                                                    req.isHidden
+                                                                }
+                                                                onChange={(
+                                                                    e,
+                                                                ) => {
+                                                                    const updatedReqs =
+                                                                        [
+                                                                            ...form.requirements,
+                                                                        ];
+                                                                    updatedReqs[
+                                                                        i
+                                                                    ] = {
+                                                                        ...updatedReqs[
+                                                                            i
+                                                                        ],
+                                                                        isHidden:
+                                                                            e
+                                                                                .target
+                                                                                .checked,
+                                                                    };
+                                                                    setForm({
+                                                                        ...form,
+                                                                        requirements:
+                                                                            updatedReqs,
+                                                                    });
+                                                                }}
+                                                                className="peer appearance-none w-4 h-4 border-2 border-border checked:bg-accent checked:border-accent cursor-pointer transition-colors"
+                                                            />
+                                                            <svg
+                                                                className="absolute text-paper pointer-events-none opacity-0 peer-checked:opacity-100 scale-50 peer-checked:scale-100 transition-transform w-2.5 h-2.5"
+                                                                viewBox="0 0 10 10"
+                                                                fill="none"
+                                                            >
+                                                                <path
+                                                                    d="M1.5 5l2.5 2.5 4.5-5"
+                                                                    stroke="currentColor"
+                                                                    strokeWidth="1.8"
+                                                                    strokeLinecap="square"
+                                                                />
+                                                            </svg>
+                                                        </div>
+                                                        <span className="text-[10px] uppercase tracking-widest text-muted group-hover:text-ink transition">
+                                                            Hidden
+                                                        </span>
+                                                    </label>
+                                                </div>
+                                            </div>
+
+                                            {/* RIGHT — DELETE */}
+                                            <div className="flex items-center shrink-0">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        const updatedReqs =
+                                                            form.requirements.filter(
+                                                                (_, idx) =>
+                                                                    idx !== i,
+                                                            );
+                                                        setForm({
+                                                            ...form,
+                                                            requirements:
+                                                                updatedReqs,
+                                                        });
+                                                    }}
+                                                    className="w-7 h-7 flex items-center justify-center border border-border text-muted hover:border-error hover:text-error transition"
+                                                >
+                                                    <FiTrash2 className="text-[12px]" />
+                                                </button>
                                             </div>
                                         </div>
-
-                                        {/* RIGHT — DELETE (vertically centered) */}
-                                        <div className="flex items-center shrink-0">
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    setRequirements((prev) =>
-                                                        prev.filter(
-                                                            (r) =>
-                                                                r._localId !==
-                                                                req._localId,
-                                                        ),
-                                                    )
-                                                }
-                                                className="w-7 h-7 flex items-center justify-center border border-border text-muted hover:border-error hover:text-error transition"
-                                            >
-                                                <FiTrash2 className="text-[12px]" />
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
+                                    ))}
                             </div>
                         )}
                     </div>

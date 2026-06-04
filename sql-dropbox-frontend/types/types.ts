@@ -72,20 +72,14 @@ export interface Exercise {
 }
 
 export interface Requirement {
-    requirementId: number;
-    statement: string;
-    isBlacklist: boolean;
-    isHidden: boolean;
+    requirementId?: number;
+    statement?: string;
+    isBlacklist?: boolean;
+    isHidden?: boolean;
     exerciseId?: number;
     createdAt?: string;
     updatedAt?: string | null;
     deletedAt?: string | null;
-}
-
-export interface RequirementDTO {
-    statement?: string;
-    use: boolean;
-    exerciseId?: number | null;
 }
 
 export interface SubmitResult {
