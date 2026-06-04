@@ -3,17 +3,11 @@
 import { useEffect, useState } from "react";
 import { FaTimes } from "react-icons/fa";
 import { useParams } from "next/navigation";
-import {
-    Exercise,
-    QueryAction,
-    Requirement,
-    RequirementDTO,
-} from "@/types/types";
+import { Exercise, QueryAction, RequirementDTO } from "@/types/types";
 import { exerciseService } from "@/services/exerciseService";
 import ConfirmDialog from "@/components/dialog/confirmDialog";
 import AlertDialog from "@/components/dialog/alertDialog";
 import { useAuth } from "@/hooks/useAuth";
-import { useTranslations } from "next-intl";
 import { FiTrash2, FiPlus } from "react-icons/fi";
 
 interface Props {
@@ -26,7 +20,6 @@ interface Props {
 
 type FormErrors = Partial<Record<keyof Exercise, string>>;
 
-// Local draft type for requirements before they have a real requirementId
 interface RequirementDraft {
     _localId: string;
     statement: string;
@@ -52,7 +45,6 @@ export default function EditExerciseDialog({
     exercise,
 }: Props) {
     const isEdit = mode === "edit";
-    const t = useTranslations("ExerciseDialog");
     const { isAdmin } = useAuth();
     const params = useParams();
     const chapterId = Number(params?.chapterId ?? 0);
@@ -71,9 +63,9 @@ export default function EditExerciseDialog({
     function validateForm(f: Omit<Exercise, "exerciseId">): FormErrors {
         const errs: FormErrors = {};
         if (!f.questionEN.trim())
-            errs.questionEN = t("errors.questionENRequired");
+            errs.questionEN = "English question is required";
         if (!f.questionNL.trim())
-            errs.questionNL = t("errors.questionNLRequired");
+            errs.questionNL = "Dutch question is required";
         return errs;
     }
 
@@ -143,24 +135,26 @@ export default function EditExerciseDialog({
             onSuccess();
             onClose();
         } catch (err: any) {
-            setErrorDialog(err?.message || t("errors.saveFailed"));
+            setErrorDialog(err?.message || "Failed to save exercise");
         }
     }
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-            <div className="relative w-full max-w-170 bg-paper-light text-ink border border-border shadow-2xl flex flex-col max-h-[90vh] font-mono">
+            <div className="relative w-full max-w-6xl bg-paper-light text-ink border border-border shadow-2xl flex flex-col max-h-[90vh] font-mono">
                 {/* HEADER STRIP */}
                 <div className="border-b border-border bg-paper px-6 py-4 flex justify-between items-start shrink-0">
                     <div>
                         <p className="text-[10px] uppercase tracking-widest text-muted">
-                            {t("headerStamp")}
+                            Exercise
                         </p>
                         <h2 className="font-display text-xl">
-                            {isEdit ? t("titleEdit") : t("titleAdd")}
+                            {isEdit ? "Edit Exercise" : "New Exercise"}
                         </h2>
                         <p className="text-[11px] text-muted mt-1">
-                            {isEdit ? t("subtitleEdit") : t("subtitleAdd")}
+                            {isEdit
+                                ? "Update the exercise details below"
+                                : "Fill in the details to create a new exercise"}
                         </p>
                     </div>
 
@@ -181,7 +175,7 @@ export default function EditExerciseDialog({
                 <div className="flex flex-col grow overflow-y-auto gap-2 px-6">
                     {/* QUESTION */}
                     <Field
-                        label={t("question")}
+                        label="Question"
                         error={errors.questionEN || errors.questionNL}
                     >
                         <div className="grid grid-cols-2 gap-4">
@@ -213,7 +207,7 @@ export default function EditExerciseDialog({
                     </Field>
 
                     {/* HINT */}
-                    <Field label={t("hint")}>
+                    <Field label="Hint">
                         <div className="grid grid-cols-2 gap-4">
                             <div className="relative">
                                 <span className="absolute right-1 top-1 text-[10px] text-muted z-10">
@@ -243,7 +237,7 @@ export default function EditExerciseDialog({
                     </Field>
 
                     {/* QUERY ACTION */}
-                    <Field label={t("queryAction")}>
+                    <Field label="Query Type">
                         <div className="flex gap-6">
                             {(
                                 [
@@ -291,25 +285,43 @@ export default function EditExerciseDialog({
                     </Field>
 
                     {/* SOLUTION QUERY */}
-                    <Field
-                        label={t("solutionQuery")}
-                        error={errors.solutionQuery}
-                    >
+                    <Field label="Solution Query" error={errors.solutionQuery}>
                         <textarea
                             name="solutionQuery"
                             value={form.solutionQuery ?? ""}
                             onChange={handleChange}
-                            rows={5}
+                            rows={6}
                             placeholder="SELECT ..."
                             className="w-full bg-transparent border border-border p-2 text-sm resize-none focus:border-accent outline-none font-mono placeholder:text-muted/40"
                         />
+
+                        {/* VALIDATION QUERY — manipulation only */}
+                        {form.queryAction !== QueryAction.Select && (
+                            <div className="mt-3">
+                                <label className="text-[11px] uppercase tracking-widest text-muted block mb-1">
+                                    Validation Query
+                                </label>
+                                <textarea
+                                    name="validationQuery"
+                                    value={form.validationQuery ?? ""}
+                                    onChange={handleChange}
+                                    rows={3}
+                                    placeholder="SELECT ..."
+                                    className="w-full bg-transparent border border-border p-2 text-sm resize-none focus:border-accent outline-none font-mono placeholder:text-muted/40"
+                                />
+                                <p className="text-[10px] text-muted uppercase tracking-widest mt-1">
+                                    Used to verify state after manipulation
+                                </p>
+                            </div>
+                        )}
+
                         <button
                             type="button"
                             disabled
                             className="mt-2 px-3 py-1.5 border border-border text-[11px] uppercase tracking-widest text-muted opacity-40 cursor-not-allowed"
-                            title={t("previewComingSoon")}
+                            title="Coming soon"
                         >
-                            {t("preview")} →
+                            Preview →
                         </button>
                     </Field>
 
@@ -317,7 +329,7 @@ export default function EditExerciseDialog({
                     <div className="py-4 border-t border-border">
                         <div className="flex items-center justify-between mb-3">
                             <label className="text-[11px] uppercase tracking-widest text-muted">
-                                {t("requirements")}
+                                Requirements
                             </label>
                             <button
                                 type="button"
@@ -335,13 +347,13 @@ export default function EditExerciseDialog({
                                 className="flex items-center gap-1.5 px-2 py-1 border border-accent text-accent text-[11px] uppercase tracking-widest hover:bg-accent hover:text-paper transition"
                             >
                                 <FiPlus className="text-[12px]" />
-                                {t("addRequirement")}
+                                Add
                             </button>
                         </div>
 
                         {requirements.length === 0 ? (
                             <p className="text-[11px] text-muted italic uppercase tracking-widest py-3 border border-dashed border-border text-center">
-                                {t("noRequirements")}
+                                No requirements
                             </p>
                         ) : (
                             <div className="flex flex-col gap-2">
@@ -372,27 +384,20 @@ export default function EditExerciseDialog({
                                                         ),
                                                     )
                                                 }
-                                                placeholder={t(
-                                                    "requirementName",
-                                                )}
+                                                placeholder="Requirement statement..."
                                                 className="w-full bg-transparent border-b border-border focus:border-accent outline-none text-sm py-0.5 placeholder:text-muted/40"
                                             />
 
                                             {/* ROW 2 — WHITELIST/BLACKLIST + HIDDEN */}
                                             <div className="flex items-center gap-3">
-                                                {/* WHITELIST / BLACKLIST TOGGLE */}
                                                 <div className="flex items-center border border-border shrink-0">
                                                     {[
                                                         {
-                                                            label: t(
-                                                                "whitelist",
-                                                            ),
+                                                            label: "Whitelist",
                                                             isBlacklist: false,
                                                         },
                                                         {
-                                                            label: t(
-                                                                "blacklist",
-                                                            ),
+                                                            label: "Blacklist",
                                                             isBlacklist: true,
                                                         },
                                                     ].map(
@@ -483,7 +488,7 @@ export default function EditExerciseDialog({
                                                         </svg>
                                                     </div>
                                                     <span className="text-[10px] uppercase tracking-widest text-muted group-hover:text-ink transition">
-                                                        {t("hidden")}
+                                                        Hidden
                                                     </span>
                                                 </label>
                                             </div>
@@ -520,16 +525,8 @@ export default function EditExerciseDialog({
                         {isAdmin && isEdit && (
                             <button
                                 onClick={() => setConfirmDeleteDialogOpen(true)}
-                                className="
-                                    flex items-center justify-center
-                                    w-9 h-9
-                                    border border-error
-                                    text-ink
-                                    hover:bg-error hover:text-paper
-                                    transition
-                                    -rotate-1
-                                "
-                                title={t("delete")}
+                                className="flex items-center justify-center w-9 h-9 border border-error text-ink hover:bg-error hover:text-paper transition -rotate-1"
+                                title="Delete"
                             >
                                 <FiTrash2 className="text-[14px]" />
                             </button>
@@ -541,14 +538,14 @@ export default function EditExerciseDialog({
                             onClick={onClose}
                             className="px-4 py-2 border border-border text-muted hover:bg-ink hover:text-paper transition"
                         >
-                            {t("cancel")}
+                            Cancel
                         </button>
 
                         <button
                             onClick={handleSubmit}
                             className="px-4 py-2 border-2 border-accent text-accent hover:bg-accent hover:text-paper transition rotate-1"
                         >
-                            {isEdit ? t("save") : t("create")}
+                            {isEdit ? "Save" : "Create"}
                         </button>
                     </div>
                 </div>
@@ -557,10 +554,10 @@ export default function EditExerciseDialog({
             <AlertDialog
                 open={!!errorDialog}
                 onClose={() => setErrorDialog(null)}
-                title={t("errorTitle")}
+                title="Error"
                 description={errorDialog || ""}
                 type="error"
-                buttonText={t("ok")}
+                buttonText="OK"
             />
 
             <ConfirmDialog
@@ -573,8 +570,8 @@ export default function EditExerciseDialog({
                     onSuccess();
                     onClose();
                 }}
-                title={t("deleteTitle")}
-                description={t("deleteDescription")}
+                title="Delete Exercise"
+                description="Are you sure you want to delete this exercise? This action cannot be undone."
                 type="delete"
             />
         </div>
