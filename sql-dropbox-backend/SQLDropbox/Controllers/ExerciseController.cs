@@ -42,7 +42,7 @@ public class ExerciseController(AppDbContext db, AuthorizationService authorizat
             if (!Enum.IsDefined(typeof(QueryAction), dto.QueryAction))
                 return BadRequest(new { message = "Query action has to be an allowed value" });
 
-            QueryAction queryAction = (QueryAction)dto.QueryAction;
+            QueryAction queryAction = (QueryAction)dto.QueryAction;   
 
             Chapter? chapter = await _db.Chapters
                 .Include(c => c.Schema)
@@ -52,10 +52,27 @@ public class ExerciseController(AppDbContext db, AuthorizationService authorizat
                 return BadRequest(new { message = "Chapter not be found." });
 
             string formattedQuery = _soS.FormatQuery(dto.SolutionQuery);
-            uint queryHash = await _soS.HashSolution(formattedQuery);
+            string? formattedValidationQuery = null;
+            string queryOutput = "";
 
-            //If this returns an error, that error should be shown
-            string queryOutput = await _scS.ExecuteSelectOnSchemaAsync(chapter.Schema.SchemaName, formattedQuery);
+            if(queryAction == QueryAction.Select)
+            {
+                //If this returns an error, that error should be shown
+                queryOutput = await _scS.ExecuteSelectOnSchemaAsync(chapter.Schema.SchemaName, formattedQuery);
+            }
+
+            if (queryAction == QueryAction.Manipulation && dto.ValidationQuery != null)
+            {
+                formattedValidationQuery = _soS.FormatQuery(dto.ValidationQuery);
+                //If this returns an error, that error should be shown
+                queryOutput = await _scS.ExecuteInsertUpdateDeleteOnSchemaAsync(chapter.Schema.SchemaName, formattedQuery, formattedValidationQuery);
+            }
+            else
+            {
+                return BadRequest(new { message = "In case of manipulation, a validation query is required." });
+            }
+
+            uint queryHash = await _soS.HashSolution(formattedQuery);
 
             var exercise = new Exercise
             {
@@ -65,6 +82,7 @@ public class ExerciseController(AppDbContext db, AuthorizationService authorizat
                 HintEN = dto.HintEN,
                 QueryOutput = queryOutput,
                 QueryAction = queryAction,
+                ValidationQuery = formattedValidationQuery,
                 Chapter = chapter,
                 CreatedAt = DateTime.UtcNow,
 
@@ -89,7 +107,7 @@ public class ExerciseController(AppDbContext db, AuthorizationService authorizat
             await _db.Exercises.AddAsync(exercise);
             await _db.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(CreateExercise), new { id = exercise.ExerciseId }, exercise);
+            return Ok(new { id = exercise.ExerciseId, exercise } );
         }
         catch (UnauthorizedAccessException)
         {

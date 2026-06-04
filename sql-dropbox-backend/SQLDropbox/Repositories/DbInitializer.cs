@@ -31,17 +31,22 @@ namespace SQLDropbox.Repositories
                         target_schema TEXT
                     ) LANGUAGE plpgsql AS $$
                 DECLARE table_record RECORD;
-                BEGIN EXECUTE format('CREATE SCHEMA IF NOT EXISTS %I', target_schema);
+                seq_record RECORD;
+                BEGIN -- Create schema
+                EXECUTE format('CREATE SCHEMA IF NOT EXISTS %I', target_schema);
+                -- Clone tables
                 FOR table_record IN
                 SELECT tablename
                 FROM pg_tables
-                WHERE schemaname = source_schema LOOP EXECUTE format(
+                WHERE schemaname = source_schema LOOP -- Create table
+                    EXECUTE format(
                         'CREATE TABLE %I.%I (LIKE %I.%I INCLUDING ALL)',
                         target_schema,
                         table_record.tablename,
                         source_schema,
                         table_record.tablename
                     );
+                -- Copy data
                 EXECUTE format(
                     'INSERT INTO %I.%I SELECT * FROM %I.%I',
                     target_schema,
@@ -49,11 +54,76 @@ namespace SQLDropbox.Repositories
                     source_schema,
                     table_record.tablename
                 );
+                -- Table ownership
+                EXECUTE format(
+                    'ALTER TABLE %I.%I OWNER TO sqldropbox_exercise_user',
+                    target_schema,
+                    table_record.tablename
+                );
+                -- Fix sequences properly (THIS is the correct way)
+                FOR seq_record IN
+                SELECT s.relname AS seq_name
+                FROM pg_class s
+                    JOIN pg_depend d ON d.objid = s.oid
+                    JOIN pg_class t ON d.refobjid = t.oid
+                    JOIN pg_namespace ns ON ns.oid = s.relnamespace
+                    JOIN pg_namespace nt ON nt.oid = t.relnamespace
+                WHERE s.relkind = 'S'
+                    AND nt.nspname = target_schema
+                    AND t.relname = table_record.tablename LOOP -- Ownership
+                    EXECUTE format(
+                        'ALTER SEQUENCE %I.%I OWNER TO sqldropbox_exercise_user',
+                        target_schema,
+                        seq_record.seq_name
+                    );
+                -- Permissions (this is what fixes INSERT issues)
+                EXECUTE format(
+                    'GRANT USAGE, SELECT, UPDATE ON SEQUENCE %I.%I TO sqldropbox_exercise_user',
+                    target_schema,
+                    seq_record.seq_name
+                );
                 END LOOP;
+                -- Table privileges (extra safety)
+                EXECUTE format(
+                    'GRANT ALL PRIVILEGES ON TABLE %I.%I TO sqldropbox_exercise_user',
+                    target_schema,
+                    table_record.tablename
+                );
+                END LOOP;
+                -- Schema ownership
                 EXECUTE format(
                     'ALTER SCHEMA %I OWNER TO sqldropbox_exercise_user',
                     target_schema
                 );
+                -- Full schema privileges
+                EXECUTE format(
+                    'GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA %I TO sqldropbox_exercise_user',
+                    target_schema
+                );
+                EXECUTE format(
+                    'GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA %I TO sqldropbox_exercise_user',
+                    target_schema
+                );
+                -- Future-proofing
+                EXECUTE format(
+                    'ALTER DEFAULT PRIVILEGES IN SCHEMA %I
+                         GRANT ALL ON TABLES TO sqldropbox_exercise_user',
+                    target_schema
+                );
+                EXECUTE format(
+                    'ALTER DEFAULT PRIVILEGES IN SCHEMA %I
+                         GRANT ALL ON SEQUENCES TO sqldropbox_exercise_user',
+                    target_schema
+                );
+                END;
+                $$;
+                /*
+                 CREATE DELETE PROCEDURE IN UTIL SCHEMA
+                 */
+                CREATE OR REPLACE PROCEDURE util.sp_delete_schema(schema_name TEXT) LANGUAGE plpgsql AS $$ BEGIN EXECUTE format(
+                        'DROP SCHEMA IF EXISTS %I CASCADE',
+                        schema_name
+                    );
                 END;
                 $$;
                 CREATE OR REPLACE PROCEDURE util.sp_delete_schema(schema_name TEXT) LANGUAGE plpgsql AS $$ BEGIN EXECUTE format(
@@ -260,7 +330,7 @@ namespace SQLDropbox.Repositories
                 Deadline = DateTime.UtcNow.AddDays(14),
                 StartDate = DateTime.UtcNow.AddDays(7),
                 Course = course1,
-                Schema = schema2,
+                Schema = schema1,
                 CreatedAt = DateTime.UtcNow,
             };
             var chapter3 = new Chapter
