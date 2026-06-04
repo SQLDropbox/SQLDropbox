@@ -13,7 +13,8 @@ namespace SQLDropbox.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class UtilitiesController(AppDbContext db, PasswordService passwordService, SolutionService solutionService, SchemaService schemaService) : BaseController
+public class UtilitiesController(
+       AppDbContext db, PasswordService passwordService, SolutionService solutionService, SchemaService schemaService) : BaseController
 {
     private readonly AppDbContext _db = db;
     private readonly PasswordService _ps = passwordService;
