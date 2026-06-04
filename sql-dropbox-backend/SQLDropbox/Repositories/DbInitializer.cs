@@ -178,6 +178,10 @@ namespace SQLDropbox.Repositories
             var solution4 = new Solution { Query = "SELECT * FROM mammals AS m JOIN food AS f ON m.food_id = f.id WHERE m.habitat = 'Arctic' AND f.name = 'Fish'", QueryHash = 1677832380, Exercise = exercise4, CreatedAt = DateTime.UtcNow };
             var solution5 = new Solution { Query = "SELECT * FROM mammals AS m JOIN food AS f ON m.food_id = f.id WHERE f.name LIKE '%a%'", QueryHash = 1059124326, Exercise = exercise5, CreatedAt = DateTime.UtcNow };
 
+            /* REQUIREMENTS */
+            var requirement1 = new Requirement { Statement = "SELECT", IsBlacklist = false, IsHidden = false, Exercise = exercise1 };
+            var requirement2 = new Requirement { Statement = "LIKE", IsBlacklist = true, IsHidden = false, Exercise = exercise1 };
+
             /* LECTURERS */
             var lecturer1 = new User
             {
@@ -280,6 +284,7 @@ namespace SQLDropbox.Repositories
             context.Chapters.AddRange(chapter1, chapter2, chapter3);
             context.Exercises.AddRange(exercise1, exercise2, exercise3, exercise4, exercise5);
             context.Solutions.AddRange(solution1, solution2, solution3, solution4, solution5);
+            context.Requirements.AddRange(requirement1, requirement2);
             context.Users.Add(admin);
             context.Users.AddRange(lecturer1, lecturer2);
             context.Users.AddRange(student1, student2);

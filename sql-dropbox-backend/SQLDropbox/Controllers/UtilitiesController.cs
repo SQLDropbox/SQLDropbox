@@ -62,14 +62,16 @@ public class UtilitiesController(AppDbContext db, PasswordService passwordServic
         {
             RequirementId = 1,
             Statement = "JOIN",
-            Use = false
+            IsBlacklist = false,
+            IsHidden = false,
         };
         requirements.Add(r1);
         Requirement r2 = new()
         {
             RequirementId = 1,
             Statement = "GROUP BY",
-            Use = true
+            IsBlacklist = true,
+            IsHidden = false,
         };
         requirements.Add(r2);
 
