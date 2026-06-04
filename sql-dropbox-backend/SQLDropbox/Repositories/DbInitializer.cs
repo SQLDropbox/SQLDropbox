@@ -445,7 +445,6 @@ namespace SQLDropbox.Repositories
             context.Exercises.AddRange(exercise1, exercise2, exercise3, exercise4, exercise5);
             context.Solutions.AddRange(solution1, solution2, solution3, solution4, solution5);
             context.Requirements.AddRange(requirement1, requirement2);
-            context.Users.Add(admin);
             context.Users.AddRange(lecturer1, lecturer2);
             context.Users.AddRange(student1, student2);
             context.UserExercises.AddRange(studentExercise1, studentExercise2, studentExercise3);
