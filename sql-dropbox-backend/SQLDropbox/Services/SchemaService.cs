@@ -108,6 +108,12 @@ namespace SQLDropbox.Services
             await using var conn = await OpenConnectionAsync();
             await using var tx = await conn.BeginTransactionAsync();
 
+            await using (var setRole = new NpgsqlCommand(
+                @"SET LOCAL ROLE sqldropbox_exercise_user;", conn, tx))
+            {
+                await setRole.ExecuteNonQueryAsync();
+            }
+
             await using (var setPath = new NpgsqlCommand(
                 $@"SET LOCAL search_path TO ""{schemaName}"";", conn, tx))
             {
@@ -115,7 +121,7 @@ namespace SQLDropbox.Services
             }
 
             var trimmed = sql.Trim();
-            if (trimmed.EndsWith(";")) trimmed = trimmed[..^1];
+            if (trimmed.EndsWith(';')) trimmed = trimmed[..^1];
 
             var commandType = _sql.GetCommandType(trimmed);
             var tableName = _sql.ExtractTableName(trimmed, commandType);
@@ -156,17 +162,27 @@ namespace SQLDropbox.Services
         public async Task<string> ExecuteSelectOnSchemaAsync(string schemaName, string selectQuery)
         {
             await using var conn = await OpenConnectionAsync();
+            await using var tx = await conn.BeginTransactionAsync();
+
+            await using (var setRole = new NpgsqlCommand(
+                @"SET LOCAL ROLE sqldropbox_select_exercise_user;", conn, tx))
+            {
+                await setRole.ExecuteNonQueryAsync();
+            }
 
             await using (var cmd = new NpgsqlCommand(
-                $@"SET search_path TO ""{schemaName}"";", conn))
+                $@"SET search_path TO ""{schemaName}"";", conn, tx))
             {
                 await cmd.ExecuteNonQueryAsync();
             }
 
             var trimmed = selectQuery.Trim();
-            if (trimmed.EndsWith(";")) trimmed = trimmed[..^1];
+            if (trimmed.EndsWith(';')) trimmed = trimmed[..^1];
 
-            return await _csv.ExportQueryAsync(conn, trimmed);
+            var result = await _csv.ExportQueryAsync(conn, trimmed);
+
+            await tx.CommitAsync();
+            return result;
         }
 
         public async Task<string> ExecuteInsertUpdateDeleteOnSchemaAsync(string sourceSchema, string query, string validationQuery)

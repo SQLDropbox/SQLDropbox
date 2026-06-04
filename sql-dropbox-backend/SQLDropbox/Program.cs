@@ -2,7 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using SQLDropbox.Data;
-using SQLDropbox.Repositories;
+using SQLDropbox.Enums;
+using SQLDropbox.Models;
 using SQLDropbox.Services;
 using System.Security.Cryptography;
 
@@ -40,6 +41,7 @@ builder.Services.AddScoped<CsvService>();
 builder.Services.AddScoped<RefreshTokenService>();
 builder.Services.AddScoped<AuthorizationService>();
 builder.Services.AddScoped<ChapterService>();
+builder.Services.AddScoped<EmailService>();
 
 // Add controllers to the container
 builder.Services.AddControllers();
@@ -115,6 +117,25 @@ if (app.Environment.IsDevelopment())
     AsyncServiceScope scope = app.Services.CreateAsyncScope();
     AppDbContext db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await db.Database.MigrateAsync();
+
+    // If no users yet, create admin user (so seed can be used)
+    if (!await db.Users.AnyAsync(u => u.Email == "admin@ucll.be"))
+    {
+        PasswordService ps = scope.ServiceProvider.GetRequiredService<PasswordService>();
+
+        var admin = new User
+        {
+            UserCode = "admin",
+            FirstName = "Admin",
+            Email = "Admin@ucll.be",
+            Password = ps.HashPassword("Admin"),
+            Role = Role.Admin,
+            CreatedAt = DateTime.UtcNow,
+        };
+
+        db.Users.Add(admin);
+        await db.SaveChangesAsync();
+    }
 }
 
 if (app.Environment.IsProduction())
@@ -122,18 +143,46 @@ if (app.Environment.IsProduction())
     // DB MIGRATION
     AsyncServiceScope scope = app.Services.CreateAsyncScope();
     AppDbContext db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-    // Delete the passwordservice
-    PasswordService pass = scope.ServiceProvider.GetRequiredService<PasswordService>();
-
-    // Delete the delete
-    await db.Database.EnsureDeletedAsync();
-
-    // Keep the migration
     await db.Database.MigrateAsync();
 
-    // Delete the seed
-    await DbInitializer.SeedAsyncProd(db, pass);
+    // If no users yet, create admin user (and for now lecturers and students as well)
+    if (!await db.Users.AnyAsync(u => u.Email == "admin@ucll.be"))
+    {
+        PasswordService ps = scope.ServiceProvider.GetRequiredService<PasswordService>();
+
+        var admin = new User
+        {
+            UserCode = "admin",
+            FirstName = "Admin",
+            Email = "Admin@ucll.be",
+            Password = ps.HashPassword("V$k0&q-8~3oQmsbO"),
+            Role = Role.Admin,
+            CreatedAt = DateTime.UtcNow,
+        };
+        var lecturer = new User
+        {
+            UserCode = "u0123456",
+            FirstName = "Lector-Lander",
+            LastName = "Dirix",
+            Email = "u0123456@ucll.be",
+            Password = ps.HashPassword("p1g8V!2ewg-&r-pY"),
+            Role = Role.Lecturer,
+            CreatedAt = DateTime.UtcNow,
+        };
+        var student = new User
+        {
+            UserCode = "r0123456",
+            FirstName = "Example",
+            LastName = "student",
+            Email = "r0123456@ucll.be",
+            Password = ps.HashPassword("Kf55L5=0tr@Qd~dk"),
+            Role = Role.Student,
+            CreatedAt = DateTime.UtcNow,
+        };
+
+        db.Users.AddRange(admin, lecturer, student);
+        await db.SaveChangesAsync();
+    }
 
     app.UseHttpsRedirection();
     app.UsePathBase("/api");

@@ -407,7 +407,7 @@ public class ChapterController(AppDbContext db, AuthorizationService authorizati
                                         .ToList()
                                 })
                                 .ToList()
-                        })                        
+                        })
                         .ToList(),
 
                     Schema = new
@@ -448,7 +448,7 @@ public class ChapterController(AppDbContext db, AuthorizationService authorizati
                     .FirstOrDefaultAsync();
 
             if (user == null)
-                return NotFound("User not found.");           
+                return NotFound("User not found.");
 
             var chapter = await _db.Chapters
                 .Where(c => c.ChapterId == chapterId)
@@ -480,7 +480,7 @@ public class ChapterController(AppDbContext db, AuthorizationService authorizati
                                     r.Statement,
                                     r.Use
                                 })
-                                .ToList(),                           
+                                .ToList(),
                         })
                         .ToList(),
 

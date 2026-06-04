@@ -2,8 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SQLDropbox.Data;
-using SQLDropbox.Models;
 using SQLDropbox.DTO;
+using SQLDropbox.Models;
 
 namespace SQLDropbox.Controllers
 {

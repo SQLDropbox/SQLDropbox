@@ -5,14 +5,14 @@
 namespace SQLDropbox.Migrations
 {
     /// <inheritdoc />
-    public partial class AddOptionalStartDateToChapter : Migration
+    public partial class invitedAtTimestamp : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<DateTime>(
-                name: "StartDate",
-                table: "Chapter",
+                name: "InvitedAt",
+                table: "User",
                 type: "timestamp without time zone",
                 nullable: true);
         }
@@ -21,8 +21,8 @@ namespace SQLDropbox.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "StartDate",
-                table: "Chapter");
+                name: "InvitedAt",
+                table: "User");
         }
     }
 }

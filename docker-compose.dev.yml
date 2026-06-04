@@ -10,8 +10,9 @@ services:
             POSTGRES_DB: sqldropbox
         volumes:
             - postgres_data:/var/lib/postgresql/data
+            - ../database:/docker-entrypoint-initdb.d
         healthcheck:
-            test: ["CMD-SHELL", "pg_isready -U postgres"]
+            test: ["CMD-SHELL", "pg_isready -U postgres -d sqldropbox"]
             interval: 5s
             timeout: 5s
             retries: 10
@@ -23,11 +24,14 @@ services:
             context: ./sql-dropbox-backend
             dockerfile: Dockerfile
         volumes:
-            - ./keys:/run/keys:ro
+            - ../env/keys:/run/keys:ro
         env_file:
-            - backend.dev.env
+            - ../env/backend.dev.env
         container_name: dotnet-api
         restart: unless-stopped
+        depends_on:
+            postgres:
+                condition: service_healthy
         ports:
             - "8080:8080"
         environment:
@@ -43,7 +47,7 @@ services:
             args:
                 NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
         env_file:
-            - frontend.dev.env
+            - ../env/frontend.dev.env
         container_name: nextjs-app
         restart: unless-stopped
         depends_on:
