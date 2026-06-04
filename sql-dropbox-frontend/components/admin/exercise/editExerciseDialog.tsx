@@ -247,12 +247,12 @@ export default function EditExerciseDialog({
                                     },
                                     {
                                         label: "MANIPULATION",
-                                        value: QueryAction.Insert,
+                                        value: QueryAction.Manipulation,
                                     },
                                 ] as const
-                            ).map(({ label, value }) => (
+                            ).map(({ label, value }, index) => (
                                 <label
-                                    key={value}
+                                    key={index}
                                     className="flex items-center gap-2 cursor-pointer group"
                                 >
                                     <div className="relative flex items-center justify-center w-4 h-4 shrink-0">
@@ -260,11 +260,7 @@ export default function EditExerciseDialog({
                                             type="radio"
                                             name="queryAction"
                                             checked={
-                                                value === QueryAction.Select
-                                                    ? form.queryAction ===
-                                                      QueryAction.Select
-                                                    : form.queryAction !==
-                                                      QueryAction.Select
+                                                QueryAction.Select === value
                                             }
                                             onChange={() =>
                                                 setForm((p) => ({
@@ -290,7 +286,7 @@ export default function EditExerciseDialog({
                             name="solutionQuery"
                             value={form.solutionQuery ?? ""}
                             onChange={handleChange}
-                            rows={6}
+                            rows={6}w
                             placeholder="SELECT ..."
                             className="w-full bg-transparent border border-border p-2 text-sm resize-none focus:border-accent outline-none font-mono placeholder:text-muted/40"
                         />
@@ -434,9 +430,7 @@ export default function EditExerciseDialog({
                                                                 ${
                                                                     req.isBlacklist ===
                                                                     isBlacklist
-                                                                        ? isBlacklist
-                                                                            ? "bg-error text-paper"
-                                                                            : "bg-accent text-paper"
+                                                                        ? "bg-accent text-paper"
                                                                         : "text-muted hover:text-ink"
                                                                 }
                                                             `}
