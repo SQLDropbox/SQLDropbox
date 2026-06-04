@@ -24,16 +24,176 @@ namespace SQLDropbox.Repositories
 
         public static async Task SeedAsyncDev(AppDbContext context, PasswordService ps)
         {
-            /* ADMIN */
-            var admin = new User
-            {
-                UserCode = "admin",
-                FirstName = "Admin",
-                Email = "Admin@ucll.be",
-                Password = ps.HashPassword("Admin"),
-                Role = Role.Admin,
-                CreatedAt = DateTime.UtcNow,
-            };
+            await context.Database.ExecuteSqlRawAsync("""
+                CREATE SCHEMA IF NOT EXISTS util;
+                CREATE OR REPLACE PROCEDURE util.sp_clone_schema(
+                        source_schema TEXT,
+                        target_schema TEXT
+                    ) LANGUAGE plpgsql AS $$
+                DECLARE table_record RECORD;
+                BEGIN EXECUTE format('CREATE SCHEMA IF NOT EXISTS %I', target_schema);
+                FOR table_record IN
+                SELECT tablename
+                FROM pg_tables
+                WHERE schemaname = source_schema LOOP EXECUTE format(
+                        'CREATE TABLE %I.%I (LIKE %I.%I INCLUDING ALL)',
+                        target_schema,
+                        table_record.tablename,
+                        source_schema,
+                        table_record.tablename
+                    );
+                EXECUTE format(
+                    'INSERT INTO %I.%I SELECT * FROM %I.%I',
+                    target_schema,
+                    table_record.tablename,
+                    source_schema,
+                    table_record.tablename
+                );
+                END LOOP;
+                EXECUTE format(
+                    'ALTER SCHEMA %I OWNER TO sqldropbox_exercise_user',
+                    target_schema
+                );
+                END;
+                $$;
+                CREATE OR REPLACE PROCEDURE util.sp_delete_schema(schema_name TEXT) LANGUAGE plpgsql AS $$ BEGIN EXECUTE format(
+                        'DROP SCHEMA IF EXISTS %I CASCADE',
+                        schema_name
+                    );
+                END;
+                $$;
+                CREATE SCHEMA IF NOT EXISTS animals;
+                CREATE TABLE IF NOT EXISTS animals.food (
+                    id SERIAL PRIMARY KEY,
+                    name TEXT NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS animals.mammals (
+                    id SERIAL PRIMARY KEY,
+                    name TEXT NOT NULL,
+                    habitat TEXT NOT NULL,
+                    food_id INT NOT NULL,
+                    CONSTRAINT fk_mammal_food FOREIGN KEY (food_id) REFERENCES animals.food(id) ON DELETE RESTRICT
+                );
+                INSERT INTO animals.food (name)
+                VALUES ('Nuts'),
+                    ('Meat'),
+                    ('Fish'),
+                    ('Plants'),
+                    ('Insects'),
+                    ('Fruits'),
+                    ('Grass'),
+                    ('Bamboo'),
+                    ('Seeds'),
+                    ('Invertebrates');
+                INSERT INTO animals.mammals (name, habitat, food_id)
+                VALUES ('Elephant', 'Savannah', 1),
+                    ('Lion', 'Savannah', 2),
+                    ('Zebra', 'Savannah', 4),
+                    ('Giraffe', 'Savannah', 7),
+                    ('Hyena', 'Savannah', 2),
+                    ('Rhino', 'Savannah', 7),
+                    ('Tiger', 'Jungle', 2),
+                    ('Orangutan', 'Jungle', 4),
+                    ('Jaguar', 'Jungle', 2),
+                    ('Chimpanzee', 'Jungle', 6),
+                    ('Sloth', 'Jungle', 4),
+                    ('Polar Bear', 'Arctic', 3),
+                    ('Artic Fox', 'Arctic', 2),
+                    ('Blue Whale', 'Arctic', 3),
+                    ('Seal', 'Arctic', 3),
+                    ('Walrus', 'Arctic', 10),
+                    ('Dolphin', 'Ocean', 3),
+                    ('Bat', 'Caves', 4),
+                    ('Cave Bear', 'Caves', 2),
+                    ('Kangaroo', 'Grasslands', 4),
+                    ('Rabbit', 'Grasslands', 7),
+                    ('Squirrel', 'Woods', 1),
+                    ('Hedgehog', 'Woods', 5),
+                    ('Wolf', 'Forest', 2),
+                    ('Fox', 'Forest', 2),
+                    ('Deer', 'Forest', 7),
+                    ('Panda', 'Forest', 8),
+                    ('Snow Leopard', 'Mountain', 2),
+                    ('Mountain Goat', 'Mountain', 7),
+                    ('Camel', 'Desert', 7),
+                    ('Meerkat', 'Desert', 5); 
+                DO $$ BEGIN IF NOT EXISTS (
+                    SELECT
+                    FROM pg_catalog.pg_roles
+                    WHERE rolname = 'sqldropbox_api'
+                ) THEN CREATE ROLE sqldropbox_api WITH LOGIN PASSWORD '2j7G7lRLqeXTxvpa';
+                END IF;
+                END $$;
+                GRANT CONNECT ON DATABASE sqldropbox TO sqldropbox_api;
+                GRANT USAGE,
+                    CREATE ON SCHEMA public TO sqldropbox_api;
+                GRANT SELECT,
+                    INSERT,
+                    UPDATE,
+                    DELETE ON ALL TABLES IN SCHEMA public TO sqldropbox_api;
+                GRANT USAGE,
+                    SELECT,
+                    UPDATE ON ALL SEQUENCES IN SCHEMA public TO sqldropbox_api;
+                ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public
+                GRANT SELECT,
+                    INSERT,
+                    UPDATE,
+                    DELETE ON TABLES TO sqldropbox_api;
+                ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public
+                GRANT USAGE,
+                    SELECT,
+                    UPDATE ON SEQUENCES TO sqldropbox_api;
+                GRANT USAGE,
+                    CREATE ON SCHEMA util TO sqldropbox_api;
+                GRANT USAGE ON LANGUAGE plpgsql TO sqldropbox_api;
+                GRANT SELECT ON ALL TABLES IN SCHEMA util TO sqldropbox_api;
+                GRANT USAGE,
+                    SELECT ON ALL SEQUENCES IN SCHEMA util TO sqldropbox_api;
+                GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA util TO sqldropbox_api;
+                DO $$ BEGIN IF NOT EXISTS (
+                    SELECT
+                    FROM pg_catalog.pg_roles
+                    WHERE rolname = 'sqldropbox_select_exercise_user'
+                ) THEN CREATE ROLE sqldropbox_select_exercise_user WITH LOGIN PASSWORD 'QJn3I7ube4JfZ57d';
+                END IF;
+                END $$;
+                REVOKE CONNECT ON DATABASE sqldropbox
+                FROM sqldropbox_select_exercise_user;
+                REVOKE ALL ON SCHEMA public
+                FROM sqldropbox_select_exercise_user;
+                DO $$
+                DECLARE r RECORD;
+                BEGIN FOR r IN
+                SELECT schema_name
+                FROM information_schema.schemata
+                WHERE schema_name NOT IN ('pg_catalog', 'information_schema', 'public') LOOP EXECUTE format(
+                        'GRANT USAGE ON SCHEMA %I TO sqldropbox_select_exercise_user',
+                        r.schema_name
+                    );
+                EXECUTE format(
+                    'GRANT SELECT ON ALL TABLES IN SCHEMA %I TO sqldropbox_select_exercise_user',
+                    r.schema_name
+                );
+                END LOOP;
+                END $$;
+                GRANT sqldropbox_select_exercise_user TO sqldropbox_api;                
+                DO $$ BEGIN IF NOT EXISTS (
+                    SELECT
+                    FROM pg_catalog.pg_roles
+                    WHERE rolname = 'sqldropbox_exercise_user'
+                ) THEN CREATE ROLE sqldropbox_exercise_user WITH LOGIN PASSWORD '49Do86HmuoPRoVo5';
+                END IF;
+                END $$;
+                REVOKE CONNECT ON DATABASE sqldropbox
+                FROM sqldropbox_exercise_user;
+                REVOKE ALL ON SCHEMA public
+                FROM sqldropbox_exercise_user;
+                REVOKE ALL ON SCHEMA util
+                FROM sqldropbox_exercise_user;
+                GRANT EXECUTE ON PROCEDURE util.sp_clone_schema(TEXT, TEXT) TO sqldropbox_exercise_user;
+                GRANT EXECUTE ON PROCEDURE util.sp_delete_schema(TEXT) TO sqldropbox_exercise_user;
+                GRANT sqldropbox_exercise_user TO sqldropbox_api;                                               
+                """);
 
             /* COURSES */
             var course1 = new Course
@@ -280,7 +440,6 @@ namespace SQLDropbox.Repositories
             context.Chapters.AddRange(chapter1, chapter2, chapter3);
             context.Exercises.AddRange(exercise1, exercise2, exercise3, exercise4, exercise5);
             context.Solutions.AddRange(solution1, solution2, solution3, solution4, solution5);
-            context.Users.Add(admin);
             context.Users.AddRange(lecturer1, lecturer2);
             context.Users.AddRange(student1, student2);
             context.UserExercises.AddRange(studentExercise1, studentExercise2, studentExercise3);
