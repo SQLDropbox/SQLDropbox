@@ -55,7 +55,9 @@ export default function EditCourseDialog({
     const [courseIdLocked, setCourseIdLocked] = useState(!isEdit);
     const [errorDialog, setErrorDialog] = useState<string | null>(null);
 
-    const { data: allLecturers, isLoading: isLoadingLecturers } = useQuery<Lecturer[]>({
+    const { data: allLecturers, isLoading: isLoadingLecturers } = useQuery<
+        Lecturer[]
+    >({
         queryKey: ["all-lecturers"],
         queryFn: () => userService.getAllLecturers(),
         enabled: open,
@@ -70,7 +72,9 @@ export default function EditCourseDialog({
         if (!form.courseNameNL.trim())
             errors.courseNameNL = t("errors.nameNLRequired");
         if (!form.lecturerIds || form.lecturerIds.length === 0)
-            errors.lecturerIds = t("errors.lecturerRequired") || "At least one instructor is required";
+            errors.lecturerIds =
+                t("errors.lecturerRequired") ||
+                "At least one instructor is required";
         return errors;
     }
 
@@ -252,7 +256,6 @@ export default function EditCourseDialog({
                             </div>
                         </div>
                     </Field>
-
                     {/* COURSE ID */}
                     <Field label={t("courseId")} error={errors.courseId}>
                         <input
@@ -266,27 +269,37 @@ export default function EditCourseDialog({
                             `}
                         />
                     </Field>
-
                     {/* DESCRIPTION */}
+                    The file is read-only in uploads, so here's the updated
+                    description block to copy in: tsx{/* DESCRIPTION */}
                     <Field label={t("description")}>
                         <div className="grid grid-cols-2 gap-4">
-                            <textarea
-                                name="courseDescriptionEN"
-                                value={form.courseDescriptionEN}
-                                onChange={handleChange}
-                                rows={5}
-                                className="bg-transparent border border-border p-2 text-sm resize-none"
-                            />
-                            <textarea
-                                name="courseDescriptionNL"
-                                value={form.courseDescriptionNL}
-                                onChange={handleChange}
-                                rows={5}
-                                className="bg-transparent border border-border p-2 text-sm resize-none"
-                            />
+                            <div className="relative">
+                                <span className="absolute right-1 top-1 text-[10px] text-muted z-10">
+                                    EN
+                                </span>
+                                <textarea
+                                    name="courseDescriptionEN"
+                                    value={form.courseDescriptionEN}
+                                    onChange={handleChange}
+                                    rows={5}
+                                    className="w-full bg-transparent border border-border p-2 text-sm resize-none"
+                                />
+                            </div>
+                            <div className="relative">
+                                <span className="absolute right-1 top-1 text-[10px] text-muted z-10">
+                                    NL
+                                </span>
+                                <textarea
+                                    name="courseDescriptionNL"
+                                    value={form.courseDescriptionNL}
+                                    onChange={handleChange}
+                                    rows={5}
+                                    className="w-full bg-transparent border border-border p-2 text-sm resize-none"
+                                />
+                            </div>
                         </div>
                     </Field>
-
                     {/* LECTURER */}
                     <Field label={t("lecturer")} error={errors.lecturerIds}>
                         {isLoadingLecturers ? (
@@ -311,24 +324,41 @@ export default function EditCourseDialog({
                                     }
 
                                     return lecturerToShow.map((l) => (
-                                        <label 
-                                            key={l.userId} 
+                                        <label
+                                            key={l.userId}
                                             className="flex items-center gap-3 p-2 hover:bg-paper cursor-pointer border border-transparent hover:border-border transition-colors group"
                                         >
                                             {/* Custom Brutalist Checkbox */}
                                             <div className="relative flex items-center justify-center w-4 h-4 shrink-0">
                                                 <input
                                                     type="checkbox"
-                                                    checked={form.lecturerIds?.includes(l.userId) || false}
+                                                    checked={
+                                                        form.lecturerIds?.includes(
+                                                            l.userId,
+                                                        ) || false
+                                                    }
                                                     onChange={(e) => {
-                                                        const isChecked = e.target.checked;
+                                                        const isChecked =
+                                                            e.target.checked;
                                                         setForm((prev) => {
-                                                            const currentIds = prev.lecturerIds || [];
+                                                            const currentIds =
+                                                                prev.lecturerIds ||
+                                                                [];
                                                             return {
                                                                 ...prev,
-                                                                lecturerIds: isChecked 
-                                                                    ? [...currentIds, l.userId] 
-                                                                    : currentIds.filter(id => id !== l.userId)
+                                                                lecturerIds:
+                                                                    isChecked
+                                                                        ? [
+                                                                              ...currentIds,
+                                                                              l.userId,
+                                                                          ]
+                                                                        : currentIds.filter(
+                                                                              (
+                                                                                  id,
+                                                                              ) =>
+                                                                                  id !==
+                                                                                  l.userId,
+                                                                          ),
                                                             };
                                                         });
                                                     }}
@@ -336,10 +366,13 @@ export default function EditCourseDialog({
                                                 />
                                                 <FaCheck className="absolute text-paper text-[10px] pointer-events-none opacity-0 peer-checked:opacity-100 scale-50 peer-checked:scale-100 transition-transform" />
                                             </div>
-                                            
+
                                             {/* Label Tekst */}
                                             <span className="font-mono text-[11px] text-ink uppercase tracking-wider group-hover:translate-x-1 transition-transform">
-                                                {l.firstName} {l.lastName} <span className="text-muted">({l.userCode})</span>
+                                                {l.firstName} {l.lastName}{" "}
+                                                <span className="text-muted">
+                                                    ({l.userCode})
+                                                </span>
                                             </span>
                                         </label>
                                     ));
@@ -347,7 +380,6 @@ export default function EditCourseDialog({
                             </div>
                         )}
                     </Field>
-
                     {/* ACTIVE */}
                     <div className="py-4 flex items-center gap-2 text-sm text-muted">
                         <input

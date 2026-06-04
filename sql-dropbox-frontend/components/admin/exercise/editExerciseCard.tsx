@@ -39,7 +39,7 @@ const emptyForm: Partial<Exercise> = {
     solutionQuery: "",
 };
 
-export default function EditExerciseDialog({
+export default function EditExerciseCard({
     open,
     onClose,
     mode,
