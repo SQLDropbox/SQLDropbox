@@ -66,6 +66,9 @@ export default function Page() {
     const chapterName =
         locale === "nl" ? chapter?.chapterNameNL : chapter?.chapterNameEN;
 
+    const activeExerciseIndex = exercises.findIndex((e) => e.exerciseId === activeExercise?.exerciseId,);
+    const activeExerciseNumber = activeExerciseIndex >= 0 ? activeExerciseIndex + 1 : null;
+
     if (!chapterId || !courseId) {
         return (
             <div>
@@ -131,7 +134,7 @@ export default function Page() {
                             className="flex flex-col gap-6 bg-paper bg-ruled p-6 flex-1 pb-20"
                         >
                             <h1 className="font-display text-2xl font-bold">
-                                {chapterName}: Exercise {activeExerciseId}
+                                {chapterName}: Exercise {activeExerciseNumber}
                             </h1>
 
                             <div className="flex flex-wrap gap-2 border-b border-border pb-3">
