@@ -41,8 +41,7 @@ public class ExerciseController(AppDbContext db, AuthorizationService authorizat
 
             if (!Enum.IsDefined(typeof(QueryAction), dto.QueryAction))
                 return BadRequest(new { message = "Query action has to be an allowed value" });
-
-            QueryAction queryAction = (QueryAction)dto.QueryAction;   
+            QueryAction queryAction = (QueryAction)dto.QueryAction;
 
             Chapter? chapter = await _db.Chapters
                 .Include(c => c.Schema)
@@ -55,7 +54,7 @@ public class ExerciseController(AppDbContext db, AuthorizationService authorizat
             string? formattedValidationQuery = null;
             string queryOutput = "";
 
-            if(queryAction == QueryAction.Select)
+            if (queryAction == QueryAction.Select)
             {
                 //If this returns an error, that error should be shown
                 queryOutput = await _scS.ExecuteSelectOnSchemaAsync(chapter.Schema.SchemaName, formattedQuery);
@@ -63,11 +62,13 @@ public class ExerciseController(AppDbContext db, AuthorizationService authorizat
 
             if (queryAction == QueryAction.Manipulation && dto.ValidationQuery != null)
             {
-                formattedValidationQuery = _soS.FormatQuery(dto.ValidationQuery);
-                //If this returns an error, that error should be shown
-                queryOutput = await _scS.ExecuteInsertUpdateDeleteOnSchemaAsync(chapter.Schema.SchemaName, formattedQuery, formattedValidationQuery);
+                return Ok(new { message = "This is being worked on" });
+                //formattedValidationQuery = _soS.FormatQuery(dto.ValidationQuery);
+                ////If this returns an error, that error should be shown
+                //queryOutput = await _scS.ExecuteInsertUpdateDeleteOnSchemaAsync(chapter.Schema.SchemaName, formattedQuery, formattedValidationQuery);
             }
-            else
+
+            if (queryAction == QueryAction.Manipulation && dto.ValidationQuery == null)
             {
                 return BadRequest(new { message = "In case of manipulation, a validation query is required." });
             }
@@ -107,7 +108,7 @@ public class ExerciseController(AppDbContext db, AuthorizationService authorizat
             await _db.Exercises.AddAsync(exercise);
             await _db.SaveChangesAsync();
 
-            return Ok(new { id = exercise.ExerciseId, exercise } );
+            return Ok(new { id = exercise.ExerciseId, exercise });
         }
         catch (UnauthorizedAccessException)
         {
@@ -115,7 +116,7 @@ public class ExerciseController(AppDbContext db, AuthorizationService authorizat
         }
         catch (Exception ex)
         {
-            return BadRequest(ex);
+            return BadRequest(new { message = ex.Message });
         }
     }
 
@@ -123,16 +124,30 @@ public class ExerciseController(AppDbContext db, AuthorizationService authorizat
     [HttpGet("{id}")]
     public async Task<IActionResult> GetExerciseById(int id)
     {
-        var exercise = await _db.Exercises
+        try
+        {
+            var (userId, role) = IsAuthenticated();
+            await _aS.UserHasAccessToExercise(userId, role, id);
+
+            var exercise = await _db.Exercises
             .Include(e => e.Solutions)
             .Include(e => e.Requirements)
             .FirstOrDefaultAsync(e => e.ExerciseId == id);
 
-        if (exercise == null)
-        {
-            return NotFound(new { message = "Exercise not found." });
+            if (exercise == null)
+            {
+                return NotFound(new { message = "Exercise not found." });
+            }
+            return Ok(exercise);
         }
-        return Ok(exercise);
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized(new { message = "You're not authorized to access this resource." });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [Authorize(Roles = "Admin,Lecturer")]
@@ -160,7 +175,7 @@ public class ExerciseController(AppDbContext db, AuthorizationService authorizat
         }
         catch (Exception ex)
         {
-            return BadRequest(ex);
+            return BadRequest(new { message = ex.Message });
         }
     }
 
@@ -253,7 +268,7 @@ public class ExerciseController(AppDbContext db, AuthorizationService authorizat
         }
         catch (Exception ex)
         {
-            return BadRequest(ex);
+            return BadRequest(new { message = ex.Message });
         }
     }
 
