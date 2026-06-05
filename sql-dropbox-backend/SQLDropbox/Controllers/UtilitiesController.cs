@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
 using SQLDropbox.Data;
 using SQLDropbox.DTO;
 using SQLDropbox.Helpers;
@@ -25,66 +24,103 @@ public class UtilitiesController(
     [HttpGet("seed-db")]
     public async Task<IActionResult> SeedTheDb()
     {
-        await DbInitializer.SeedAsyncDev(_db, _ps);
-        return Ok("The DB should have been seeded.");
+        try
+        {
+            await DbInitializer.SeedAsyncDev(_db, _ps);
+            return Ok("DB seeded.");
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [Authorize(Roles = "Admin")]
     [HttpGet("empty-db")]
     public async Task<IActionResult> EmptyTheDb()
     {
-        await DbInitializer.EmptyAsync(_db);
-        return Ok("The DB should have been emptied.");
+        try
+        {
+            await DbInitializer.EmptyAsync(_db);
+            return Ok("DB emptied.");
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [Authorize(Roles = "Admin")]
     [HttpPost("format")]
     public async Task<IActionResult> Format([FromBody] FormatDTO format)
     {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
+        try
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-        if (format.Query == null)
-            return BadRequest("Query is required.");
+            if (format.Query == null)
+                return BadRequest("Query is required.");
 
-        var formatted = _soS.FormatQuery(format.Query);
-        return Ok(formatted);
+            var formatted = _soS.FormatQuery(format.Query);
+            return Ok(formatted);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [Authorize(Roles = "Admin")]
     [HttpPost("check")]
     public async Task<IActionResult> Check([FromBody] FormatDTO format)
     {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-
-        List<Requirement> requirements = [];
-        Requirement r1 = new()
+        try
         {
-            RequirementId = 1,
-            Statement = "JOIN",
-            Use = false
-        };
-        requirements.Add(r1);
-        Requirement r2 = new()
-        {
-            RequirementId = 1,
-            Statement = "GROUP BY",
-            Use = true
-        };
-        requirements.Add(r2);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-        var (Valid, Message) = _soS.CheckQueryRequirements(requirements, format.Query);
-        return Ok($"{Valid}: {Message}");
+            List<Requirement> requirements = [];
+            Requirement r1 = new()
+            {
+                RequirementId = 1,
+                Statement = "JOIN",
+                IsBlacklist = false,
+                IsHidden = false,
+            };
+            requirements.Add(r1);
+            Requirement r2 = new()
+            {
+                RequirementId = 1,
+                Statement = "GROUP BY",
+                IsBlacklist = true,
+                IsHidden = false,
+            };
+            requirements.Add(r2);
+
+            var (Valid, Message) = _soS.CheckQueryRequirements(requirements, format.Query);
+            return Ok($"{Valid}: {Message}");
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [Authorize(Roles = "Admin")]
     [HttpGet("me")]
     public async Task<IActionResult> Me()
     {
-        var result = AuthHelper.GetUserClaims(this);
-        if (result.Result != null) return BadRequest(result.Result);
-        return Ok(result.Value.ToString());
+        try
+        {
+            var result = AuthHelper.GetUserClaims(this);
+            if (result.Result != null) return BadRequest(result.Result);
+            return Ok(result.Value.ToString());
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [Authorize(Roles = "Admin")]
@@ -162,7 +198,7 @@ public class UtilitiesController(
                     IsCompleted = false,
                     Exercise = randomExercise,
                     User = student,
-                    CreatedAt = DateTime.UtcNow,
+                    CreatedAt = DateTime.Now,
                 });
 
                 // Remove the randomly selected exercise from the possible exercises
@@ -178,7 +214,7 @@ public class UtilitiesController(
         }
         catch (Exception ex)
         {
-            return BadRequest(ex);
+            return BadRequest(new { message = ex.Message });
         }
     }
 
@@ -188,7 +224,12 @@ public class UtilitiesController(
     {
         try
         {
-            string formattedQuery = _soS.FormatQuery(dto.Query);
+            var (formattedQuery, formatErrorMessage) = _soS.FormatQuery(dto.Query);
+            if (formatErrorMessage != null)
+                return BadRequest(new { message = $"Error occured formatting query: {formatErrorMessage}." });
+            if (formattedQuery == null)
+                return BadRequest(new { message = "Something went wrong while formatting the query." });
+
             uint queryHash = await _soS.HashSolution(formattedQuery);
             string queryOutput = await _scS.ExecuteSelectOnSchemaAsync("animals", formattedQuery);
 
@@ -196,248 +237,7 @@ public class UtilitiesController(
         }
         catch (Exception ex)
         {
-            return BadRequest(ex);
-        }
-    }
-
-    [Authorize(Roles = "Admin")]
-    [HttpPost("test-select")]
-    public async Task<IActionResult> TestSelect([FromBody] TempTestSolutionDTO dto)
-    {
-        try
-        {
-            Exercise? exercise = await _db.Exercises
-                .Include(e => e.Solutions)
-                .Include(e => e.Requirements)
-                .Include(e => e.Chapter)
-                .ThenInclude(c => c.Schema)
-                .FirstOrDefaultAsync(e => e.ExerciseId == dto.ExerciseId);
-
-            if (exercise == null)
-                return BadRequest(new { message = "This exercise doesn't exist." });
-            if (exercise.Chapter == null)
-                return BadRequest(new { message = "This exercise is not part of a chapter." });
-            if (exercise.Chapter.Schema == null)
-                return BadRequest(new { message = "This exercise has no set schema." });
-
-            string formattedQuery = _soS.FormatQuery(dto.Query);
-
-            List<Requirement> requirements = [.. exercise.Requirements];
-            var (Valid, Message) = _soS.CheckQueryRequirements(requirements, formattedQuery);
-            if (!Valid)
-                return BadRequest(new { message = Message });
-
-            uint queryHash = await _soS.HashSolution(formattedQuery);
-
-            Solution? knownSolution = exercise.Solutions.FirstOrDefault(s => s.QueryHash == queryHash);
-
-            User? user = await _db.Users.FirstOrDefaultAsync(u => u.UserId == dto.UserId);
-            if (user == null)
-                return BadRequest(new { message = "User doesn't exist" });
-
-            if (knownSolution != null)
-            {
-                // TODO -> active after testing, and test this too
-                //await _soS.RegisterUserSolution(formattedQuery, exercise, user, null);
-                return Ok(new { message = "Well done, the output of this query is correct." });
-            }
-
-            string queryOutput = await _scS.ExecuteSelectOnSchemaAsync(exercise.Chapter.Schema.SchemaName, formattedQuery);
-
-            // TODO -> If the query above fails, or the output doesn't match, a specific error should be returned here
-            // TODO -> ask if teammember's function returns a specific error? SHould it be caught in the catch? Return the output regardless?
-            if (exercise.QueryOutput != queryOutput)
-            {
-                // TODO -> active after testing, and test this too
-                //await _soS.RegisterUserSolution(formattedQuery, exercise, user, "The output of this query doesn't match with the expected output.");
-                return Ok(new { message = "The output of this query doesn't match with the expected output." });
-            }
-
-            //If correct, save solution
-            Solution solution = new()
-            {
-                Query = queryOutput,
-                QueryHash = queryHash,
-                CreatedAt = DateTime.UtcNow,
-                Exercise = exercise,
-            };
-
-            // TODO -> active after testing, and test this too
-            //_db.Solutions.Add(solution);
-            //await _db.SaveChangesAsync();
-
-            // TODO -> remove solution from return?
-            return Ok(new { message = "Well done, the output of this query is correct.", solution });
-        }
-        catch (PostgresException ex)
-        {
-            string code = ex.SqlState;
-            string message = "Something went wrong.";
-
-            switch (ex.SqlState)
-            {
-                case "22001":
-                    message = "String too long.";
-                    break;
-                case "22003":
-                    message = "Number too large/small.";
-                    break;
-                case "22P02":
-                    message = "Incorrect type or format.";
-                    break;
-                case "23502":
-                    message = "Violating a not null constraint.";
-                    break;
-                case "23503":
-                    message = "Violating a foreign key constraint.";
-                    break;
-                case "23505":
-                    message = "Violating a unique constraint.";
-                    break;
-                case "23514":
-                    message = "Failing a check constraint.";
-                    break;
-                case "42501":
-                    message = "Don't have permission to access this resource.";
-                    break;
-                case "42601":
-                    message = "Use of invalid SQL syntax.";
-                    break;
-                case "42703":
-                    message = "Use of a column that doesn't exist.";
-                    break;
-                case "42P01":
-                    message = "Use of a table that doesn't exist.";
-                    break;
-            }
-
-            return BadRequest(new { message });
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { message = $"CAUGHT: {ex.Message}" });
-        }
-    }
-
-    [Authorize(Roles = "Admin")]
-    [HttpPost("test-insert-update-delete")]
-    public async Task<IActionResult> TestInsertUpdateDelete([FromBody] TempTestSolutionDTO dto)
-    {
-        try
-        {
-            Exercise? exercise = await _db.Exercises
-                .Include(e => e.Solutions)
-                .Include(e => e.Requirements)
-                .Include(e => e.Chapter)
-                .ThenInclude(c => c.Schema)
-                .FirstOrDefaultAsync(e => e.ExerciseId == dto.ExerciseId);
-
-            if (exercise == null)
-                return BadRequest(new { message = "This exercise doesn't exist." });
-            if (exercise.Chapter == null)
-                return BadRequest(new { message = "This exercise is not part of a chapter." });
-            if (exercise.Chapter.Schema == null)
-                return BadRequest(new { message = "This exercise has no set schema." });
-
-            string formattedQuery = _soS.FormatQuery(dto.Query);
-
-            List<Requirement> requirements = [.. exercise.Requirements];
-            var (Valid, Message) = _soS.CheckQueryRequirements(requirements, formattedQuery);
-            if (!Valid)
-                return BadRequest(new { message = Message });
-
-            uint queryHash = await _soS.HashSolution(formattedQuery);
-
-            Solution? knownSolution = exercise.Solutions.FirstOrDefault(s => s.QueryHash == queryHash);
-
-            User? user = await _db.Users.FirstOrDefaultAsync(u => u.UserId == dto.UserId);
-            if (user == null)
-                return BadRequest(new { message = "User doesn't exist" });
-
-            if (knownSolution != null)
-            {
-                // TODO -> active after testing, and test this too
-                //await _soS.RegisterUserSolution(formattedQuery, exercise, user, null);
-                return Ok(new { message = "Well done, this query was correct!" });
-            }
-
-            if (exercise.ValidationQuery == null)
-                return BadRequest(new { message = $"This {exercise.QueryAction} query cannot be validated." });
-
-            string queryOutput = await _scS.ExecuteInsertUpdateDeleteOnSchemaAsync(exercise.Chapter.Schema.SchemaName, formattedQuery, exercise.ValidationQuery);
-
-            // TODO -> If the query above fails, or the output doesn't match, a specific error should be returned here
-            // TODO -> ask if teammember's function returns a specific error? SHould it be caught in the catch? Return the output regardless?
-            if (exercise.QueryOutput != queryOutput)
-            {
-                // TODO -> active after testing, and test this too
-                //await _soS.RegisterUserSolution(formattedQuery, exercise, user, "This is wrong, an error should be saved (work in progress)!");
-                return Ok(new { message = "This is wrong, an error should be returned (work in progress)!" });
-            }
-
-            //If correct, save solution
-            Solution solution = new()
-            {
-                Query = queryOutput,
-                QueryHash = queryHash,
-                CreatedAt = DateTime.UtcNow,
-                Exercise = exercise,
-            };
-
-            // TODO -> active after testing, and test this too
-            //_db.Solutions.Add(solution);
-            //await _db.SaveChangesAsync();
-
-            // TODO -> remove solution from return?
-            return Ok(new { message = "Well done, this query was correct!", solution });
-        }
-        catch (PostgresException ex)
-        {
-            string code = ex.SqlState;
-            string message = "Something went wrong.";
-
-            switch (ex.SqlState)
-            {
-                case "22001":
-                    message = "String too long.";
-                    break;
-                case "22003":
-                    message = "Number too large/small.";
-                    break;
-                case "22P02":
-                    message = "Incorrect type or format.";
-                    break;
-                case "23502":
-                    message = "Violating a not null constraint.";
-                    break;
-                case "23503":
-                    message = "Violating a foreign key constraint.";
-                    break;
-                case "23505":
-                    message = "Violating a unique constraint.";
-                    break;
-                case "23514":
-                    message = "Failing a check constraint.";
-                    break;
-                case "42501":
-                    message = "Don't have permission to access this resource.";
-                    break;
-                case "42601":
-                    message = "Use of invalid SQL syntax.";
-                    break;
-                case "42703":
-                    message = "Use of a column that doesn't exist.";
-                    break;
-                case "42P01":
-                    message = "Use of a table that doesn't exist.";
-                    break;
-            }
-
-            return BadRequest(new { message });
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { message = $"CAUGHT: {ex.Message}" });
+            return BadRequest(new { message = ex.Message });
         }
     }
 }

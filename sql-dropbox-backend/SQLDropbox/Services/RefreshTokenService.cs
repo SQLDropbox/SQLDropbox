@@ -54,8 +54,8 @@ namespace SQLDropbox.Services
             RefreshToken refreshTokenToCreate = new()
             {
                 TokenHash = tokenHash,
-                CreatedAt = DateTime.UtcNow,
-                ExpiresAt = DateTime.UtcNow.AddDays(_refreshTokenDays),
+                CreatedAt = DateTime.Now,
+                ExpiresAt = DateTime.Now.AddDays(_refreshTokenDays),
                 IsRevoked = false,
                 User = user
             };
@@ -75,7 +75,7 @@ namespace SQLDropbox.Services
             string tokenHash = HashToken(refreshToken);
             return await _db.RefreshTokens
                 .Include(rt => rt.User)
-                .Where(rt => rt.TokenHash == tokenHash && !rt.IsRevoked && rt.ExpiresAt > DateTime.UtcNow)
+                .Where(rt => rt.TokenHash == tokenHash && !rt.IsRevoked && rt.ExpiresAt > DateTime.Now)
                 .FirstOrDefaultAsync();
         }
 

@@ -50,10 +50,8 @@ export interface Chapter {
 }
 
 export enum QueryAction {
-    Insert = 1,
-    Select = 2,
-    Update = 3,
-    Delete = 4,
+    Select = 1,
+    Manipulation = 2,
 }
 
 export interface Exercise {
@@ -74,19 +72,14 @@ export interface Exercise {
 }
 
 export interface Requirement {
-    requirementId: number;
-    statement: string;
-    use: boolean;
+    requirementId?: number;
+    statement?: string;
+    isBlacklist?: boolean;
+    isHidden?: boolean;
     exerciseId?: number;
     createdAt?: string;
     updatedAt?: string | null;
     deletedAt?: string | null;
-}
-
-export interface RequirementDTO {
-    statement?: string;
-    use: boolean;
-    exerciseId?: number | null;
 }
 
 export interface SubmitResult {

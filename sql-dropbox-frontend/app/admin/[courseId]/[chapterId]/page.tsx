@@ -12,7 +12,7 @@ import { Exercise, Chapter } from "@/types/types";
 
 import { exerciseService } from "@/services/exerciseService";
 import { chapterService } from "@/services/chapterService";
-import EditExerciseDialog from "@/components/admin/exercise/editExerciseCard";
+import EditExerciseDialog from "@/components/admin/exercise/editExerciseDialog";
 import Loading from "@/components/loading";
 
 export default function ChapterExercisesPage() {
@@ -31,6 +31,7 @@ export default function ChapterExercisesPage() {
         data: chapter,
         isLoading,
         error,
+        refetch,
     } = useQuery<Chapter>({
         queryKey: ["exercises", chapterIdNumber],
         queryFn: () => exerciseService.getAllExercisesByChapterId(chapterId),
@@ -70,7 +71,7 @@ export default function ChapterExercisesPage() {
         <div>
             <Header />
 
-            <div className="max-w-350 mx-auto p-6">
+            <div className="max-w-7xl mx-auto p-6">
                 <div className="mb-6">
                     <Link
                         href={`/admin/${courseId}`}
@@ -115,8 +116,8 @@ export default function ChapterExercisesPage() {
                 open={isDialogOpen}
                 onClose={() => setIsDialogOpen(false)}
                 mode={dialogMode}
-                chapterId={chapterIdNumber}
                 exercise={selectedExercise}
+                onSuccess={refetch}
             />
         </div>
     );

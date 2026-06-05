@@ -18,10 +18,17 @@ namespace SQLDropbox.Services
             return hash;
         }
 
-        public string FormatQuery(string query)
+        public (string? FormattedQuery, string? Message) FormatQuery(string query)
         {
-            var ast = new SqlQueryParser().Parse(query);
-            return ast.ToSql();
+            try
+            {
+                var ast = new SqlQueryParser().Parse(query);
+                return (ast.ToSql(), null);
+            }
+            catch (Exception ex)
+            {
+                return (null, ex.Message);
+            }
         }
 
         public (bool Valid, string Message) CheckQueryRequirements(List<Requirement> requirements, string formattedQuery)
@@ -30,13 +37,13 @@ namespace SQLDropbox.Services
             {
                 bool containsStatement = formattedQuery.Contains(requirement.Statement, StringComparison.CurrentCultureIgnoreCase);
 
-                if (requirement.Use && !containsStatement)
-                {
-                    return (false, $"You must use {requirement.Statement}.");
-                }
-                if (!requirement.Use && containsStatement)
+                if (requirement.IsBlacklist && containsStatement)
                 {
                     return (false, $"You can't use {requirement.Statement}.");
+                }
+                if (!requirement.IsBlacklist && !containsStatement)
+                {
+                    return (false, $"You must use {requirement.Statement}.");
                 }
             }
             return (true, "The query is correct.");
@@ -63,7 +70,7 @@ namespace SQLDropbox.Services
                     IsCompleted = isCorrect,
                     Exercise = exercise,
                     User = user,
-                    CreatedAt = DateTime.UtcNow,
+                    CreatedAt = DateTime.Now,
                 };
 
                 _db.UserExercises.Add(userExercise);
@@ -74,7 +81,7 @@ namespace SQLDropbox.Services
                     return;
 
                 userExercise.IsCompleted = isCorrect;
-                userExercise.UpdatedAt = DateTime.UtcNow;
+                userExercise.UpdatedAt = DateTime.Now;
             }
 
             userExercise.UserSolutions.Add(new()
@@ -82,7 +89,7 @@ namespace SQLDropbox.Services
                 Query = formattedQuery,
                 IsCorrect = isCorrect,
                 ErrorMessage = errorMessage,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
             });
 
             await _db.SaveChangesAsync();

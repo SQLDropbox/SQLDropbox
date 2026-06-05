@@ -9,5 +9,6 @@
         public int? QueryAction { get; set; }
         public string? ValidationQuery { get; set; }
         public string? SolutionQuery { get; set; }
+        public List<RequirementDTO> Requirements { get; set; } = [];
     }
 }

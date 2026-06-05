@@ -1,19 +1,6 @@
 import { Exercise } from "@/types/types";
 import { api } from "./apiClient";
 
-const mapToExerciseDto = (exercise: Partial<Exercise>) => {
-    return {
-        questionNL: exercise.questionNL ?? "",
-        questionEN: exercise.questionEN ?? "",
-        hintNL: exercise.hintNL ?? "",
-        hintEN: exercise.hintEN ?? "",
-        chapterId: exercise.chapterId,
-        queryAction: exercise.queryAction,
-        validationQuery: exercise.validationQuery ?? "",
-        solutionQuery: exercise.solutionQuery,
-    };
-};
-
 const getExercisesByChapterId = async (chapterId: string) => {
     return api.privateFetch(`/Chapter/${chapterId}/exercises`, {
         method: "GET",
@@ -27,14 +14,12 @@ const getAllExercisesByChapterId = async (chapterId: string) => {
 };
 
 const addExercise = async (exercise: Partial<Exercise>) => {
-    const payload = mapToExerciseDto(exercise);
-
     return api.privateFetch(`/Exercise`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(exercise),
     });
 };
 
@@ -42,14 +27,12 @@ const updateExercise = async (
     exerciseId: number,
     exercise: Partial<Exercise>,
 ) => {
-    const payload = mapToExerciseDto(exercise);
-
     return api.privateFetch(`/Exercise/${exerciseId}`, {
         method: "PUT",
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(exercise),
     });
 };
 

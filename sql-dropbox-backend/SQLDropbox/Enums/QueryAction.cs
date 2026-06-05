@@ -2,9 +2,7 @@
 {
     public enum QueryAction
     {
-        Insert = 1,
-        Select = 2,
-        Update = 3,
-        Delete = 4,
+        Select = 1,
+        Manipulation = 2,
     }
 }

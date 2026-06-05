@@ -56,7 +56,9 @@
         "duplicate": "Duplicate",
         "cancel": "CANCEL",
         "save": "SAVE",
-        "create": "CREATE"
+        "create": "CREATE",
+        "courseIdInfo": "Course ID cannot be changed",
+        "activeInfo": "When a course is marked inactive, students can no longer access it"
     },
     "ChapterDialog": {
         "titleEdit": "Edit Chapter",
@@ -136,11 +138,13 @@
     },
     "DuplicateCourseModal": {
         "title": "Duplicate Course",
-        "description": "You are about to duplicate {courseName}. Optionally provide a custom URL (CourseId). Leave empty to auto-generate one.",
+        "description": "Duplicate {courseName}. Optionally set a Course ID. This cannot be changed later.",
         "placeholder": "e.g. {courseId}-copy",
-        "cancel": "Cancel",
-        "confirm": "Confirm",
-        "duplicating": "Duplicating..."
+        "cancel": "CANCEL",
+        "confirm": "CONFIRM",
+        "duplicating": "Duplicating...",
+        "newCourseId": "New Course ID",
+        "autoGenerateHint": "Leave empty to generate automatically."
     },
     "Header": {
         "brand": "Databasement",
