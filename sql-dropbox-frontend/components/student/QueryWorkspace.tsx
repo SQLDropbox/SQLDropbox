@@ -9,6 +9,7 @@ import { PostgreSQL, sql } from "@codemirror/lang-sql";
 import { createTheme } from "@uiw/codemirror-themes";
 import { acceptCompletion } from "@codemirror/autocomplete";
 import QueryResult from "./QueryResult";
+import RequirementsSidebar from "./RequirementsSidebar";
 
 type Props = {
     exercise: Exercise;
@@ -82,10 +83,13 @@ export default function QueryWorkspace({
 
     const normalizedQuery = queryValue.toLowerCase();
 
-    const satisfiedReqs = exercise.requirements?.map((req) => ({
-        ...req,
-        satisfied: normalizedQuery.includes(req.statement!.toLowerCase()),
-    }));
+    const satisfiedReqs = exercise.requirements?.map((req) => {
+        const isIncluded = normalizedQuery.includes(req.statement!.toLowerCase());
+        return {
+            ...req,
+            satisfied: req.isBlacklist ? !isIncluded : isIncluded,
+        };
+    }) || [];
 
     const missingRequirements = satisfiedReqs?.filter((r) => !r.satisfied);
     const queryMeetsRequirements = (missingRequirements?.length ?? 0) === 0;
@@ -188,46 +192,9 @@ export default function QueryWorkspace({
                 </div>
 
                 {/* Requirements sidebar */}
-                {hasRequirements && (
-                    <div className="w-48 shrink-0 border-l border-border ml-3 flex flex-col">
-                        <div className="px-3 pt-4">
-                            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted mb-2">
-                                {t("requiredSyntax")}
-                            </p>
-                            <div className="h-0.5 bg-border/20 rounded-full overflow-hidden">
-                                <div
-                                    className="h-full bg-accent transition-all duration-500 ease-in-out"
-                                    style={{ width: `${progressPct}%` }}
-                                />
-                            </div>
-                            <p className="font-mono text-[10px] text-muted mt-1.5 text-right">
-                                {completedCount}/{totalCount}
-                            </p>
-                        </div>
-
-                        <div className="flex flex-col flex-1">
-                            {satisfiedReqs?.map((req, i) => (
-                                <div
-                                    key={i}
-                                    className="flex items-center gap-3 px-3 py-1"
-                                >
-                                    <RequirementRing
-                                        satisfied={req.satisfied}
-                                    />
-                                    <span
-                                        className={`font-mono text-xs uppercase tracking-widest transition-colors duration-300 ${
-                                            req.satisfied
-                                                ? "text-accent"
-                                                : "text-muted"
-                                        }`}
-                                    >
-                                        {req.statement}
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
+                        {hasRequirements && (
+                            <RequirementsSidebar satisfiedReqs={satisfiedReqs} />
+                        )}
             </div>
 
             {queryError && (
