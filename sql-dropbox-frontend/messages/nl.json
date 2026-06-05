@@ -56,7 +56,9 @@
         "duplicate": "Dupliceren",
         "cancel": "ANNULEER",
         "save": "OPSLAAN",
-        "create": "AANMAKEN"
+        "create": "AANMAKEN",
+        "courseIdInfo": "Cursus ID kan niet worden gewijzigd",
+        "activeInfo": "Wanneer een cursus als inactief wordt gemarkeerd, hebben studenten geen toegang meer tot deze cursus"
     },
     "ChapterDialog": {
         "titleEdit": "Hoofdstuk bewerken",

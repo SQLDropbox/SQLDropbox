@@ -56,7 +56,9 @@
         "duplicate": "Duplicate",
         "cancel": "CANCEL",
         "save": "SAVE",
-        "create": "CREATE"
+        "create": "CREATE",
+        "courseIdInfo": "Course ID cannot be changed",
+        "activeInfo": "When a course is marked inactive, students can no longer access it"
     },
     "ChapterDialog": {
         "titleEdit": "Edit Chapter",
