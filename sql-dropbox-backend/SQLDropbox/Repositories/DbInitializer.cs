@@ -181,7 +181,7 @@ namespace SQLDropbox.Repositories
                 CourseDescriptionEN = "Manage data.",
                 IsActive = true,
                 //Lecturer = "Lehr Kragt",
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
             };
             var course2 = new Course
             {
@@ -192,7 +192,7 @@ namespace SQLDropbox.Repositories
                 CourseDescriptionEN = "Analyze data.",
                 IsActive = false,
                 //Lecturer = "Bro Fesser",
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
             };
             var course3 = new Course
             {
@@ -203,12 +203,12 @@ namespace SQLDropbox.Repositories
                 CourseDescriptionEN = "Foundate data.",
                 IsActive = false,
                 //Lecturer = "Lek Tuurer",
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
             };
 
             /* SCHEMAS */
-            var schema1 = new Schema { SchemaName = "animals", CreatedAt = DateTime.UtcNow, SchemaImage = "02fe567c-4e83-4db8-8eab-e2f8ca2c3804.png" };
-            var schema2 = new Schema { SchemaName = "rooms", CreatedAt = DateTime.UtcNow };
+            var schema1 = new Schema { SchemaName = "animals", CreatedAt = DateTime.Now, SchemaImage = "02fe567c-4e83-4db8-8eab-e2f8ca2c3804.png" };
+            var schema2 = new Schema { SchemaName = "rooms", CreatedAt = DateTime.Now };
 
             /* CHAPTERS */
             var chapter1 = new Chapter
@@ -219,11 +219,11 @@ namespace SQLDropbox.Repositories
                 ChapterDescriptionEN = "Learn to use SELECT.",
                 AmountOfExercises = 3,
                 Order = 1,
-                Deadline = DateTime.UtcNow.AddDays(7),
-                StartDate = DateTime.UtcNow,
+                Deadline = DateTime.Now.AddDays(7),
+                StartDate = DateTime.Now,
                 Course = course1,
                 Schema = schema1,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
             };
             var chapter2 = new Chapter
             {
@@ -233,11 +233,11 @@ namespace SQLDropbox.Repositories
                 ChapterDescriptionEN = "Learn to use SUBQUERIES.",
                 AmountOfExercises = 5,
                 Order = 2,
-                Deadline = DateTime.UtcNow.AddDays(14),
-                StartDate = DateTime.UtcNow.AddDays(7),
+                Deadline = DateTime.Now.AddDays(14),
+                StartDate = DateTime.Now.AddDays(7),
                 Course = course1,
                 Schema = schema1,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
             };
             var chapter3 = new Chapter
             {
@@ -247,11 +247,11 @@ namespace SQLDropbox.Repositories
                 ChapterDescriptionEN = "Learn to use GROUP BY.",
                 AmountOfExercises = 7,
                 Order = 3,
-                Deadline = DateTime.UtcNow.AddDays(21),
-                StartDate = DateTime.UtcNow.AddDays(14),
+                Deadline = DateTime.Now.AddDays(21),
+                StartDate = DateTime.Now.AddDays(14),
                 Course = course1,
                 Schema = schema2,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
             };
 
             /* EXERCISES */
@@ -262,7 +262,7 @@ namespace SQLDropbox.Repositories
                 QueryOutput = "id,name,habitat,food_id\r\n7,Tiger,Jungle,2\r\n8,Orangutan,Jungle,4\r\n9,Jaguar,Jungle,2\r\n10,Chimpanzee,Jungle,6\r\n11,Sloth,Jungle,4\r\n38,Tiger,Jungle,2\r\n39,Orangutan,Jungle,4\r\n40,Jaguar,Jungle,2\r\n41,Chimpanzee,Jungle,6\r\n42,Sloth,Jungle,4\r\n",
                 QueryAction = QueryAction.Select,
                 Chapter = chapter1,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
             };
             var exercise2 = new Exercise
             {
@@ -271,7 +271,7 @@ namespace SQLDropbox.Repositories
                 QueryOutput = "id,name,habitat,food_id,id,name\r\n1,Elephant,Savannah,1,1,Nuts\r\n22,Squirrel,Woods,1,1,Nuts\r\n32,Elephant,Savannah,1,1,Nuts\r\n53,Squirrel,Woods,1,1,Nuts\r\n",
                 QueryAction = QueryAction.Select,
                 Chapter = chapter1,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
             };
             var exercise3 = new Exercise
             {
@@ -282,7 +282,7 @@ namespace SQLDropbox.Repositories
                 QueryOutput = "id,name,habitat,food_id\r\n1,Elephant,Savannah,1\r\n3,Zebra,Savannah,4\r\n4,Giraffe,Savannah,7\r\n5,Hyena,Savannah,2\r\n32,Elephant,Savannah,1\r\n34,Zebra,Savannah,4\r\n35,Giraffe,Savannah,7\r\n36,Hyena,Savannah,2\r\n",
                 QueryAction = QueryAction.Select,
                 Chapter = chapter1,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
             };
             var exercise4 = new Exercise
             {
@@ -293,7 +293,7 @@ namespace SQLDropbox.Repositories
                 QueryOutput = "id,name,habitat,food_id,id,name\r\n12,Polar Bear,Arctic,3,3,Fish\r\n14,Blue Whale,Arctic,3,3,Fish\r\n15,Seal,Arctic,3,3,Fish\r\n43,Polar Bear,Arctic,3,3,Fish\r\n45,Blue Whale,Arctic,3,3,Fish\r\n46,Seal,Arctic,3,3,Fish\r\n",
                 QueryAction = QueryAction.Select,
                 Chapter = chapter1,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
             };
             var exercise5 = new Exercise
             {
@@ -304,19 +304,19 @@ namespace SQLDropbox.Repositories
                 QueryOutput = "id,name,habitat,food_id,id,name\r\n2,Lion,Savannah,2,2,Meat\r\n3,Zebra,Savannah,4,4,Plants\r\n4,Giraffe,Savannah,7,7,Grass\r\n5,Hyena,Savannah,2,2,Meat\r\n6,Rhino,Savannah,7,7,Grass\r\n7,Tiger,Jungle,2,2,Meat\r\n8,Orangutan,Jungle,4,4,Plants\r\n9,Jaguar,Jungle,2,2,Meat\r\n11,Sloth,Jungle,4,4,Plants\r\n13,Artic Fox,Arctic,2,2,Meat\r\n16,Walrus,Arctic,10,10,Invertebrates\r\n18,Bat,Caves,4,4,Plants\r\n19,Cave Bear,Caves,2,2,Meat\r\n20,Kangaroo,Grasslands,4,4,Plants\r\n21,Rabbit,Grasslands,7,7,Grass\r\n24,Wolf,Forest,2,2,Meat\r\n25,Fox,Forest,2,2,Meat\r\n26,Deer,Forest,7,7,Grass\r\n27,Panda,Forest,8,8,Bamboo\r\n28,Snow Leopard,Mountain,2,2,Meat\r\n29,Mountain Goat,Mountain,7,7,Grass\r\n30,Camel,Desert,7,7,Grass\r\n33,Lion,Savannah,2,2,Meat\r\n34,Zebra,Savannah,4,4,Plants\r\n35,Giraffe,Savannah,7,7,Grass\r\n36,Hyena,Savannah,2,2,Meat\r\n37,Rhino,Savannah,7,7,Grass\r\n38,Tiger,Jungle,2,2,Meat\r\n39,Orangutan,Jungle,4,4,Plants\r\n40,Jaguar,Jungle,2,2,Meat\r\n42,Sloth,Jungle,4,4,Plants\r\n44,Artic Fox,Arctic,2,2,Meat\r\n47,Walrus,Arctic,10,10,Invertebrates\r\n49,Bat,Caves,4,4,Plants\r\n50,Cave Bear,Caves,2,2,Meat\r\n51,Kangaroo,Grasslands,4,4,Plants\r\n52,Rabbit,Grasslands,7,7,Grass\r\n55,Wolf,Forest,2,2,Meat\r\n56,Fox,Forest,2,2,Meat\r\n57,Deer,Forest,7,7,Grass\r\n58,Panda,Forest,8,8,Bamboo\r\n59,Snow Leopard,Mountain,2,2,Meat\r\n60,Mountain Goat,Mountain,7,7,Grass\r\n61,Camel,Desert,7,7,Grass\r\n",
                 QueryAction = QueryAction.Select,
                 Chapter = chapter1,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
             };
 
             /* SOLUTIONS */
-            var solution1 = new Solution { Query = "SELECT * FROM mammals AS m WHERE m.habitat = 'Jungle'", QueryHash = 3684803095, Exercise = exercise1, CreatedAt = DateTime.UtcNow };
-            var solution2 = new Solution { Query = "SELECT * FROM mammals AS m JOIN food AS f ON m.food_id = f.id WHERE f.name = 'Nuts'", QueryHash = 2227733060, Exercise = exercise2, CreatedAt = DateTime.UtcNow };
-            var solution3 = new Solution { Query = "SELECT * FROM mammals AS m WHERE m.habitat = 'Savannah' AND m.name LIKE '%e%'", QueryHash = 2303149545, Exercise = exercise3, CreatedAt = DateTime.UtcNow };
-            var solution4 = new Solution { Query = "SELECT * FROM mammals AS m JOIN food AS f ON m.food_id = f.id WHERE m.habitat = 'Arctic' AND f.name = 'Fish'", QueryHash = 1677832380, Exercise = exercise4, CreatedAt = DateTime.UtcNow };
-            var solution5 = new Solution { Query = "SELECT * FROM mammals AS m JOIN food AS f ON m.food_id = f.id WHERE f.name LIKE '%a%'", QueryHash = 1059124326, Exercise = exercise5, CreatedAt = DateTime.UtcNow };
+            var solution1 = new Solution { Query = "SELECT * FROM mammals AS m WHERE m.habitat = 'Jungle'", QueryHash = 3684803095, Exercise = exercise1, CreatedAt = DateTime.Now };
+            var solution2 = new Solution { Query = "SELECT * FROM mammals AS m JOIN food AS f ON m.food_id = f.id WHERE f.name = 'Nuts'", QueryHash = 2227733060, Exercise = exercise2, CreatedAt = DateTime.Now };
+            var solution3 = new Solution { Query = "SELECT * FROM mammals AS m WHERE m.habitat = 'Savannah' AND m.name LIKE '%e%'", QueryHash = 2303149545, Exercise = exercise3, CreatedAt = DateTime.Now };
+            var solution4 = new Solution { Query = "SELECT * FROM mammals AS m JOIN food AS f ON m.food_id = f.id WHERE m.habitat = 'Arctic' AND f.name = 'Fish'", QueryHash = 1677832380, Exercise = exercise4, CreatedAt = DateTime.Now };
+            var solution5 = new Solution { Query = "SELECT * FROM mammals AS m JOIN food AS f ON m.food_id = f.id WHERE f.name LIKE '%a%'", QueryHash = 1059124326, Exercise = exercise5, CreatedAt = DateTime.Now };
 
             /* REQUIREMENTS */
-            var requirement1 = new Requirement { Statement = "SELECT", IsBlacklist = false, IsHidden = false, Exercise = exercise1, CreatedAt = DateTime.UtcNow };
-            var requirement2 = new Requirement { Statement = "LIKE", IsBlacklist = true, IsHidden = false, Exercise = exercise1, CreatedAt = DateTime.UtcNow };
+            var requirement1 = new Requirement { Statement = "SELECT", IsBlacklist = false, IsHidden = false, Exercise = exercise1, CreatedAt = DateTime.Now };
+            var requirement2 = new Requirement { Statement = "LIKE", IsBlacklist = true, IsHidden = false, Exercise = exercise1, CreatedAt = DateTime.Now };
 
             /* LECTURERS */
             var lecturer1 = new User
@@ -328,7 +328,7 @@ namespace SQLDropbox.Repositories
                 Password = ps.HashPassword("u0123456"),
                 Role = Role.Lecturer,
                 LecturerCourses = [course1, course2],
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
             };
             var lecturer2 = new User
             {
@@ -339,7 +339,7 @@ namespace SQLDropbox.Repositories
                 Password = ps.HashPassword("u1234567"),
                 Role = Role.Lecturer,
                 LecturerCourses = [course1, course3],
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
             };
 
             /* STUDENTS */
@@ -352,7 +352,7 @@ namespace SQLDropbox.Repositories
                 Password = ps.HashPassword("r0123456"),
                 Role = Role.Student,
                 StudentCourses = [course1],
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
             };
             var student2 = new User
             {
@@ -363,7 +363,7 @@ namespace SQLDropbox.Repositories
                 Password = ps.HashPassword("r0933070"),
                 Role = Role.Student,
                 StudentCourses = [course1],
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
             };
 
             /* STUDENT EXERCISES */
@@ -372,21 +372,21 @@ namespace SQLDropbox.Repositories
                 IsCompleted = true,
                 Exercise = exercise1,
                 User = student1,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
             };
             var studentExercise2 = new UserExercise
             {
                 IsCompleted = false,
                 Exercise = exercise2,
                 User = student1,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
             };
             var studentExercise3 = new UserExercise
             {
                 IsCompleted = false,
                 Exercise = exercise3,
                 User = student1,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
             };
 
             /* STUDENT SOLUTIONS */
@@ -395,7 +395,7 @@ namespace SQLDropbox.Repositories
                 Query = "SELECT * FROM mammals AS m WHERE m.habitat = 'Jungle'",
                 IsCorrect = true,
                 UserExercise = studentExercise1,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
             };
             var studentSolution2 = new UserSolution
             {
@@ -403,7 +403,7 @@ namespace SQLDropbox.Repositories
                 IsCorrect = false,
                 ErrorMessage = "Need to use a JOIN, query doesn't contain \"Nuts\"",
                 UserExercise = studentExercise2,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
             };
             var studentSolution3 = new UserSolution
             {
@@ -411,7 +411,7 @@ namespace SQLDropbox.Repositories
                 IsCorrect = false,
                 ErrorMessage = "Query doesn't contain \"Savannah\" or \"e\"",
                 UserExercise = studentExercise3,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
             };
 
             /* ADD */

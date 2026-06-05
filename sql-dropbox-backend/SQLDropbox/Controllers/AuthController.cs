@@ -47,7 +47,7 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
             {
                 if (user.Password != null)
                     return BadRequest("This account is already set up.");
-                
+
                 dto.Password = dto.Password.Trim();
 
                 string hashedPassword = _pS.HashPassword(dto.Password);
