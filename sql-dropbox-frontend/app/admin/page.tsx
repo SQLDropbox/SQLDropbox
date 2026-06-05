@@ -11,7 +11,7 @@ import CourseCard from "@/components/admin/course/courseCard";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslations } from "next-intl";
 import AddLecturerDialog from "@/components/admin/lecturer/addLecturerDialog";
-import AddSchemaDialog from "@/components/admin/schema/addSchemaDialog";
+import AddSchemaDialog from "@/components/admin/course/addSchemaDialog";
 
 export default function Page() {
     const { isAdmin } = useAuth();
@@ -47,15 +47,33 @@ export default function Page() {
                                 onClick={() => setAddLecturerDialogOpen(true)}
                                 className="
                                     flex items-center gap-2
-                                    border-2 border-accent text-accent
-                                    px-4 py-2
-                                    font-mono text-xs uppercase tracking-widest
-                                    hover:bg-accent hover:text-paper
+                                    border-2 border-border text-muted
+                                    px-3 py-1.5
+                                    font-mono text-[10px] uppercase tracking-widest
+                                    hover:bg-ink hover:text-paper
                                     transition-colors
+                                    -rotate-1
                                 "
                             >
                                 <FaUserPlus />
                                 NEW LECTURER
+                            </button>
+
+                            {/* NEW SCHEMA */}
+                            <button
+                                onClick={() => setAddSchemaDialogOpen(true)}
+                                className="
+                                    flex items-center gap-2
+                                    border-2 border-border text-muted
+                                    px-3 py-1.5
+                                    font-mono text-[10px] uppercase tracking-widest
+                                    hover:bg-ink hover:text-paper
+                                    transition-colors
+                                    -rotate-1
+                                "
+                            >
+                                <FaPlus />
+                                NEW SCHEMA
                             </button>
 
                             {/* NEW COURSE */}
@@ -71,26 +89,11 @@ export default function Page() {
                                     font-mono text-xs uppercase tracking-widest
                                     hover:bg-accent hover:text-paper
                                     transition-colors
+                                    -rotate-1
                                 "
                             >
                                 <FaPlus />
                                 {t("newCourse")}
-                            </button>
-
-                            {/* NEW SCHEMA */}
-                            <button
-                                onClick={() => setAddSchemaDialogOpen(true)}
-                                className="
-                                    flex items-center gap-2
-                                    border-2 border-accent text-accent
-                                    px-4 py-2
-                                    font-mono text-xs uppercase tracking-widest
-                                    hover:bg-accent hover:text-paper
-                                    transition-colors
-                                "
-                            >
-                                <FaPlus />
-                                NEW SCHEMA
                             </button>
                         </div>
                     )}
@@ -142,7 +145,7 @@ export default function Page() {
                 mode={selectedCourse ? "edit" : "add"}
                 course={selectedCourse ?? undefined}
             />
-             <AddLecturerDialog
+            <AddLecturerDialog
                 open={addLecturerDialogOpen}
                 onClose={() => setAddLecturerDialogOpen(false)}
             />
