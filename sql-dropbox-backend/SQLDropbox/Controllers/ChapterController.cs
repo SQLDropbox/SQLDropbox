@@ -49,7 +49,7 @@ public class ChapterController(AppDbContext db, AuthorizationService authorizati
         }
         catch (Exception ex)
         {
-            return BadRequest(ex);
+            return BadRequest(new { message = ex.Message });
         }
     }
 
@@ -94,7 +94,7 @@ public class ChapterController(AppDbContext db, AuthorizationService authorizati
         }
         catch (Exception ex)
         {
-            return BadRequest(ex);
+            return BadRequest(new { message = ex.Message });
         }
     }
 
@@ -133,7 +133,7 @@ public class ChapterController(AppDbContext db, AuthorizationService authorizati
                 Schema = schema,
                 StartDate = dto.StartDate,
                 Deadline = dto.Deadline,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now
             };
 
             _db.Chapters.Add(newChapter);
@@ -147,7 +147,7 @@ public class ChapterController(AppDbContext db, AuthorizationService authorizati
         }
         catch (Exception ex)
         {
-            return BadRequest(ex);
+            return BadRequest(new { message = ex.Message });
         }
     }
 
@@ -183,7 +183,7 @@ public class ChapterController(AppDbContext db, AuthorizationService authorizati
                 chapter.Schema = schema;
             }
 
-            chapter.UpdatedAt = DateTime.UtcNow;
+            chapter.UpdatedAt = DateTime.Now;
             await _db.SaveChangesAsync();
             return Ok(chapter);
         }
@@ -193,7 +193,7 @@ public class ChapterController(AppDbContext db, AuthorizationService authorizati
         }
         catch (Exception ex)
         {
-            return BadRequest(ex);
+            return BadRequest(new { message = ex.Message });
         }
     }
 
@@ -211,7 +211,7 @@ public class ChapterController(AppDbContext db, AuthorizationService authorizati
             if (chapter == null)
                 return NotFound(new { message = "Chapter not found." });
 
-            chapter.DeletedAt = DateTime.UtcNow;
+            chapter.DeletedAt = DateTime.Now;
             await _db.SaveChangesAsync();
             return Ok(new { message = $"Chapter with ID {id} successfully deleted." });
         }
@@ -221,7 +221,7 @@ public class ChapterController(AppDbContext db, AuthorizationService authorizati
         }
         catch (Exception ex)
         {
-            return BadRequest(ex);
+            return BadRequest(new { message = ex.Message });
         }
     }
 
@@ -323,7 +323,7 @@ public class ChapterController(AppDbContext db, AuthorizationService authorizati
         }
         catch (Exception ex)
         {
-            return BadRequest(ex);
+            return BadRequest(new { message = ex.Message });
         }
     }
 
@@ -402,7 +402,7 @@ public class ChapterController(AppDbContext db, AuthorizationService authorizati
         }
         catch (Exception ex)
         {
-            return BadRequest(ex);
+            return BadRequest(new { message = ex.Message });
         }
     }
 
@@ -429,7 +429,7 @@ public class ChapterController(AppDbContext db, AuthorizationService authorizati
                     if (chapterToUpdate != null)
                     {
                         chapterToUpdate.Order = i;
-                        chapterToUpdate.UpdatedAt = DateTime.UtcNow;
+                        chapterToUpdate.UpdatedAt = DateTime.Now;
                     }
                 }
             }
@@ -443,7 +443,7 @@ public class ChapterController(AppDbContext db, AuthorizationService authorizati
         }
         catch (Exception ex)
         {
-            return BadRequest(ex);
+            return BadRequest(new { message = ex.Message });
         }
     }
 }

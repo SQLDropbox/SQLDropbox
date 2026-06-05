@@ -20,7 +20,7 @@ namespace SQLDropbox.Services
                 UserCode = userCode,
                 Email = email,
                 Role = Role.Student,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now
             };
 
             var entity = _db.Users.Add(newStudent);
@@ -50,7 +50,7 @@ namespace SQLDropbox.Services
                     user.LastName = dto.LastName;
                     user.Email = dto.Email;
                     user.DeletedAt = null;
-                    user.UpdatedAt = DateTime.UtcNow;
+                    user.UpdatedAt = DateTime.Now;
 
                     user.StudentCourses.Add(course);
                 }
@@ -63,7 +63,7 @@ namespace SQLDropbox.Services
                         LastName = dto.LastName,
                         Email = dto.Email,
                         Role = Role.Student,
-                        CreatedAt = DateTime.UtcNow,
+                        CreatedAt = DateTime.Now,
                         StudentCourses = new List<Course> { course }
                     };
 

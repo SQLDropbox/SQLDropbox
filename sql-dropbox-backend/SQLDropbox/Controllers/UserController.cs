@@ -51,7 +51,7 @@ namespace SQLDropbox.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(ex);
+                return BadRequest(new { message = ex.Message });
             }
         }
 
@@ -95,7 +95,7 @@ namespace SQLDropbox.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(ex);
+                return BadRequest(new { message = ex.Message });
             }
         }
 
@@ -156,7 +156,7 @@ namespace SQLDropbox.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(ex);
+                return BadRequest(new { message = ex.Message });
             }
         }
 
@@ -179,7 +179,7 @@ namespace SQLDropbox.Controllers
                     .Where(u => u.StudentCourses.Any(c => c.CourseId == courseId))
                     .ToListAsync();
 
-                students.ForEach(x => x.DeletedAt = DateTime.UtcNow);
+                students.ForEach(x => x.DeletedAt = DateTime.Now);
                 await _db.SaveChangesAsync();
 
                 return Ok(new
@@ -193,7 +193,7 @@ namespace SQLDropbox.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(ex);
+                return BadRequest(new { message = ex.Message });
             }
         }
 
@@ -259,7 +259,7 @@ namespace SQLDropbox.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(ex);
+                return BadRequest(new { message = ex.Message });
             }
         }
 
@@ -267,103 +267,117 @@ namespace SQLDropbox.Controllers
         [HttpGet("lecturers")]
         public async Task<IActionResult> GetAllLecturers()
         {
-            var lecturers = await _db.Users
-                .Where(u => u.Role == Role.Lecturer)
-                .Select(u => new
-                {
-                    u.UserId,
-                    u.UserCode,
-                    u.FirstName,
-                    u.LastName
-                })
-                .ToListAsync();
+            try
+            {
+                var lecturers = await _db.Users
+                    .Where(u => u.Role == Role.Lecturer)
+                    .Select(u => new
+                    {
+                        u.UserId,
+                        u.UserCode,
+                        u.FirstName,
+                        u.LastName
+                    })
+                    .ToListAsync();
 
-            return Ok(lecturers);
+                return Ok(lecturers);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [Authorize(Roles = "Admin")]
         [HttpPost("lecturer")]
         public async Task<IActionResult> AddLecturer([FromBody] CreateLecturerDTO dto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var userExists = await _db.Users.AnyAsync(u =>
-                u.UserCode.ToLower() == dto.UserCode.ToLower() ||
-                u.Email.ToLower() == dto.Email.ToLower());
-
-            if (userExists)
+            try
             {
-                return BadRequest("A user with this UserCode or Email already exists.");
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
+
+                var userExists = await _db.Users.AnyAsync(u =>
+                    u.UserCode.ToLower() == dto.UserCode.ToLower() ||
+                    u.Email.ToLower() == dto.Email.ToLower());
+
+                if (userExists)
+                {
+                    return BadRequest("A user with this UserCode or Email already exists.");
+                }
+
+                var newLecturer = new User
+                {
+                    UserId = Guid.NewGuid(),
+                    UserCode = dto.UserCode,
+                    FirstName = dto.FirstName,
+                    LastName = dto.LastName,
+                    Email = dto.Email,
+                    Password = null,
+                    Role = Role.Lecturer,
+                    CreatedAt = DateTime.Now
+                };
+
+                _db.Users.Add(newLecturer);
+                await _db.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    newLecturer.UserId,
+                    newLecturer.UserCode,
+                    newLecturer.FirstName,
+                    newLecturer.LastName
+                });
             }
-
-            var newLecturer = new User
+            catch (Exception ex)
             {
-                UserId = Guid.NewGuid(),
-                UserCode = dto.UserCode,
-                FirstName = dto.FirstName,
-                LastName = dto.LastName,
-                Email = dto.Email,
-                Password = null,
-                Role = Role.Lecturer,
-                CreatedAt = DateTime.UtcNow
-            };
-
-            _db.Users.Add(newLecturer);
-            await _db.SaveChangesAsync();
-
-            return Ok(new
-            {
-                newLecturer.UserId,
-                newLecturer.UserCode,
-                newLecturer.FirstName,
-                newLecturer.LastName
-            });
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [Authorize(Roles = "Admin")]
         [HttpPost("invite/{userId}")]
         public async Task<IActionResult> InviteUser(string userId)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var user = await _db.Users.FirstOrDefaultAsync(u => u.UserId.ToString() == userId);
-
-            if (user == null)
-            {
-                return BadRequest("User not found.");
-            }
-
-            if (user.Password != null)
-            {
-                return BadRequest("Account already set up.");
-            }
-
-            if (user.InvitedAt != null)
-            {
-                return BadRequest("User has already been invited.");
-            }
-
-            string fullName = user.FirstName + " " + user.LastName;
-
             try
             {
-                await _emailService.SendEmailAsync(
-                                toEmail: user.Email,
-                                toName: fullName,
-                                subject: "You're invited!",
-                                htmlContent: $"<h1>Hello {fullName},</h1><p>You have been invited to SQLDropbox. <a href='http://localhost:3000/activate/{user.UserId}'>Click here to activate your account.</a></p>"
-                            );
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
 
-                user.InvitedAt = DateTime.UtcNow;
+                var user = await _db.Users.FirstOrDefaultAsync(u => u.UserId.ToString() == userId);
+
+                if (user == null)
+                {
+                    return BadRequest("User not found.");
+                }
+
+                if (user.Password != null)
+                {
+                    return BadRequest("Account already set up.");
+                }
+
+                if (user.InvitedAt != null)
+                {
+                    return BadRequest("User has already been invited.");
+                }
+
+                string fullName = user.FirstName + " " + user.LastName;
+
+                await _emailService.SendEmailAsync(
+                                    toEmail: user.Email,
+                                    toName: fullName,
+                                    subject: "You're invited!",
+                                    htmlContent: $"<h1>Hello {fullName},</h1><p>You have been invited to SQLDropbox. <a href='http://localhost:3000/activate/{user.UserId}'>Click here to activate your account.</a></p>"
+                                );
+
+                user.InvitedAt = DateTime.Now;
                 await _db.SaveChangesAsync();
 
                 return Ok();
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new { message = ex.Message });
             }
         }
     }

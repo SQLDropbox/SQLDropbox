@@ -50,7 +50,7 @@ namespace SQLDropbox.Services
                 issuer: _issuer,
                 audience: _audience,
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(_accessTokenMinutes),
+                expires: DateTime.Now.AddMinutes(_accessTokenMinutes),
                 signingCredentials: creds
             );
 

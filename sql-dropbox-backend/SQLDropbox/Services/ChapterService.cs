@@ -56,7 +56,7 @@ namespace SQLDropbox.Services
                     IsCompleted = false,
                     Exercise = randomExercise,
                     User = user,
-                    CreatedAt = DateTime.UtcNow,
+                    CreatedAt = DateTime.Now,
                 });
 
                 amountNeeded--;
