@@ -59,7 +59,7 @@ public class CourseController(AppDbContext db, AuthorizationService authorizatio
         }
         catch (Exception ex)
         {
-            return BadRequest(ex);
+            return BadRequest(new { message = ex.Message });
         }
     }
 
@@ -111,7 +111,7 @@ public class CourseController(AppDbContext db, AuthorizationService authorizatio
                 course.IsActive,
                 totalCourseCount,
                 chapters = course.Chapters
-                    .Where(c => role != Role.Student || !c.StartDate.HasValue || c.StartDate.Value.Date <= DateTime.UtcNow.Date)
+                    .Where(c => role != Role.Student || !c.StartDate.HasValue || c.StartDate.Value.Date <= DateTime.Now.Date)
                     .OrderBy(c => c.Order)
                     .Select(x => new
                     {
@@ -135,7 +135,7 @@ public class CourseController(AppDbContext db, AuthorizationService authorizatio
         }
         catch (Exception ex)
         {
-            return BadRequest(ex);
+            return BadRequest(new { message = ex.Message });
         }
     }
 
@@ -143,45 +143,52 @@ public class CourseController(AppDbContext db, AuthorizationService authorizatio
     [HttpPost]
     public async Task<IActionResult> AddCourse([FromBody] CourseDTO course)
     {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-
-        if (_db.Courses.Any(x => x.CourseId == course.CourseId))
+        try
         {
-            return BadRequest("This URL is already in use");
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            if (_db.Courses.Any(x => x.CourseId == course.CourseId))
+            {
+                return BadRequest("This URL is already in use");
+            }
+
+            if (course.CourseId == null)
+            {
+                return BadRequest("The URL cannot be null");
+            }
+
+            var newCourse = new Course
+            {
+                CourseId = course.CourseId,
+                CourseNameEN = course.CourseNameEN,
+                CourseNameNL = course.CourseNameNL,
+                CourseDescriptionEN = course.CourseDescriptionEN,
+                CourseDescriptionNL = course.CourseDescriptionNL,
+                //Lecturer = course.Lecturer,
+                IsActive = course.IsActive,
+                CreatedAt = DateTime.Now,
+                Lecturers = []
+            };
+
+            if (course.LecturerIds != null && course.LecturerIds.Any())
+            {
+                var lecturers = await _db.Users
+                    .Where(u => course.LecturerIds.Contains(u.UserId) && u.Role == Role.Lecturer)
+                    .ToListAsync();
+
+                newCourse.Lecturers = lecturers;
+            }
+
+            _db.Courses.Add(newCourse);
+            await _db.SaveChangesAsync();
+
+            return Ok(newCourse);
         }
-
-        if (course.CourseId == null)
+        catch (Exception ex)
         {
-            return BadRequest("The URL cannot be null");
+            return BadRequest(new { message = ex.Message });
         }
-
-        var newCourse = new Course
-        {
-            CourseId = course.CourseId,
-            CourseNameEN = course.CourseNameEN,
-            CourseNameNL = course.CourseNameNL,
-            CourseDescriptionEN = course.CourseDescriptionEN,
-            CourseDescriptionNL = course.CourseDescriptionNL,
-            //Lecturer = course.Lecturer,
-            IsActive = course.IsActive,
-            CreatedAt = DateTime.Now,
-            Lecturers = []
-        };
-
-        if (course.LecturerIds != null && course.LecturerIds.Any())
-        {
-            var lecturers = await _db.Users
-                .Where(u => course.LecturerIds.Contains(u.UserId) && u.Role == Role.Lecturer)
-                .ToListAsync();
-
-            newCourse.Lecturers = lecturers;
-        }
-
-        _db.Courses.Add(newCourse);
-        await _db.SaveChangesAsync();
-
-        return Ok(newCourse);
     }
 
     [Authorize(Roles = "Admin,Lecturer")]
@@ -209,7 +216,7 @@ public class CourseController(AppDbContext db, AuthorizationService authorizatio
             existing.CourseDescriptionNL = course.CourseDescriptionNL;
             //existing.Lecturer = course.Lecturer;
             existing.IsActive = course.IsActive;
-            existing.UpdatedAt = DateTime.UtcNow;
+            existing.UpdatedAt = DateTime.Now;
 
             if (course.LecturerIds != null)
             {
@@ -234,7 +241,7 @@ public class CourseController(AppDbContext db, AuthorizationService authorizatio
         }
         catch (Exception ex)
         {
-            return BadRequest(ex);
+            return BadRequest(new { message = ex.Message });
         }
     }
 
@@ -242,29 +249,33 @@ public class CourseController(AppDbContext db, AuthorizationService authorizatio
     [HttpDelete("{courseID}")]
     public ActionResult DeleteCourse(string courseID)
     {
-        var course = _db.Courses.FirstOrDefault(x => x.CourseId == courseID);
-
-        if (course == null)
+        try
         {
-            return BadRequest("Course not found");
+            var course = _db.Courses.FirstOrDefault(x => x.CourseId == courseID);
+
+            if (course == null)
+            {
+                return BadRequest("Course not found");
+            }
+
+            course.DeletedAt = DateTime.Now;
+            _db.SaveChanges();
+
+            return Ok();
         }
-
-        course.DeletedAt = DateTime.Now;
-        _db.SaveChanges();
-
-        return Ok();
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
 
-    [Authorize(Roles = "Admin,Lecturer")]
+    [Authorize(Roles = "Admin")]
     [HttpPost("{courseId}/Duplicate")]
     public async Task<IActionResult> DuplicateCourse(string courseId, [FromBody] DuplicateCourseDTO? request = null)
     {
         try
         {
-            var (userId, role) = IsAuthenticated();
-            await _aS.UserHasAccessToCourse(userId, role, courseId);
-
             var existingCourse = _db.Courses
             .Include(c => c.Lecturers)
             .Include(c => c.Chapters)
@@ -352,13 +363,9 @@ public class CourseController(AppDbContext db, AuthorizationService authorizatio
             _db.SaveChanges();
             return Ok(duplicateCourse);
         }
-        catch (UnauthorizedAccessException)
-        {
-            return Unauthorized(new { message = "You're not authorized to access this resource." });
-        }
         catch (Exception ex)
         {
-            return BadRequest(ex);
+            return BadRequest(new { message = ex.Message });
         }
     }
 
@@ -366,51 +373,65 @@ public class CourseController(AppDbContext db, AuthorizationService authorizatio
     [HttpPost("{courseId}/Lecturers")]
     public async Task<IActionResult> AddLecturerToCourse(string courseId, [FromBody] AssignLecturerDTO request)
     {
-        var course = await _db.Courses
+        try
+        {
+            var course = await _db.Courses
             .Include(c => c.Lecturers)
             .FirstOrDefaultAsync(c => c.CourseId == courseId);
-        if (course == null)
-            return NotFound("Course not found");
+            if (course == null)
+                return NotFound("Course not found");
 
-        var user = await _db.Users
-            .FirstOrDefaultAsync(u => u.UserId == request.UserId);
-        if (user == null)
-            return NotFound("User not found");
+            var user = await _db.Users
+                .FirstOrDefaultAsync(u => u.UserId == request.UserId);
+            if (user == null)
+                return NotFound("User not found");
 
-        if (user.Role != Role.Lecturer)
-            return BadRequest("This user does not have the Lecturer role.");
-        if (course.Lecturers.Any(l => l.UserId == request.UserId))
-            return BadRequest("This lecturer is already assigned to this course.");
+            if (user.Role != Role.Lecturer)
+                return BadRequest("This user does not have the Lecturer role.");
+            if (course.Lecturers.Any(l => l.UserId == request.UserId))
+                return BadRequest("This lecturer is already assigned to this course.");
 
-        course.Lecturers.Add(user);
-        await _db.SaveChangesAsync();
+            course.Lecturers.Add(user);
+            await _db.SaveChangesAsync();
 
-        return Ok(new { message = "Lecturer successfully added to the course." });
+            return Ok(new { message = "Lecturer successfully added to the course." });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [Authorize(Roles = "Admin")]
     [HttpDelete("{courseId}/lecturers/{userId}")]
     public async Task<IActionResult> RemoveLecturerFromCourse(string courseId, Guid userId)
     {
-        var course = await _db.Courses
-            .Include(c => c.Lecturers)
-            .FirstOrDefaultAsync(c => c.CourseId == courseId);
+        try
+        {
+            var course = await _db.Courses
+                .Include(c => c.Lecturers)
+                .FirstOrDefaultAsync(c => c.CourseId == courseId);
 
-        if (course == null)
-            return NotFound("Course not found");
+            if (course == null)
+                return NotFound("Course not found");
 
-        var user = await _db.Users
-            .FirstOrDefaultAsync(u => u.UserId == userId);
+            var user = await _db.Users
+                .FirstOrDefaultAsync(u => u.UserId == userId);
 
-        if (user == null)
-            return NotFound("User not found");
+            if (user == null)
+                return NotFound("User not found");
 
-        if (!course.Lecturers.Any(l => l.UserId == userId))
-            return BadRequest("This lecturer is not assigned to this course.");
+            if (!course.Lecturers.Any(l => l.UserId == userId))
+                return BadRequest("This lecturer is not assigned to this course.");
 
-        course.Lecturers.Remove(user);
-        await _db.SaveChangesAsync();
+            course.Lecturers.Remove(user);
+            await _db.SaveChangesAsync();
 
-        return Ok(new { message = "Lecturer successfully removed from the course." });
+            return Ok(new { message = "Lecturer successfully removed from the course." });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 }

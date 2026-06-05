@@ -50,8 +50,12 @@ public class ExerciseController(AppDbContext db, AuthorizationService authorizat
             if (chapter == null)
                 return BadRequest(new { message = "Chapter not be found." });
 
-            string formattedQuery = _soS.FormatQuery(dto.SolutionQuery);
-            string? formattedValidationQuery = null;
+            var (formattedQuery, formatErrorMessage) = _soS.FormatQuery(dto.SolutionQuery);
+            if (formatErrorMessage != null)
+                return BadRequest(new { message = $"Error occured formatting query: {formatErrorMessage}." });
+            if (formattedQuery == null)
+                return BadRequest(new { message = "Something went wrong while formatting the query." });
+
             string queryOutput = "";
 
             if (queryAction == QueryAction.Select)
@@ -60,11 +64,17 @@ public class ExerciseController(AppDbContext db, AuthorizationService authorizat
                 queryOutput = await _scS.ExecuteSelectOnSchemaAsync(chapter.Schema.SchemaName, formattedQuery);
             }
 
+            string? formattedValidationQuery = null;
+
             if (queryAction == QueryAction.Manipulation && dto.ValidationQuery != null)
             {
-                //return Ok(new { message = "This is being worked on" });
-                formattedValidationQuery = _soS.FormatQuery(dto.ValidationQuery);
-                //If this returns an error, that error should be shown
+                var (fVQ, fEM) = _soS.FormatQuery(dto.ValidationQuery);
+                if (formatErrorMessage != null)
+                    return BadRequest(new { message = $"Error occured formatting validation query: {fEM}." });
+                if (fVQ == null)
+                    return BadRequest(new { message = "Something went wrong while formatting the validation query." });
+
+                formattedValidationQuery = fVQ;
                 queryOutput = await _scS.ExecuteInsertUpdateDeleteOnSchemaAsync(chapter.Schema.SchemaName, formattedQuery, formattedValidationQuery);
             }
 
@@ -85,14 +95,14 @@ public class ExerciseController(AppDbContext db, AuthorizationService authorizat
                 QueryAction = queryAction,
                 ValidationQuery = formattedValidationQuery,
                 Chapter = chapter,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
 
                 Solutions = [
                     new Solution
                     {
                         Query = formattedQuery,
                         QueryHash = queryHash,
-                        CreatedAt = DateTime.UtcNow
+                        CreatedAt = DateTime.Now
                     }
                 ],
 
@@ -131,13 +141,12 @@ public class ExerciseController(AppDbContext db, AuthorizationService authorizat
 
             var exercise = await _db.Exercises
             .Include(e => e.Solutions)
-            .Include(e => e.Requirements)
+            .Include(e => e.Requirements.Where(r => !r.IsHidden))
             .FirstOrDefaultAsync(e => e.ExerciseId == id);
 
             if (exercise == null)
-            {
                 return NotFound(new { message = "Exercise not found." });
-            }
+
             return Ok(exercise);
         }
         catch (UnauthorizedAccessException)
@@ -165,7 +174,7 @@ public class ExerciseController(AppDbContext db, AuthorizationService authorizat
             {
                 return BadRequest(new { message = "Exercise not found." });
             }
-            exercise.DeletedAt = DateTime.UtcNow;
+            exercise.DeletedAt = DateTime.Now;
             _db.SaveChanges();
             return Ok();
         }
@@ -219,7 +228,12 @@ public class ExerciseController(AppDbContext db, AuthorizationService authorizat
             {
                 _db.Solutions.RemoveRange(exercise.Solutions);
 
-                string formattedQuery = _soS.FormatQuery(dto.SolutionQuery);
+                var (formattedQuery, formatErrorMessage) = _soS.FormatQuery(dto.SolutionQuery);
+                if (formatErrorMessage != null)
+                    return BadRequest(new { message = $"Error occured formatting query: {formatErrorMessage}." });
+                if (formattedQuery == null)
+                    return BadRequest(new { message = "Something went wrong while formatting the query." });
+
                 uint queryHash = await _soS.HashSolution(formattedQuery);
 
                 if (exercise.QueryAction == QueryAction.Select)
@@ -235,13 +249,13 @@ public class ExerciseController(AppDbContext db, AuthorizationService authorizat
                 {
                     Query = formattedQuery,
                     QueryHash = queryHash,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.Now
                 }
                 ];
             }
 
-            _db.Requirements.RemoveRange(exercise.Requirements); 
-            
+            _db.Requirements.RemoveRange(exercise.Requirements);
+
             if (dto.Requirements != null)
             {
                 foreach (var r in dto.Requirements)
@@ -257,13 +271,18 @@ public class ExerciseController(AppDbContext db, AuthorizationService authorizat
 
             if (exercise.QueryAction != QueryAction.Select && dto.ValidationQuery != null)
             {
-                string formattedQuery = _soS.FormatQuery(dto.ValidationQuery);
+                var (formattedQuery, formatErrorMessage) = _soS.FormatQuery(dto.ValidationQuery);
+                if (formatErrorMessage != null)
+                    return BadRequest(new { message = $"Error occured formatting validation query: {formatErrorMessage}." });
+                if (formattedQuery == null)
+                    return BadRequest(new { message = "Something went wrong while formatting the validation query." });
+
                 string queryOutput = await _scS.ExecuteSelectOnSchemaAsync(exercise.Chapter.Schema.SchemaName, formattedQuery);
                 exercise.ValidationQuery = formattedQuery;
                 exercise.QueryOutput = queryOutput;
             }
 
-            exercise.UpdatedAt = DateTime.UtcNow;
+            exercise.UpdatedAt = DateTime.Now;
 
             await _db.SaveChangesAsync();
 
