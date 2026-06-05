@@ -31,7 +31,11 @@ namespace SQLDropbox.Services
                 new SendSmtpEmailTo(email: toEmail, name: toName)
                 },
                 subject: subject,
-                htmlContent: htmlContent
+                htmlContent: htmlContent,
+                replyTo: new SendSmtpEmailReplyTo(
+                    email: _config["Brevo:ReplyToEmail"],
+                    name: _config["Brevo:ReplyToName"]
+                )
             );
 
             await apiInstance.SendTransacEmailAsync(sendSmtpEmail);
