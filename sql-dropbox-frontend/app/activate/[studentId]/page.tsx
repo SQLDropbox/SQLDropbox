@@ -62,9 +62,7 @@ export default function Page() {
     if (error) return notFound();
 
     if (isLoading) {
-        return (
-            <Loading />
-        );
+        return <Loading />;
     }
 
     return (
@@ -155,7 +153,9 @@ export default function Page() {
                                     onChange={(e) =>
                                         setConfirmPassword(e.target.value)
                                     }
-                                    placeholder={t("confirmPasswordPlaceholder")}
+                                    placeholder={t(
+                                        "confirmPasswordPlaceholder",
+                                    )}
                                     className="w-full bg-transparent outline-none text-sm caret-ink"
                                 />
 

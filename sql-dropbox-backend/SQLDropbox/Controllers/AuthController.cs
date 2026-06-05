@@ -60,9 +60,10 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
                 string refreshToken = _rtS.GenerateRefreshToken();
                 RefreshToken validRefreshToken = await _rtS.CreateRefreshToken(user, HttpContext.Connection.RemoteIpAddress!.ToString(), refreshToken);
 
+                _jwtS.AttachCookie(Response, accessToken);
                 _rtS.AttachCookie(Response, refreshToken, validRefreshToken.ExpiresAt);
 
-                return Ok(new { token = accessToken });
+                return Ok();
             }
 
             return NotFound(new { message = "This account does not exist." });
@@ -100,9 +101,10 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
                 string refreshToken = _rtS.GenerateRefreshToken();
                 RefreshToken validRefreshToken = await _rtS.CreateRefreshToken(user, HttpContext.Connection.RemoteIpAddress!.ToString(), refreshToken);
 
+                _jwtS.AttachCookie(Response, accessToken);
                 _rtS.AttachCookie(Response, refreshToken, validRefreshToken.ExpiresAt);
 
-                return Ok(new { token = accessToken });
+                return Ok();
             }
 
             return BadRequest(new { message = "Incorrect credentials." });
@@ -132,9 +134,10 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
             string newRefreshToken = _rtS.GenerateRefreshToken();
             RefreshToken newValidRefreshToken = await _rtS.CreateRefreshToken(oldRefreshToken.User, HttpContext.Connection.RemoteIpAddress!.ToString(), newRefreshToken);
 
+            _jwtS.AttachCookie(Response, newAccessToken);
             _rtS.AttachCookie(Response, newRefreshToken, newValidRefreshToken.ExpiresAt);
 
-            return Ok(new { token = newAccessToken });
+            return Ok();
         }
         catch
         {
@@ -155,6 +158,7 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
             if (oldRefreshToken != null)
                 await _rtS.RevokeRefreshToken(oldRefreshToken);
 
+            _jwtS.RemoveCookie(Response);
             _rtS.RemoveCookie(Response);
 
             return Ok(new { Message = "Successfully logged out" });

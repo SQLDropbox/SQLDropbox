@@ -20,9 +20,10 @@ const login = async (
     emailOrCode: string,
     password: string,
 ) => {
-    const response = await authService.login(emailOrCode, password);
+    //const response =
+    await authService.login(emailOrCode, password);
 
-    setJWTCookie(response.token);
+    //setJWTCookie(response.token);
 
     setTimeout(() => {
         router.push("/");

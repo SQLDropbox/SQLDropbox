@@ -50,20 +50,12 @@ async function refreshAccessToken(): Promise<string> {
     if (refreshPromise) return refreshPromise;
 
     refreshPromise = (async () => {
-        const refresh = await publicFetch(
-            "/Auth/refresh",
-            {
-                method: "GET",
-                credentials: "include",
-            },
-        );
+        await publicFetch("/Auth/refresh", {
+            method: "GET",
+            credentials: "include",
+        });
 
-        if (!refresh?.token) {
-            throw new Error("No refresh token returned");
-        }
-
-        setJWTCookie(refresh.token);
-        return refresh.token;
+        return "refresh";
     })();
 
     try {
