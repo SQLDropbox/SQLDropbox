@@ -81,7 +81,7 @@ openssl rsa -in private.dev.pem -pubout -out public.dev.pem
 ![alt text](analyse/backend/B6.png)
 ### 5. Seed application (optional).
 - If you want some dummy data, login via swagger (url above).
-- login via this endpoint `/Auth/login` as an admin.
+- login via this endpoint `/Auth/login` as an admin (login credentials in backend program.cs file).
 - Copy the token that the response returns.
 ![alt text](analyse/backend/B7.png)
 - go to the endpoint `/Utilities/seed-db`
