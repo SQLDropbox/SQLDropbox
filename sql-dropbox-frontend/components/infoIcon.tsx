@@ -31,7 +31,7 @@ export default function InfoIcon({
                     ${horizontalClass}
                     whitespace-nowrap
                     bg-muted text-paper
-                    text-[10px]s
+                    text-[10px]
                     px-2 py-1
                     opacity-0 invisible
                     group-hover:opacity-100
