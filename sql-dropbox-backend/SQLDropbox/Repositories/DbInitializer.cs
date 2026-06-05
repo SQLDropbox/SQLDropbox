@@ -24,44 +24,64 @@ namespace SQLDropbox.Repositories
 
         public static async Task SeedAsyncDev(AppDbContext context, PasswordService ps)
         {
-            await context.Database.ExecuteSqlRawAsync("""
+
+            await context.Database.ExecuteSqlRawAsync(@"
                 CREATE SCHEMA IF NOT EXISTS util;
+            ");
+
+            await context.Database.ExecuteSqlRawAsync(@"
                 CREATE OR REPLACE PROCEDURE util.sp_clone_schema(
-                        source_schema TEXT,
-                        target_schema TEXT
-                    ) LANGUAGE plpgsql AS $$
-                DECLARE table_record RECORD;
-                BEGIN EXECUTE format('CREATE SCHEMA IF NOT EXISTS %I', target_schema);
-                FOR table_record IN
-                SELECT tablename
-                FROM pg_tables
-                WHERE schemaname = source_schema LOOP EXECUTE format(
-                        'CREATE TABLE %I.%I (LIKE %I.%I INCLUDING ALL)',
-                        target_schema,
-                        table_record.tablename,
-                        source_schema,
-                        table_record.tablename
-                    );
-                EXECUTE format(
-                    'INSERT INTO %I.%I SELECT * FROM %I.%I',
-                    target_schema,
-                    table_record.tablename,
-                    source_schema,
-                    table_record.tablename
-                );
-                END LOOP;
-                EXECUTE format(
-                    'ALTER SCHEMA %I OWNER TO sqldropbox_exercise_user',
-                    target_schema
-                );
+                    source_schema TEXT,
+                    target_schema TEXT
+                )
+                LANGUAGE plpgsql
+                AS $$
+                DECLARE
+                    table_record RECORD;
+                BEGIN
+                    EXECUTE format('CREATE SCHEMA IF NOT EXISTS %I', target_schema);
+
+                    FOR table_record IN
+                        SELECT tablename
+                        FROM pg_tables
+                        WHERE schemaname = source_schema
+                    LOOP
+                        EXECUTE format(
+                            'CREATE TABLE %I.%I (LIKE %I.%I INCLUDING ALL)',
+                            target_schema,
+                            table_record.tablename,
+                            source_schema,
+                            table_record.tablename
+                        );
+
+                        EXECUTE format(
+                            'INSERT INTO %I.%I SELECT * FROM %I.%I',
+                            target_schema,
+                            table_record.tablename,
+                            source_schema,
+                            table_record.tablename
+                        );
+                    END LOOP;
                 END;
                 $$;
-                CREATE OR REPLACE PROCEDURE util.sp_delete_schema(schema_name TEXT) LANGUAGE plpgsql AS $$ BEGIN EXECUTE format(
+            ");
+
+            await context.Database.ExecuteSqlRawAsync(@"
+                CREATE OR REPLACE PROCEDURE util.sp_delete_schema(
+                    schema_name TEXT
+                )
+                LANGUAGE plpgsql
+                AS $$
+                BEGIN
+                    EXECUTE format(
                         'DROP SCHEMA IF EXISTS %I CASCADE',
                         schema_name
                     );
                 END;
                 $$;
+            ");
+
+            await context.Database.ExecuteSqlRawAsync(@"
                 CREATE SCHEMA IF NOT EXISTS animals;
                 CREATE TABLE IF NOT EXISTS animals.food (
                     id SERIAL PRIMARY KEY,
@@ -74,6 +94,9 @@ namespace SQLDropbox.Repositories
                     food_id INT NOT NULL,
                     CONSTRAINT fk_mammal_food FOREIGN KEY (food_id) REFERENCES animals.food(id) ON DELETE RESTRICT
                 );
+            ");
+
+            await context.Database.ExecuteSqlRawAsync(@"
                 INSERT INTO animals.food (name)
                 VALUES ('Nuts'),
                     ('Meat'),
@@ -116,40 +139,10 @@ namespace SQLDropbox.Repositories
                     ('Snow Leopard', 'Mountain', 2),
                     ('Mountain Goat', 'Mountain', 7),
                     ('Camel', 'Desert', 7),
-                    ('Meerkat', 'Desert', 5); 
-                DO $$ BEGIN IF NOT EXISTS (
-                    SELECT
-                    FROM pg_catalog.pg_roles
-                    WHERE rolname = 'sqldropbox_api'
-                ) THEN CREATE ROLE sqldropbox_api WITH LOGIN PASSWORD '2j7G7lRLqeXTxvpa';
-                END IF;
-                END $$;
-                GRANT CONNECT ON DATABASE sqldropbox TO sqldropbox_api;
-                GRANT USAGE,
-                    CREATE ON SCHEMA public TO sqldropbox_api;
-                GRANT SELECT,
-                    INSERT,
-                    UPDATE,
-                    DELETE ON ALL TABLES IN SCHEMA public TO sqldropbox_api;
-                GRANT USAGE,
-                    SELECT,
-                    UPDATE ON ALL SEQUENCES IN SCHEMA public TO sqldropbox_api;
-                ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public
-                GRANT SELECT,
-                    INSERT,
-                    UPDATE,
-                    DELETE ON TABLES TO sqldropbox_api;
-                ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public
-                GRANT USAGE,
-                    SELECT,
-                    UPDATE ON SEQUENCES TO sqldropbox_api;
-                GRANT USAGE,
-                    CREATE ON SCHEMA util TO sqldropbox_api;
-                GRANT USAGE ON LANGUAGE plpgsql TO sqldropbox_api;
-                GRANT SELECT ON ALL TABLES IN SCHEMA util TO sqldropbox_api;
-                GRANT USAGE,
-                    SELECT ON ALL SEQUENCES IN SCHEMA util TO sqldropbox_api;
-                GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA util TO sqldropbox_api;
+                    ('Meerkat', 'Desert', 5);  
+            ");
+
+            await context.Database.ExecuteSqlRawAsync("""
                 DO $$ BEGIN IF NOT EXISTS (
                     SELECT
                     FROM pg_catalog.pg_roles
@@ -175,24 +168,7 @@ namespace SQLDropbox.Repositories
                     r.schema_name
                 );
                 END LOOP;
-                END $$;
-                GRANT sqldropbox_select_exercise_user TO sqldropbox_api;                
-                DO $$ BEGIN IF NOT EXISTS (
-                    SELECT
-                    FROM pg_catalog.pg_roles
-                    WHERE rolname = 'sqldropbox_exercise_user'
-                ) THEN CREATE ROLE sqldropbox_exercise_user WITH LOGIN PASSWORD '49Do86HmuoPRoVo5';
-                END IF;
-                END $$;
-                REVOKE CONNECT ON DATABASE sqldropbox
-                FROM sqldropbox_exercise_user;
-                REVOKE ALL ON SCHEMA public
-                FROM sqldropbox_exercise_user;
-                REVOKE ALL ON SCHEMA util
-                FROM sqldropbox_exercise_user;
-                GRANT EXECUTE ON PROCEDURE util.sp_clone_schema(TEXT, TEXT) TO sqldropbox_exercise_user;
-                GRANT EXECUTE ON PROCEDURE util.sp_delete_schema(TEXT) TO sqldropbox_exercise_user;
-                GRANT sqldropbox_exercise_user TO sqldropbox_api;                                               
+                END $$;                                                            
                 """);
 
             /* COURSES */
@@ -260,7 +236,7 @@ namespace SQLDropbox.Repositories
                 Deadline = DateTime.UtcNow.AddDays(14),
                 StartDate = DateTime.UtcNow.AddDays(7),
                 Course = course1,
-                Schema = schema2,
+                Schema = schema1,
                 CreatedAt = DateTime.UtcNow,
             };
             var chapter3 = new Chapter
@@ -339,8 +315,8 @@ namespace SQLDropbox.Repositories
             var solution5 = new Solution { Query = "SELECT * FROM mammals AS m JOIN food AS f ON m.food_id = f.id WHERE f.name LIKE '%a%'", QueryHash = 1059124326, Exercise = exercise5, CreatedAt = DateTime.UtcNow };
 
             /* REQUIREMENTS */
-            var requirement1 = new Requirement { Statement = "SELECT", IsBlacklist = false, IsHidden = false, Exercise = exercise1 };
-            var requirement2 = new Requirement { Statement = "LIKE", IsBlacklist = true, IsHidden = false, Exercise = exercise1 };
+            var requirement1 = new Requirement { Statement = "SELECT", IsBlacklist = false, IsHidden = false, Exercise = exercise1, CreatedAt = DateTime.UtcNow };
+            var requirement2 = new Requirement { Statement = "LIKE", IsBlacklist = true, IsHidden = false, Exercise = exercise1, CreatedAt = DateTime.UtcNow };
 
             /* LECTURERS */
             var lecturer1 = new User
