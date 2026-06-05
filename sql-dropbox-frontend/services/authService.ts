@@ -16,7 +16,10 @@ const setupAccount = async (guid: string, password: string) => {
 const login = async (emailOrCode: string, password: string) => {
     return api.publicFetch(`/Auth/login`, {
         method: "POST",
-        body: JSON.stringify({emailOrCode: emailOrCode.trim(), password: password.trim(),}),
+        body: JSON.stringify({
+            emailOrCode: emailOrCode.trim(),
+            password: password.trim(),
+        }),
         credentials: "include",
     });
 };

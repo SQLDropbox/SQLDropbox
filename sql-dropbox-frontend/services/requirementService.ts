@@ -1,5 +1,5 @@
 import { api } from "./apiClient";
-import { Requirement, RequirementDTO } from "@/types/types";
+import { Requirement } from "@/types/types";
 
 const getRequirementsForExercise = async (
     exerciseId: number,
@@ -10,7 +10,7 @@ const getRequirementsForExercise = async (
 };
 
 const createRequirementForExercise = async (
-    dto: RequirementDTO,
+    dto: Requirement,
 ) => {
     return api.privateFetch("/Requirement/create", {
         method: "POST",
@@ -20,7 +20,7 @@ const createRequirementForExercise = async (
 
 const updateRequirementForExercise = async (
     requirementId: number,
-    dto: RequirementDTO,
+    dto: Requirement,
 ) => {
     return api.privateFetch(`/Requirement/update/${requirementId}`, {
         method: "POST",
