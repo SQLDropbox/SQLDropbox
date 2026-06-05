@@ -190,7 +190,7 @@ namespace SQLDropbox.Services
         {
             await using var conn = await OpenConnectionAsync();
             await using var tx = await conn.BeginTransactionAsync();
-           
+
             await using (var setPath = new NpgsqlCommand(
                 $@"SET LOCAL search_path TO ""{schemaName}"";", conn, tx))
             {

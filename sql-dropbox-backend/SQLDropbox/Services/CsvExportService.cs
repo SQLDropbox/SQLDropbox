@@ -1,5 +1,4 @@
 ﻿using Npgsql;
-using SqlParser.Ast;
 using System.Text;
 
 namespace SQLDropbox.Services

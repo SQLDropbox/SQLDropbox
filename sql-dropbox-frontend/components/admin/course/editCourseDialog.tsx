@@ -12,6 +12,7 @@ import { useAuth } from "@/hooks/useAuth";
 import DuplicateCourseModal from "./duplicateCourseModal";
 import { useTranslations } from "next-intl";
 import { FiCopy, FiTrash2 } from "react-icons/fi";
+import InfoIcon from "@/components/infoIcon";
 
 interface Props {
     open: boolean;
@@ -256,22 +257,25 @@ export default function EditCourseDialog({
                             </div>
                         </div>
                     </Field>
+
                     {/* COURSE ID */}
                     <Field label={t("courseId")} error={errors.courseId}>
-                        <input
-                            name="courseId"
-                            value={form.courseId}
-                            onChange={handleChange}
-                            disabled={isEdit}
-                            className={`
-                                w-full bg-transparent border-b border-border py-1 text-sm
-                                ${isEdit ? "opacity-50 cursor-not-allowed" : ""}
-                            `}
-                        />
+                        <div className="flex items-center gap-2">
+                            <input
+                                name="courseId"
+                                value={form.courseId}
+                                onChange={handleChange}
+                                disabled={isEdit}
+                                className={`flex-1 bg-transparent border-b border-border py-1 text-sm
+                                    ${isEdit ? "opacity-50 cursor-not-allowed" : ""}
+                                `}
+                            />
+
+                            <InfoIcon title={t("courseIdInfo")} />
+                        </div>
                     </Field>
+
                     {/* DESCRIPTION */}
-                    The file is read-only in uploads, so here's the updated
-                    description block to copy in: tsx{/* DESCRIPTION */}
                     <Field label={t("description")}>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="relative">
@@ -300,16 +304,17 @@ export default function EditCourseDialog({
                             </div>
                         </div>
                     </Field>
+
                     {/* LECTURER */}
                     <Field label={t("lecturer")} error={errors.lecturerIds}>
                         {isLoadingLecturers ? (
-                            <div className="bg-surface-1 border border-border p-4">
+                            <div className="bg-paper border border-border p-4">
                                 <p className="text-[11px] text-muted uppercase tracking-widest italic animate-pulse">
                                     {t("loadingLecturers")}
                                 </p>
                             </div>
                         ) : (
-                            <div className="bg-surface-1 border border-border p-2 max-h-40 overflow-y-auto flex flex-col gap-1 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]">
+                            <div className="bg-paper border border-border p-2 max-h-40 overflow-y-auto flex flex-col gap-1 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]">
                                 {(() => {
                                     const lecturerToShow = allLecturers ?? [];
 
@@ -393,6 +398,7 @@ export default function EditCourseDialog({
                             }
                         />
                         {t("active")}
+                        <InfoIcon title={t("activeInfo")} horizontal="right" vertical="top" />
                     </div>
                 </div>
 

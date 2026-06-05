@@ -56,7 +56,9 @@
         "duplicate": "Duplicate",
         "cancel": "CANCEL",
         "save": "SAVE",
-        "create": "CREATE"
+        "create": "CREATE",
+        "courseIdInfo": "Course ID cannot be changed",
+        "activeInfo": "When a course is marked inactive, students can no longer access it"
     },
     "ChapterDialog": {
         "titleEdit": "Edit Chapter",
@@ -136,11 +138,13 @@
     },
     "DuplicateCourseModal": {
         "title": "Duplicate Course",
-        "description": "You are about to duplicate {courseName}. Optionally provide a custom URL (CourseId). Leave empty to auto-generate one.",
+        "description": "Duplicate {courseName}. Optionally set a Course ID. This cannot be changed later.",
         "placeholder": "e.g. {courseId}-copy",
-        "cancel": "Cancel",
-        "confirm": "Confirm",
-        "duplicating": "Duplicating..."
+        "cancel": "CANCEL",
+        "confirm": "CONFIRM",
+        "duplicating": "Duplicating...",
+        "newCourseId": "New Course ID",
+        "autoGenerateHint": "Leave empty to generate automatically."
     },
     "Header": {
         "brand": "Databasement",
@@ -214,25 +218,25 @@
         "removeFailed": "Failed to remove lecturer."
     },
     "LecturerTableHead": {
-        "lectorId": "LECTOR-ID",
+        "lectorId": "LECTURER-ID",
         "instructorName": "NAME",
         "role": "ROLE",
         "actions": "ACTIONS"
     },
     "LecturerTable": {
-        "title": "MASTER LECTOR LEDGER",
+        "title": "MASTER LECTURER LEDGER",
         "assignedPersonnel": "VOL. {courseId} — ASSIGNED PERSONNEL",
-        "searchPlaceholder": "SEARCH LECTORS...",
+        "searchPlaceholder": "SEARCH LECTURERS...",
         "assignLecturer": "ASSIGN LECTURER",
-        "noInstructors": "— NO LECTORS ASSIGNED YET —",
+        "noInstructors": "— NO LECTURERS ASSIGNED YET —",
         "recordingNo": "RECORDING NO. {courseId}",
         "modal": {
             "title": "Assign Lecturer",
             "authorization": "AUTHORIZATION REQ. FOR COURSE: {courseId}",
             "errorPrefix": "ERROR:",
             "selectInstructor": "Select Lecturer",
-            "loadingInstructors": "LOADING LECTORS...",
-            "noAvailableInstructors": "NO AVAILABLE LECTORS",
+            "loadingInstructors": "LOADING LECTURERS...",
+            "noAvailableInstructors": "NO AVAILABLE LECTURERS",
             "selectPersonnelPlaceholder": "-- SELECT PERSONNEL --",
             "allAssignedNote": "* All registered lecturers are already assigned to this course.",
             "cancel": "Cancel",
@@ -346,6 +350,59 @@
             "mismatch": "Passwords do not match.",
             "tooShort": "Password must be at least 6 characters long.",
             "generic": "Something went wrong."
+        }
+    },
+    "SchemaDialog": {
+        "title": "Create Schema",
+        "subtitle": "DATABASE STRUCTURE / SCHEMA ENTRY",
+        "role": "SYS. MODULE: SCHEMA",
+        "fields": {
+            "name": "Schema Name",
+            "image": "Schema Image (optional)"
+        },
+        "placeholders": {
+            "name": "e.g. animals"
+        },
+        "actions": {
+            "upload": "Upload Image",
+            "cancel": "CANCEL",
+            "create": "CREATE",
+            "processing": "PROCESSING..."
+        },
+        "errors": {
+            "required": "Schema name is required",
+            "generic": "Failed to create schema."
+        },
+        "success": "Schema created successfully."
+    },
+    "LecturerDialog": {
+        "title": "Register Lecturer",
+        "subtitle": "PERSONNEL DOSSIER / DATABASE ENTRY",
+        "role": "SYS. ROLE: LECTURER",
+        "fields": {
+            "firstName": "First Name",
+            "lastName": "Last Name",
+            "userCode": "User Code",
+            "email": "Email"
+        },
+        "placeholders": {
+            "firstName": "e.g. Joran",
+            "lastName": "e.g. Dirix",
+            "userCode": "e.g. u1234567",
+            "email": "e.g. u1234567@ucll.be"
+        },
+        "actions": {
+            "cancel": "CANCEL",
+            "register": "REGISTER",
+            "processing": "PROCESSING..."
+        },
+        "errors": {
+            "userCode": "User Code is required",
+            "firstName": "First name is required",
+            "lastName": "Last name is required",
+            "emailRequired": "Email is required",
+            "emailInvalid": "Invalid email format",
+            "generic": "Failed to register personnel."
         }
     }
 }

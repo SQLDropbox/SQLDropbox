@@ -15,60 +15,75 @@ namespace SQLDropbox.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpGet("/Schema")]
-        public async Task<ActionResult<IEnumerable<object>>> GetSchemas()
+        public async Task<IActionResult> GetSchemas()
         {
-            var schemas = await _context.Set<Schema>()
-                .OrderBy(s => s.SchemaName)
-                .Select(s => new
-                {
-                    schemaId = s.SchemaId,
-                    schemaName = s.SchemaName,
-                    schemaImage = s.SchemaImage
-                })
-                .ToListAsync();
+            try
+            {
 
-            return Ok(schemas);
+                var schemas = await _context.Set<Schema>()
+                    .OrderBy(s => s.SchemaName)
+                    .Select(s => new
+                    {
+                        schemaId = s.SchemaId,
+                        schemaName = s.SchemaName,
+                        schemaImage = s.SchemaImage
+                    })
+                    .ToListAsync();
+
+                return Ok(schemas);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpPost("/Schema")]
-        public async Task<ActionResult> CreateSchema([FromForm] SchemaDTO dto)
+        public async Task<IActionResult> CreateSchema([FromForm] SchemaDTO dto)
         {
-            string? imageFileName = null;
-
-            if (dto.Image != null)
+            try
             {
-                var uploadsFolder = Path.Combine(
-                    Directory.GetCurrentDirectory(),
-                    "wwwroot",
-                    "schema-images");
+                string? imageFileName = null;
 
-                Directory.CreateDirectory(uploadsFolder);
+                if (dto.Image != null)
+                {
+                    var uploadsFolder = Path.Combine(
+                        Directory.GetCurrentDirectory(),
+                        "wwwroot",
+                        "schema-images");
 
-                var extension = Path.GetExtension(dto.Image.FileName);
-                imageFileName = $"{Guid.NewGuid()}{extension}";
+                    Directory.CreateDirectory(uploadsFolder);
 
-                var filePath = Path.Combine(uploadsFolder, imageFileName);
+                    var extension = Path.GetExtension(dto.Image.FileName);
+                    imageFileName = $"{Guid.NewGuid()}{extension}";
 
-                using var stream = new FileStream(filePath, FileMode.Create);
-                await dto.Image.CopyToAsync(stream);
+                    var filePath = Path.Combine(uploadsFolder, imageFileName);
+
+                    using var stream = new FileStream(filePath, FileMode.Create);
+                    await dto.Image.CopyToAsync(stream);
+                }
+
+                var schema = new Schema
+                {
+                    SchemaName = dto.SchemaName,
+                    SchemaImage = imageFileName,
+                    CreatedAt = DateTime.Now
+                };
+
+                _context.Set<Schema>().Add(schema);
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    schema.SchemaId,
+                    schema.SchemaName,
+                    schema.SchemaImage
+                });
             }
-
-            var schema = new Schema
+            catch (Exception ex)
             {
-                SchemaName = dto.SchemaName,
-                SchemaImage = imageFileName,
-                CreatedAt = DateTime.UtcNow
-            };
-
-            _context.Set<Schema>().Add(schema);
-            await _context.SaveChangesAsync();
-
-            return Ok(new
-            {
-                schema.SchemaId,
-                schema.SchemaName,
-                schema.SchemaImage
-            });
+                return BadRequest(new { message = ex.Message });
+            }
         }
     }
 }

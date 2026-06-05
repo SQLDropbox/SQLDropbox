@@ -1,7 +1,6 @@
 "use client";
 
 import Header from "@/components/header";
-import { authService } from "@/services/authService";
 import { authUtils } from "@/utils/authUtils";
 import { useRouter } from "next/navigation";
 import { useState } from "react";

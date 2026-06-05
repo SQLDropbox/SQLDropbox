@@ -15,7 +15,7 @@ type Props = {
     onSuccess: () => void;
 };
 
-export default function AddLecturerModal({ courseId, currentLecturers, onClose, onSuccess }: Props) {
+export default function AsssignLecturerDialog({ courseId, currentLecturers, onClose, onSuccess }: Props) {
     const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);

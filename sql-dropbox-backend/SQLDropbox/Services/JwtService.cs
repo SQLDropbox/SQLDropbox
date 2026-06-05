@@ -50,11 +50,28 @@ namespace SQLDropbox.Services
                 issuer: _issuer,
                 audience: _audience,
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(_accessTokenMinutes),
+                expires: DateTime.Now.AddMinutes(_accessTokenMinutes),
                 signingCredentials: creds
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        public void AttachCookie(HttpResponse response, string refreshToken)
+        {
+            response.Cookies.Append("token", refreshToken, new CookieOptions
+            {
+                HttpOnly = false,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTime.Now.AddMinutes(_accessTokenMinutes),
+                Path = "/"
+            });
+        }
+
+        public void RemoveCookie(HttpResponse response)
+        {
+            response.Cookies.Delete("token", new CookieOptions { Path = "/" });
         }
     }
 }

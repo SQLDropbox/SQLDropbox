@@ -11,7 +11,7 @@ import Loading from "@/components/loading";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { courseService } from "@/services/courseService";
-import AddLecturerModal from "@/components/admin/lecturer/addLecturerModal";
+import AsssignLecturerDialog from "@/components/admin/lecturer/assignLecturerDialog";
 
 export default function LecturerPage() {
     const params = useParams();
@@ -61,7 +61,7 @@ export default function LecturerPage() {
             </div>
 
             {isAddModalOpen && (
-                <AddLecturerModal
+                <AsssignLecturerDialog
                     courseId={courseId!}
                     currentLecturers={course?.lecturers ?? []}
                     onClose={() => setIsAddModalOpen(false)}

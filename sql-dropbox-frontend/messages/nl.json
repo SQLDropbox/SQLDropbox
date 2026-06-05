@@ -56,7 +56,9 @@
         "duplicate": "Dupliceren",
         "cancel": "ANNULEER",
         "save": "OPSLAAN",
-        "create": "AANMAKEN"
+        "create": "AANMAKEN",
+        "courseIdInfo": "Cursus ID kan niet worden gewijzigd",
+        "activeInfo": "Wanneer een cursus als inactief wordt gemarkeerd, hebben studenten geen toegang meer tot deze cursus"
     },
     "ChapterDialog": {
         "titleEdit": "Hoofdstuk bewerken",
@@ -136,11 +138,13 @@
     },
     "DuplicateCourseModal": {
         "title": "Cursus dupliceren",
-        "description": "Je staat op het punt om {courseName} te dupliceren. Optioneel kun je een aangepaste URL (CourseId) opgeven. Laat leeg om er automatisch één te genereren.",
+        "description": "Dupliceer {courseName}. Stel optioneel een Course ID in. Dit kan later niet meer worden gewijzigd.",
         "placeholder": "bijv. {courseId}-copy",
-        "cancel": "Annuleren",
-        "confirm": "Bevestigen",
-        "duplicating": "Dupliceren..."
+        "cancel": "ANNULEREN",
+        "confirm": "BEVESTIGEN",
+        "duplicating": "Dupliceren...",
+        "newCourseId": "Nieuwe cursus-ID",
+        "autoGenerateHint": "Laat leeg om automatisch te genereren."
     },
     "Header": {
         "brand": "Databasement",
@@ -346,6 +350,59 @@
             "mismatch": "Wachtwoorden komen niet overeen.",
             "tooShort": "Wachtwoord moet minimaal 6 tekens bevatten.",
             "generic": "Er is iets fout gegaan."
+        }
+    },
+    "SchemaDialog": {
+        "title": "Schema Aanmaken",
+        "subtitle": "DATABASE STRUCTUUR / SCHEMA INVOER",
+        "role": "SYS. MODULE: SCHEMA",
+        "fields": {
+            "name": "Schemanaam",
+            "image": "Schema Afbeelding (optioneel)"
+        },
+        "placeholders": {
+            "name": "bv. dieren"
+        },
+        "actions": {
+            "upload": "Upload Afbeelding",
+            "cancel": "ANNULEREN",
+            "create": "AANMAKEN",
+            "processing": "BEZIG..."
+        },
+        "errors": {
+            "required": "Schemanaam is verplicht",
+            "generic": "Schema aanmaken mislukt."
+        },
+        "success": "Schema succesvol aangemaakt."
+    },
+    "LecturerDialog": {
+        "title": "Lector Registreren",
+        "subtitle": "PERSONEELSDOSSIER / DATABASE INVOER",
+        "role": "SYS. ROL: LECTOR",
+        "fields": {
+            "firstName": "Voornaam",
+            "lastName": "Achternaam",
+            "userCode": "Gebruikerscode",
+            "email": "E-mail"
+        },
+        "placeholders": {
+            "firstName": "bv. Joran",
+            "lastName": "bv. Dirix",
+            "userCode": "bv. u1234567",
+            "email": "bv. u1234567@ucll.be"
+        },
+        "actions": {
+            "cancel": "ANNULEREN",
+            "register": "REGISTREREN",
+            "processing": "BEZIG..."
+        },
+        "errors": {
+            "userCode": "Gebruikerscode is verplicht",
+            "firstName": "Voornaam is verplicht",
+            "lastName": "Achternaam is verplicht",
+            "emailRequired": "E-mail is verplicht",
+            "emailInvalid": "Ongeldig e-mailadres",
+            "generic": "Registratie mislukt."
         }
     }
 }

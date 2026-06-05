@@ -130,7 +130,7 @@ if (app.Environment.IsDevelopment())
             Email = "Admin@ucll.be",
             Password = ps.HashPassword("Admin"),
             Role = Role.Admin,
-            CreatedAt = DateTime.UtcNow,
+            CreatedAt = DateTime.Now,
         };
 
         db.Users.Add(admin);
@@ -157,7 +157,7 @@ if (app.Environment.IsProduction())
             Email = "Admin@ucll.be",
             Password = ps.HashPassword("V$k0&q-8~3oQmsbO"),
             Role = Role.Admin,
-            CreatedAt = DateTime.UtcNow,
+            CreatedAt = DateTime.Now,
         };
         var lecturer = new User
         {
@@ -167,7 +167,7 @@ if (app.Environment.IsProduction())
             Email = "u0123456@ucll.be",
             Password = ps.HashPassword("p1g8V!2ewg-&r-pY"),
             Role = Role.Lecturer,
-            CreatedAt = DateTime.UtcNow,
+            CreatedAt = DateTime.Now,
         };
         var student = new User
         {
@@ -177,7 +177,7 @@ if (app.Environment.IsProduction())
             Email = "r0123456@ucll.be",
             Password = ps.HashPassword("Kf55L5=0tr@Qd~dk"),
             Role = Role.Student,
-            CreatedAt = DateTime.UtcNow,
+            CreatedAt = DateTime.Now,
         };
 
         db.Users.AddRange(admin, lecturer, student);
