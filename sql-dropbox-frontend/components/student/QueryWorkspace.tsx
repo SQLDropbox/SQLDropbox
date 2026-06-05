@@ -155,9 +155,12 @@ export default function QueryWorkspace({
         <div>
             <div className="flex">
                 {/* Editor column */}
-                <div className="border border-border flex-1">
+                <div className="border border-border flex-1 flex flex-col h-full">
+                    
                     <CodeMirror
+                        height="100%"
                         minHeight="200px"
+                        className="flex-1 text-sm [&>.cm-editor]:h-full"
                         value={queryValue}
                         onChange={(val) => setQueryValue(val)}
                         extensions={[
