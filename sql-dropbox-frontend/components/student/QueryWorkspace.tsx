@@ -84,7 +84,7 @@ export default function QueryWorkspace({
 
     const satisfiedReqs = exercise.requirements?.map((req) => ({
         ...req,
-        satisfied: normalizedQuery.includes(req.statement.toLowerCase()),
+        satisfied: normalizedQuery.includes(req.statement!.toLowerCase()),
     }));
 
     const missingRequirements = satisfiedReqs?.filter((r) => !r.satisfied);
