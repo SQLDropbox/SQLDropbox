@@ -388,6 +388,10 @@
     "LecturerDialog": {
         "title": "Lector Registreren",
         "subtitle": "PERSONEELSDOSSIER / DATABASE INVOER",
+        "alert": {
+            "title": "SYSTEEMFOUT",
+            "button": "Sluiten"
+        },
         "role": "SYS. ROL: LECTOR",
         "fields": {
             "firstName": "Voornaam",

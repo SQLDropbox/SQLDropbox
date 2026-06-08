@@ -388,6 +388,10 @@
     "LecturerDialog": {
         "title": "Register Lecturer",
         "subtitle": "PERSONNEL DOSSIER / DATABASE ENTRY",
+        "alert": {
+            "title": "System Error",
+            "button": "Close"
+        },
         "role": "SYS. ROLE: LECTURER",
         "fields": {
             "firstName": "First Name",
