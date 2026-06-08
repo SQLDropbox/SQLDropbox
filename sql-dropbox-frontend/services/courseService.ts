@@ -54,6 +54,12 @@ const removeLecturerFromCourse = async (courseId: string, userId: string) => {
     });
 };
 
+const inviteStudents = async (courseId: string) => {
+    return api.privateFetch(`/Course/${courseId}/invite`, {
+        method: "POST",
+    });
+};
+
 export const courseService = {
     getCourses,
     getCourseByCourseId,
@@ -63,4 +69,5 @@ export const courseService = {
     duplicateCourse,
     addLecturerToCourse,
     removeLecturerFromCourse,
+    inviteStudents,
 };

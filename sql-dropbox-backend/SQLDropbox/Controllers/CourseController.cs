@@ -11,10 +11,13 @@ namespace SQLDropbox.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class CourseController(AppDbContext db, AuthorizationService authorizationService) : BaseController
+public class CourseController(AppDbContext db, AuthorizationService authorizationService, EmailService emailService, IConfiguration configuration) : BaseController
 {
     private readonly AppDbContext _db = db;
     private readonly AuthorizationService _aS = authorizationService;
+    private readonly EmailService _emailService = emailService;
+    private readonly IConfiguration _configuration = configuration;
+
 
     [Authorize]
     [HttpGet]
@@ -428,6 +431,75 @@ public class CourseController(AppDbContext db, AuthorizationService authorizatio
             await _db.SaveChangesAsync();
 
             return Ok(new { message = "Lecturer successfully removed from the course." });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [Authorize(Roles = "Admin,Lecturer")]
+    [HttpPost("{courseId}/invite")]
+    public async Task<IActionResult> InviteStudents(string courseId)
+    {
+        try
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var course = await _db.Courses.Include(c => c.Students).FirstOrDefaultAsync(c => c.CourseId == courseId && c.DeletedAt == null);
+
+            if (course == null)
+                return NotFound("Course not found");
+
+            if (!course.IsActive)
+                return BadRequest("Course is not active");
+
+            var courseStudents = course.Students.Where(x => x.InvitedAt == null && x.Password == null);
+
+            var url = _configuration["AllowedOrigins"];
+
+            if (url == null)
+            {
+                return BadRequest("The URL of the frontend was not found.");
+            }
+
+
+            var emailTasks = courseStudents.Select(async student =>
+            {
+                string htmlContent = $"""
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                        <h1 style="color: #1a1a1a;">Welcome to Databasement, {student.FirstName}!</h1>
+                        <p style="color: #555; font-size: 16px; line-height: 1.5;">
+                            You've been invited to join a course on Databasement. Click the button below to activate your account.
+                        </p>
+                        <a href="{url}/activate/{student.UserId}"
+                           style="display: inline-block; background-color: #4F46E5; color: white;
+                                  padding: 12px 24px; border-radius: 6px; text-decoration: none;
+                                  font-size: 16px; margin: 20px 0;">
+                            Activate my account
+                        </a>
+                        <p style="color: #999; font-size: 13px;">
+                            If you didn't expect this email, you can safely ignore it.
+                        </p>
+                    </div>
+                """;
+
+                await _emailService.SendEmailAsync(
+                    toEmail: student.Email,
+                    toName: student.FirstName + " " + student.LastName,
+                    subject: "Welcome to Databasement!",
+                    htmlContent: htmlContent
+                );
+
+                student.InvitedAt = DateTime.Now;
+            });
+
+            await Task.WhenAll(emailTasks);
+
+            await _db.SaveChangesAsync();
+
+            return Ok();
         }
         catch (Exception ex)
         {

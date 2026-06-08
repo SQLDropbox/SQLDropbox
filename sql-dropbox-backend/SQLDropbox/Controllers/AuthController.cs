@@ -56,7 +56,9 @@ public class AuthController(AppDbContext db, PasswordService passwordService, Jw
                 _db.Users.Update(user);
                 await _db.SaveChangesAsync();
 
+                _jwtS.RemoveCookie(Response);
                 string accessToken = _jwtS.GenerateAccessToken(user);
+                _rtS.RemoveCookie(Response);
                 string refreshToken = _rtS.GenerateRefreshToken();
                 RefreshToken validRefreshToken = await _rtS.CreateRefreshToken(user, HttpContext.Connection.RemoteIpAddress!.ToString(), refreshToken);
 
