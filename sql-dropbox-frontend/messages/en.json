@@ -2,6 +2,8 @@
     "Course": {
         "title": "Courses",
         "manageTitle": "Manage Courses",
+        "newLecturer": "New lecturer",
+        "newSchema": "New schema",
         "newCourse": "New course",
         "loading": "Loading...",
         "error": "Something went wrong",
@@ -145,6 +147,14 @@
         "duplicating": "Duplicating...",
         "newCourseId": "New Course ID",
         "autoGenerateHint": "Leave empty to generate automatically."
+    },
+    "AdminChapterExercisesPage": {
+        "error": "Error: {message}",
+        "backToChapters": "Back to chapters",
+        "title": "Exercises: {chapterName}",
+        "chapterFallback": "Chapter {chapterId}",
+        "addExercise": "New Exercise",
+        "empty": "There are no exercises linked to this chapter yet."
     },
     "Header": {
         "brand": "Databasement",
@@ -311,7 +321,7 @@
             "importing": "IMPORTING...",
             "confirmImport": "CONFIRM IMPORT",
             "sysError": "SYS ERROR",
-            "acknowledge": "ACKNOWLEDGE"
+            "acknowledge": "Close"
         }
     },
     "Unauthorized": {
@@ -356,6 +366,14 @@
     "SchemaDialog": {
         "title": "Create Schema",
         "subtitle": "DATABASE STRUCTURE / SCHEMA ENTRY",
+        "alert": {
+            "title": "System Error",
+            "button": "Close"
+        },
+        "successAlert": {
+            "title": "Success",
+            "button": "OK"
+        },
         "role": "SYS. MODULE: SCHEMA",
         "fields": {
             "name": "Schema Name",
@@ -379,6 +397,10 @@
     "LecturerDialog": {
         "title": "Register Lecturer",
         "subtitle": "PERSONNEL DOSSIER / DATABASE ENTRY",
+        "alert": {
+            "title": "System Error",
+            "button": "Close"
+        },
         "role": "SYS. ROLE: LECTURER",
         "fields": {
             "firstName": "First Name",
