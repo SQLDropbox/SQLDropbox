@@ -365,6 +365,14 @@
     "SchemaDialog": {
         "title": "Schema Aanmaken",
         "subtitle": "DATABASE STRUCTUUR / SCHEMA INVOER",
+        "alert": {
+            "title": "SYSTEEMFOUT",
+            "button": "Sluiten"
+        },
+        "successAlert": {
+            "title": "SUCCES",
+            "button": "OK"
+        },
         "role": "SYS. MODULE: SCHEMA",
         "fields": {
             "name": "Schemanaam",

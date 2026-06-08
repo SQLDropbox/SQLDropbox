@@ -365,6 +365,14 @@
     "SchemaDialog": {
         "title": "Create Schema",
         "subtitle": "DATABASE STRUCTURE / SCHEMA ENTRY",
+        "alert": {
+            "title": "System Error",
+            "button": "Close"
+        },
+        "successAlert": {
+            "title": "Success",
+            "button": "OK"
+        },
         "role": "SYS. MODULE: SCHEMA",
         "fields": {
             "name": "Schema Name",
