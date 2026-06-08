@@ -190,7 +190,7 @@ export default function QueryWorkspace({
                             },
                             styles: [],
                         })}
-                        className="text-sm"
+                        //className="text-sm"
                     />
                 </div>
 
