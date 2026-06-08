@@ -11,17 +11,17 @@ namespace SQLDropbox.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class ExerciseController(AppDbContext db, AuthorizationService authorizationService, SolutionService solutionService, SchemaService schemaService) : BaseController
+public class ExerciseController(AppDbContext db, SolutionService solutionService, SchemaService schemaService) : BaseController(db)
 {
     private readonly AppDbContext _db = db;
-    private readonly AuthorizationService _aS = authorizationService;
     private readonly SolutionService _soS = solutionService;
     private readonly SchemaService _scS = schemaService;
 
+    [Authorize]
     [HttpGet]
     public async Task<IActionResult> GetAllExercises()
     {
-        var exercises = await _db.Exercises
+        List<Exercise> exercises = await _db.Exercises
             .Include(e => e.Solutions.OrderBy(s => s.SolutionId).FirstOrDefault())
             .ToListAsync();
         return Ok(exercises);
@@ -33,8 +33,7 @@ public class ExerciseController(AppDbContext db, AuthorizationService authorizat
     {
         try
         {
-            var (userId, role) = IsAuthenticated();
-            await _aS.UserHasAccessToChapter(userId, role, dto.ChapterId);
+            await UserHasAccessToChapter(dto.ChapterId);
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -136,8 +135,7 @@ public class ExerciseController(AppDbContext db, AuthorizationService authorizat
     {
         try
         {
-            var (userId, role) = IsAuthenticated();
-            await _aS.UserHasAccessToExercise(userId, role, id);
+            await UserHasAccessToExercise(id);
 
             var exercise = await _db.Exercises
             .Include(e => e.Solutions)
@@ -165,8 +163,7 @@ public class ExerciseController(AppDbContext db, AuthorizationService authorizat
     {
         try
         {
-            var (userId, role) = IsAuthenticated();
-            await _aS.UserHasAccessToExercise(userId, role, id);
+            await UserHasAccessToExercise(id);
 
             var exercise = _db.Exercises.FirstOrDefault(x => x.ExerciseId == id);
 
@@ -194,8 +191,7 @@ public class ExerciseController(AppDbContext db, AuthorizationService authorizat
     {
         try
         {
-            var (userId, role) = IsAuthenticated();
-            await _aS.UserHasAccessToExercise(userId, role, id);
+            await UserHasAccessToExercise(id);
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);

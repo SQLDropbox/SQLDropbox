@@ -39,7 +39,6 @@ builder.Services.AddScoped<CsvExportService>();
 builder.Services.AddScoped<RoutineService>();
 builder.Services.AddScoped<CsvService>();
 builder.Services.AddScoped<RefreshTokenService>();
-builder.Services.AddScoped<AuthorizationService>();
 builder.Services.AddScoped<ChapterService>();
 builder.Services.AddScoped<EmailService>();
 
@@ -77,8 +76,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 // JWT
-var publicKey = File.ReadAllText(builder.Configuration["Jwt:PublicKeyPath"])
-    ?? throw new Exception("Jwt:PublicKeyPath is missing");
+var publicKey = File.ReadAllText(builder.Configuration["Jwt:PublicKeyPath"] ?? throw new Exception("Jwt:PublicKeyPath is missing"));
 var rsa = RSA.Create();
 rsa.ImportFromPem(publicKey);
 
@@ -106,20 +104,17 @@ var app = builder.Build();
 // CORS
 app.UseCors("AllowFrontend");
 
-if (app.Environment.IsDevelopment())
+// DB MIGRATION
+AsyncServiceScope scope = app.Services.CreateAsyncScope();
+AppDbContext db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+await db.Database.MigrateAsync();
+
+// ADMIN CREATION
+if (!await db.Users.AnyAsync(u => u.UserCode == "admin"))
 {
-    // SWAGGER
-    app.MapOpenApi();
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    string? adminPassword = builder.Configuration["AdminPassword"];
 
-    // DB MIGRATION
-    AsyncServiceScope scope = app.Services.CreateAsyncScope();
-    AppDbContext db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await db.Database.MigrateAsync();
-
-    // If no users yet, create admin user (so seed can be used)
-    if (!await db.Users.AnyAsync(u => u.Email == "admin@ucll.be"))
+    if (adminPassword != null)
     {
         PasswordService ps = scope.ServiceProvider.GetRequiredService<PasswordService>();
 
@@ -128,7 +123,7 @@ if (app.Environment.IsDevelopment())
             UserCode = "admin",
             FirstName = "Admin",
             Email = "Admin@ucll.be",
-            Password = ps.HashPassword("Admin"),
+            Password = ps.HashPassword(adminPassword),
             Role = Role.Admin,
             CreatedAt = DateTime.Now,
         };
@@ -138,52 +133,16 @@ if (app.Environment.IsDevelopment())
     }
 }
 
-if (app.Environment.IsProduction())
+if (app.Environment.IsDevelopment())
 {
-    // DB MIGRATION
-    AsyncServiceScope scope = app.Services.CreateAsyncScope();
-    AppDbContext db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await db.Database.MigrateAsync();
+    // SWAGGER
+    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();    
+}
 
-    // If no users yet, create admin user (and for now lecturers and students as well)
-    if (!await db.Users.AnyAsync(u => u.Email == "admin@ucll.be"))
-    {
-        PasswordService ps = scope.ServiceProvider.GetRequiredService<PasswordService>();
-
-        var admin = new User
-        {
-            UserCode = "admin",
-            FirstName = "Admin",
-            Email = "Admin@ucll.be",
-            Password = ps.HashPassword("V$k0&q-8~3oQmsbO"),
-            Role = Role.Admin,
-            CreatedAt = DateTime.Now,
-        };
-        var lecturer = new User
-        {
-            UserCode = "u0123456",
-            FirstName = "Lector-Lander",
-            LastName = "Dirix",
-            Email = "u0123456@ucll.be",
-            Password = ps.HashPassword("p1g8V!2ewg-&r-pY"),
-            Role = Role.Lecturer,
-            CreatedAt = DateTime.Now,
-        };
-        var student = new User
-        {
-            UserCode = "r0123456",
-            FirstName = "Example",
-            LastName = "student",
-            Email = "r0123456@ucll.be",
-            Password = ps.HashPassword("Kf55L5=0tr@Qd~dk"),
-            Role = Role.Student,
-            CreatedAt = DateTime.Now,
-        };
-
-        db.Users.AddRange(admin, lecturer, student);
-        await db.SaveChangesAsync();
-    }
-
+if (app.Environment.IsProduction())
+{      
     app.UseHttpsRedirection();
     app.UsePathBase("/api");
 }

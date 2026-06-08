@@ -32,12 +32,17 @@ namespace SQLDropbox.Controllers
 
                 return Ok(schemas);
             }
+            catch (UnauthorizedAccessException)
+            {
+                return Unauthorized(new { message = "You're not authorized to access this resource." });
+            }
             catch (Exception ex)
             {
                 return BadRequest(new { message = ex.Message });
             }
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost("/Schema")]
         public async Task<IActionResult> CreateSchema([FromForm] SchemaDTO dto)
         {
@@ -79,6 +84,10 @@ namespace SQLDropbox.Controllers
                     schema.SchemaName,
                     schema.SchemaImage
                 });
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Unauthorized(new { message = "You're not authorized to access this resource." });
             }
             catch (Exception ex)
             {

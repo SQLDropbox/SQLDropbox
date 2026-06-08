@@ -6,7 +6,7 @@ using SQLDropbox.Services;
 namespace SQLDropbox.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("[controller]")]
 public class SchemaController(SchemaService schema, SqlQueryService sql) : ControllerBase
 {
     private readonly SchemaService _schema = schema;
@@ -16,18 +16,29 @@ public class SchemaController(SchemaService schema, SqlQueryService sql) : Contr
     [HttpPost("clone-dynamic")]
     public async Task<IActionResult> CloneSchema([FromQuery] string sourceSchema)
     {
-        if (string.IsNullOrWhiteSpace(sourceSchema))
-            return BadRequest("sourceSchema is required");
+        try
+        {
+            if (string.IsNullOrWhiteSpace(sourceSchema))
+                return BadRequest("sourceSchema is required");
 
-        if (_sql.IsProtectedSchema(sourceSchema))
-            return BadRequest("This schema is protected and cannot be cloned.");
+            if (_sql.IsProtectedSchema(sourceSchema))
+                return BadRequest("This schema is protected and cannot be cloned.");
 
-        if (!await _schema.SchemaExistsAsync(sourceSchema))
-            return NotFound();
+            if (!await _schema.SchemaExistsAsync(sourceSchema))
+                return NotFound();
 
-        var cloned = await _schema.CloneSchemaAsync(sourceSchema);
+            var cloned = await _schema.CloneSchemaAsync(sourceSchema);
 
-        return Ok(new { sourceSchema, cloned });
+            return Ok(new { sourceSchema, cloned });
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized(new { message = "You're not authorized to access this resource." });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [Authorize(Roles = "Admin")]
@@ -36,25 +47,26 @@ public class SchemaController(SchemaService schema, SqlQueryService sql) : Contr
         [FromQuery] string sourceSchema,
         [FromQuery] string selectQuery)
     {
-        if (string.IsNullOrWhiteSpace(sourceSchema))
-            return BadRequest("sourceSchema is required");
-
-        if (string.IsNullOrWhiteSpace(selectQuery))
-            return BadRequest("selectQuery is required");
-
-        if (_sql.IsProtectedSchema(sourceSchema))
-            return BadRequest("This schema is protected and cannot be queried.");
-
-        var exists = await _schema.SchemaExistsAsync(sourceSchema);
-        if (!exists)
-            return NotFound();
-
-        var validation = _sql.Validate(selectQuery);
-        if (!validation.IsValid)
-            return BadRequest(validation.Message);
-
         try
         {
+            if (string.IsNullOrWhiteSpace(sourceSchema))
+                return BadRequest("sourceSchema is required");
+
+            if (string.IsNullOrWhiteSpace(selectQuery))
+                return BadRequest("selectQuery is required");
+
+            if (_sql.IsProtectedSchema(sourceSchema))
+                return BadRequest("This schema is protected and cannot be queried.");
+
+            var exists = await _schema.SchemaExistsAsync(sourceSchema);
+            if (!exists)
+                return NotFound();
+
+            var validation = _sql.Validate(selectQuery);
+            if (!validation.IsValid)
+                return BadRequest(validation.Message);
+
+
             var sql = validation.NormalizedQuery!;
             var commandType = _sql.GetCommandType(sql);
 
@@ -74,6 +86,10 @@ public class SchemaController(SchemaService schema, SqlQueryService sql) : Contr
 
             return Ok(result);
         }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized(new { message = "You're not authorized to access this resource." });
+        }
         catch (PostgresException ex)
         {
             return ex.SqlState switch
@@ -89,7 +105,10 @@ public class SchemaController(SchemaService schema, SqlQueryService sql) : Contr
                     code = ex.SqlState
                 })
             };
-
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
         }
     }
 }

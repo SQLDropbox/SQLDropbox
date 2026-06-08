@@ -11,10 +11,9 @@ namespace SQLDropbox.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class CourseController(AppDbContext db, AuthorizationService authorizationService, EmailService emailService, IConfiguration configuration) : BaseController
+public class CourseController(AppDbContext db, EmailService emailService, IConfiguration configuration) : BaseController(db)
 {
     private readonly AppDbContext _db = db;
-    private readonly AuthorizationService _aS = authorizationService;
     private readonly EmailService _emailService = emailService;
     private readonly IConfiguration _configuration = configuration;
 
@@ -72,8 +71,8 @@ public class CourseController(AppDbContext db, AuthorizationService authorizatio
     {
         try
         {
+            await UserHasAccessToCourse(courseId);
             var (userId, role) = IsAuthenticated();
-            await _aS.UserHasAccessToCourse(userId, role, courseId);
 
             var query = _db.Courses
             .Include(x => x.Lecturers)
@@ -200,8 +199,7 @@ public class CourseController(AppDbContext db, AuthorizationService authorizatio
     {
         try
         {
-            var (userId, role) = IsAuthenticated();
-            await _aS.UserHasAccessToCourse(userId, role, courseId);
+            await UserHasAccessToCourse(courseId);
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -372,12 +370,14 @@ public class CourseController(AppDbContext db, AuthorizationService authorizatio
         }
     }
 
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,Lecturer")]
     [HttpPost("{courseId}/Lecturers")]
     public async Task<IActionResult> AddLecturerToCourse(string courseId, [FromBody] AssignLecturerDTO request)
     {
         try
         {
+            await UserHasAccessToCourse(courseId);
+
             var course = await _db.Courses
             .Include(c => c.Lecturers)
             .FirstOrDefaultAsync(c => c.CourseId == courseId);
@@ -399,18 +399,24 @@ public class CourseController(AppDbContext db, AuthorizationService authorizatio
 
             return Ok(new { message = "Lecturer successfully added to the course." });
         }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized(new { message = "You're not authorized to access this resource." });
+        }
         catch (Exception ex)
         {
             return BadRequest(new { message = ex.Message });
         }
     }
 
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,Lecturer")]
     [HttpDelete("{courseId}/lecturers/{userId}")]
     public async Task<IActionResult> RemoveLecturerFromCourse(string courseId, Guid userId)
     {
         try
         {
+            await UserHasAccessToCourse(courseId);
+
             var course = await _db.Courses
                 .Include(c => c.Lecturers)
                 .FirstOrDefaultAsync(c => c.CourseId == courseId);
@@ -432,6 +438,10 @@ public class CourseController(AppDbContext db, AuthorizationService authorizatio
 
             return Ok(new { message = "Lecturer successfully removed from the course." });
         }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized(new { message = "You're not authorized to access this resource." });
+        }
         catch (Exception ex)
         {
             return BadRequest(new { message = ex.Message });
@@ -444,6 +454,8 @@ public class CourseController(AppDbContext db, AuthorizationService authorizatio
     {
         try
         {
+            await UserHasAccessToCourse(courseId);
+
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
@@ -457,11 +469,11 @@ public class CourseController(AppDbContext db, AuthorizationService authorizatio
 
             var courseStudents = course.Students.Where(x => x.InvitedAt == null && x.Password == null);
 
-            var url = _configuration["AllowedOrigins"];
+            var url = _configuration["EMailActivationURL"];
 
             if (url == null)
             {
-                return BadRequest("The URL of the frontend was not found.");
+                return BadRequest("The EMailActivationURL was not found.");
             }
 
 
@@ -500,6 +512,10 @@ public class CourseController(AppDbContext db, AuthorizationService authorizatio
             await _db.SaveChangesAsync();
 
             return Ok();
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized(new { message = "You're not authorized to access this resource." });
         }
         catch (Exception ex)
         {
