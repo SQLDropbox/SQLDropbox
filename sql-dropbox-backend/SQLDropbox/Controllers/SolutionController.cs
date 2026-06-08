@@ -18,6 +18,13 @@ public class SolutionController(AppDbContext db, SolutionService solutionService
     private readonly SolutionService _soS = solutionService;
     private readonly SchemaService _scS = schemaService;
 
+    private string GetResultMismatchMessage(string expected, string actual){
+        if (string.IsNullOrWhiteSpace(actual))  return "Your query returned no results.";
+        if (string.IsNullOrWhiteSpace(expected)) return "Your query returned data when no data was expected.";
+
+        return "Your query executed successfully, but the result does not match the expected output.";
+    }
+
     [Authorize]
     [HttpPost("submit/select")]
     public async Task<ActionResult> SubmitSelectSolution([FromBody] SolutionDTO dto)
@@ -105,15 +112,17 @@ public class SolutionController(AppDbContext db, SolutionService solutionService
 
             if (exercise.QueryOutput != queryOutput)
             {
+                string errorMessage = GetResultMismatchMessage(exercise.QueryOutput ?? "", queryOutput ?? "");
+
                 await _soS.RegisterUserSolution(
                     formattedQuery,
                     exercise,
                     user,
-                    "Your query's result is incorrect.");
+                    errorMessage);
 
                 return Ok(new
                 {
-                    message = "Your query's result is incorrect.",
+                    message = errorMessage,
                     queryResult = queryOutput
                 });
             }
