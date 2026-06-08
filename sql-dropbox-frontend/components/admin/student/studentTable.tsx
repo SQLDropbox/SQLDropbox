@@ -8,6 +8,7 @@ import { useEffect, useMemo, useState } from "react";
 import { FaUpload, FaUserPlus } from "react-icons/fa6";
 import { FaSearch } from "react-icons/fa";
 import { useTranslations } from "next-intl";
+import { MdOutlineMailOutline } from "react-icons/md";
 
 const TAPE_CORNERS = [
     "top-2 -left-4 -rotate-45",
@@ -18,6 +19,7 @@ const TAPE_CORNERS = [
 
 type Props = {
     course: Course;
+    onInviteStudents: () => void;
     onAddManual: () => void;
     onUpload: () => void;
 };
@@ -38,7 +40,7 @@ function useDebouncedValue<T>(value: T, delay = 200) {
     return debouncedValue;
 }
 
-export default function StudentTable({ course, onAddManual, onUpload }: Props) {
+export default function StudentTable({ course, onAddManual, onUpload, onInviteStudents }: Props) {
     const [search, setSearch] = useState("");
     const t = useTranslations("StudentTable");
     const debouncedSearch = useDebouncedValue(search, 250);
@@ -97,6 +99,20 @@ export default function StudentTable({ course, onAddManual, onUpload }: Props) {
 
                 {/* Toolbar */}
                 <div className="flex items-center gap-2 mb-1">
+                    <button
+                        onClick={onInviteStudents}
+                        className="
+                            flex items-center gap-1.5
+                            border border-border px-3 py-1.5
+                            font-mono text-[11px] uppercase tracking-wider text-muted
+                            hover:border-ink hover:text-ink hover:bg-surface-1
+                            transition-colors
+                        "
+                    >
+                        <MdOutlineMailOutline className="text-[10px]" />
+                        {t("invite")}
+                    </button>
+
                     <div className="relative">
                         <input
                             type="text"

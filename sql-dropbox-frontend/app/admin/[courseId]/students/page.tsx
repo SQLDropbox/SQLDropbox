@@ -13,10 +13,13 @@ import StudentTable from "@/components/admin/student/studentTable";
 import Loading from "@/components/loading";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
+import ConfirmDialog from "@/components/dialog/confirmDialog";
+import { courseService } from "@/services/courseService";
 
 export default function Page() {
     const params = useParams();
     const [modalTab, setModalTab] = useState<"upload" | "manual" | null>(null);
+    const [confirmInviteOpen, setConfirmInviteOpen] = useState(false);
     const t = useTranslations("Course");
 
     const courseId = (params.courseId as string) ?? undefined;
@@ -57,6 +60,7 @@ export default function Page() {
                         course={course!}
                         onAddManual={() => setModalTab("manual")}
                         onUpload={() => setModalTab("upload")}
+                        onInviteStudents={() => setConfirmInviteOpen(true)}
                     />
                 </main>
             </div>
@@ -82,6 +86,19 @@ export default function Page() {
                     }}
                 />
             )}
+
+            <ConfirmDialog
+                open={confirmInviteOpen}
+                onClose={() => setConfirmInviteOpen(false)}
+                onConfirm={() => {
+                    courseService.inviteStudents(courseId!).then(() => {
+                        setConfirmInviteOpen(false);
+                    });
+                }}
+                title={"Invite students"}
+                description={`Are you sure you want to invite all students to this course? This will send an email invitation to ${course?.invitePossibleCount || 0} student(s).`}
+                type={"confirm"}
+            />
         </div>
     );
 }

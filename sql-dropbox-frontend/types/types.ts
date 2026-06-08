@@ -12,6 +12,7 @@ export interface Course {
     students?: User[];
     chapters?: Chapter[];
 
+    invitePossibleCount?: number;
     studentCount?: number;
     chapterCount?: number;
     amountOfExercises?: number;

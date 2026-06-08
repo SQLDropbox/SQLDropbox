@@ -265,6 +265,7 @@
         "title": "MASTER STUDENT LEDGER",
         "progressSheet": "VOL. {courseId} — PROGRESS TRACKING SHEET",
         "searchPlaceholder": "SEARCH STUDENTS...",
+        "invite": "Invite students",
         "enroll": "Enroll",
         "upload": "Upload",
         "noPersonnel": "— NO STUDENTS ON RECORD —",

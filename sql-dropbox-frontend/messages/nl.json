@@ -265,6 +265,7 @@
         "title": "MASTER STUDENT LEDGER",
         "progressSheet": "VOL. {courseId} — VOORTGANGSOVERZICHT",
         "searchPlaceholder": "ZOEK STUDENTEN...",
+        "invite": "Studenten uitnodigen",
         "enroll": "Inschrijven",
         "upload": "Uploaden",
         "noPersonnel": "— GEEN STUDENTEN GEREGISTREERD —",
