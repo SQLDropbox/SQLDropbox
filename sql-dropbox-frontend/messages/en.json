@@ -146,6 +146,14 @@
         "newCourseId": "New Course ID",
         "autoGenerateHint": "Leave empty to generate automatically."
     },
+    "AdminChapterExercisesPage": {
+        "error": "Error: {message}",
+        "backToChapters": "Back to chapters",
+        "title": "Exercises: {chapterName}",
+        "chapterFallback": "Chapter {chapterId}",
+        "addExercise": "New Exercise",
+        "empty": "There are no exercises linked to this chapter yet."
+    },
     "Header": {
         "brand": "Databasement",
         "admin": "Admin",

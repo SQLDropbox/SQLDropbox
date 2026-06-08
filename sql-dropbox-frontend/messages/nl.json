@@ -146,6 +146,14 @@
         "newCourseId": "Nieuwe cursus-ID",
         "autoGenerateHint": "Laat leeg om automatisch te genereren."
     },
+    "AdminChapterExercisesPage": {
+        "error": "Fout: {message}",
+        "backToChapters": "Terug naar hoofdstukken",
+        "title": "Oefeningen: {chapterName}",
+        "chapterFallback": "Hoofdstuk {chapterId}",
+        "addExercise": "Nieuwe oefening",
+        "empty": "Er zijn nog geen oefeningen gekoppeld aan dit hoofdstuk."
+    },
     "Header": {
         "brand": "Databasement",
         "admin": "Admin",
