@@ -469,11 +469,11 @@ public class CourseController(AppDbContext db, EmailService emailService, IConfi
 
             var courseStudents = course.Students.Where(x => x.InvitedAt == null && x.Password == null);
 
-            var url = _configuration["EMailActivationURL"];
+            var url = _configuration["FrontendURL"];
 
             if (url == null)
             {
-                return BadRequest("The EMailActivationURL was not found.");
+                return BadRequest("FrontendURL is missing.");
             }
 
 

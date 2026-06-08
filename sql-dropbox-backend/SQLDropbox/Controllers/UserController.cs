@@ -326,11 +326,11 @@ namespace SQLDropbox.Controllers
                 _db.Users.Add(newLecturer);
                 await _db.SaveChangesAsync();
 
-                var url = _configuration["EMailActivationURL"];
+                var url = _configuration["FrontendURL"];
 
                 if (url == null)
                 {
-                    return BadRequest("The EMailActivationURL was not found.");
+                    return BadRequest("FrontendURL is not configured.");
                 }
 
                 string htmlContent = $"""

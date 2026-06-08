@@ -16,11 +16,7 @@ builder.Services.AddCors(options =>
     {
         policy
 
-            .WithOrigins(
-                builder.Configuration["AllowedOrigins"]
-                    ?.Split(",", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                    ?? []
-            )
+            .WithOrigins(builder.Configuration["FrontendURL"] ?? throw new Exception("FrontendURL is not configured."))
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
@@ -76,7 +72,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 // JWT
-var publicKey = File.ReadAllText(builder.Configuration["Jwt:PublicKeyPath"] ?? throw new Exception("Jwt:PublicKeyPath is missing"));
+var publicKey = File.ReadAllText(builder.Configuration["Jwt:PublicKeyPath"] ?? throw new Exception("Jwt:PublicKeyPath is not configured"));
 var rsa = RSA.Create();
 rsa.ImportFromPem(publicKey);
 
@@ -90,8 +86,8 @@ builder.Services.AddAuthentication("Bearer")
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
 
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
+            ValidIssuer = builder.Configuration["Jwt:Issuer"] ?? throw new Exception("Jwt:Issuer is not configured"),
+            ValidAudience = builder.Configuration["Jwt:Audience"] ?? throw new Exception("Jwt:Audience is not configured"),
             IssuerSigningKey = new RsaSecurityKey(rsa),
 
             ClockSkew = TimeSpan.Zero
@@ -112,25 +108,22 @@ await db.Database.MigrateAsync();
 // ADMIN CREATION
 if (!await db.Users.AnyAsync(u => u.UserCode == "admin"))
 {
-    string? adminPassword = builder.Configuration["AdminPassword"];
+    string adminPassword = builder.Configuration["AdminPassword"] ?? throw new Exception("AdminPassword is not configured");
 
-    if (adminPassword != null)
+    PasswordService ps = scope.ServiceProvider.GetRequiredService<PasswordService>();
+
+    var admin = new User
     {
-        PasswordService ps = scope.ServiceProvider.GetRequiredService<PasswordService>();
+        UserCode = "admin",
+        FirstName = "Admin",
+        Email = "Admin@ucll.be",
+        Password = ps.HashPassword(adminPassword),
+        Role = Role.Admin,
+        CreatedAt = DateTime.Now,
+    };
 
-        var admin = new User
-        {
-            UserCode = "admin",
-            FirstName = "Admin",
-            Email = "Admin@ucll.be",
-            Password = ps.HashPassword(adminPassword),
-            Role = Role.Admin,
-            CreatedAt = DateTime.Now,
-        };
-
-        db.Users.Add(admin);
-        await db.SaveChangesAsync();
-    }
+    db.Users.Add(admin);
+    await db.SaveChangesAsync();
 }
 
 if (app.Environment.IsDevelopment())
