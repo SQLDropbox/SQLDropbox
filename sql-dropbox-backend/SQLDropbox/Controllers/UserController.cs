@@ -11,7 +11,7 @@ namespace SQLDropbox.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class UserController(AppDbContext db, AuthorizationService authorizationService, PasswordService passwordService, CsvService csvService, UserService userService, EmailService emailService) : BaseController
+    public class UserController(AppDbContext db, AuthorizationService authorizationService, PasswordService passwordService, CsvService csvService, UserService userService, EmailService emailService, IConfiguration configuration) : BaseController
     {
         private readonly AppDbContext _db = db;
         private readonly AuthorizationService _aS = authorizationService;
@@ -19,6 +19,8 @@ namespace SQLDropbox.Controllers
         private readonly CsvService _csvService = csvService;
         private readonly UserService _userService = userService;
         private readonly EmailService _emailService = emailService;
+        private readonly IConfiguration _configuration = configuration;
+
 
         [Authorize(Roles = "Admin,Lecturer")]
         [HttpPost("studentCourse/{courseId}")]
@@ -218,6 +220,8 @@ namespace SQLDropbox.Controllers
                 if (course == null)
                     return NotFound();
 
+                var invitePossibleCount = course.Students.Where(x => x.InvitedAt == null && x.Password == null).Count();
+
                 var chapters = course.Chapters
                             .Select(ch => new
                             {
@@ -249,6 +253,7 @@ namespace SQLDropbox.Controllers
                 return Ok(new
                 {
                     courseId = course.CourseId,
+                    invitePossibleCount,
                     chapters,
                     students
                 });
@@ -306,19 +311,57 @@ namespace SQLDropbox.Controllers
                     return BadRequest("A user with this UserCode or Email already exists.");
                 }
 
+                var lecturerId = Guid.NewGuid();
+
                 var newLecturer = new User
                 {
-                    UserId = Guid.NewGuid(),
+                    UserId = lecturerId,
                     UserCode = dto.UserCode,
                     FirstName = dto.FirstName,
                     LastName = dto.LastName,
                     Email = dto.Email,
                     Password = null,
                     Role = Role.Lecturer,
-                    CreatedAt = DateTime.Now
+                    CreatedAt = DateTime.Now,
                 };
 
                 _db.Users.Add(newLecturer);
+                await _db.SaveChangesAsync();
+
+                var url = _configuration["AllowedOrigins"];
+
+                if (url == null)
+                {
+                    return BadRequest("The URL of the frontend was not found.");
+                }
+
+                string htmlContent = $"""
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                        <h1 style="color: #1a1a1a;">Welcome to Databasement, {dto.FirstName}!</h1>
+                        <p style="color: #555; font-size: 16px; line-height: 1.5;">
+                            You've been invited to join a course on Databasement. Click the button below to activate your account.
+                        </p>
+                        <a href="{url}/activate/{lecturerId}"
+                           style="display: inline-block; background-color: #4F46E5; color: white;
+                                  padding: 12px 24px; border-radius: 6px; text-decoration: none;
+                                  font-size: 16px; margin: 20px 0;">
+                            Activate my account
+                        </a>
+                        <p style="color: #999; font-size: 13px;">
+                            If you didn't expect this email, you can safely ignore it.
+                        </p>
+                    </div>
+                """;
+
+                await _emailService.SendEmailAsync(
+                    toEmail: dto.Email,
+                    toName: dto.FirstName + " " + dto.LastName,
+                    subject: "Welcome to Databasement!",
+                    htmlContent: htmlContent
+                );
+
+
+                newLecturer.InvitedAt = DateTime.Now;
                 await _db.SaveChangesAsync();
 
                 return Ok(new
@@ -328,52 +371,6 @@ namespace SQLDropbox.Controllers
                     newLecturer.FirstName,
                     newLecturer.LastName
                 });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-        }
-
-        [Authorize(Roles = "Admin")]
-        [HttpPost("invite/{userId}")]
-        public async Task<IActionResult> InviteUser(string userId)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                    return BadRequest(ModelState);
-
-                var user = await _db.Users.FirstOrDefaultAsync(u => u.UserId.ToString() == userId);
-
-                if (user == null)
-                {
-                    return BadRequest("User not found.");
-                }
-
-                if (user.Password != null)
-                {
-                    return BadRequest("Account already set up.");
-                }
-
-                if (user.InvitedAt != null)
-                {
-                    return BadRequest("User has already been invited.");
-                }
-
-                string fullName = user.FirstName + " " + user.LastName;
-
-                await _emailService.SendEmailAsync(
-                                    toEmail: user.Email,
-                                    toName: fullName,
-                                    subject: "You're invited!",
-                                    htmlContent: $"<h1>Hello {fullName},</h1><p>You have been invited to SQLDropbox. <a href='http://localhost:3000/activate/{user.UserId}'>Click here to activate your account.</a></p>"
-                                );
-
-                user.InvitedAt = DateTime.Now;
-                await _db.SaveChangesAsync();
-
-                return Ok();
             }
             catch (Exception ex)
             {
