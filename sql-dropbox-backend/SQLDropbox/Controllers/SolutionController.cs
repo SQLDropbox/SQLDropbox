@@ -46,8 +46,6 @@ public class SolutionController(AppDbContext db, SolutionService solutionService
                 return BadRequest(new { message = "The chapter this exercise is part of has no set schema." });
             if (exercise.Solutions.Count < 1)
                 return BadRequest(new { message = "The exercise has no set solution." });
-            if (exercise.UserExercises.Any(ue => ue.IsCompleted))
-                return BadRequest(new { message = "You have already solved this exercise." });
 
             User? user = await _db.Users.FirstOrDefaultAsync(u => u.UserId == userId);
             if (user == null)
