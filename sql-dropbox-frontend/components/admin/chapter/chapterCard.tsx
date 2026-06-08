@@ -145,7 +145,11 @@ export default function ChapterCard({
                         }`}
                     >
                         Deadline:{" "}
-                        {new Date(chapter.deadline).toLocaleDateString(locale)}
+                        {new Date(chapter.deadline).toLocaleDateString("en-GB", {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric"
+                        })}
                     </p>
                 )}
             </div>
