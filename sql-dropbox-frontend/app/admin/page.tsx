@@ -56,7 +56,7 @@ export default function Page() {
                                 "
                             >
                                 <FaUserPlus />
-                                NEW LECTURER
+                                {t("newLecturer")}
                             </button>
 
                             {/* NEW SCHEMA */}
@@ -73,7 +73,7 @@ export default function Page() {
                                 "
                             >
                                 <FaPlus />
-                                NEW SCHEMA
+                                {t("newSchema")}
                             </button>
 
                             {/* NEW COURSE */}

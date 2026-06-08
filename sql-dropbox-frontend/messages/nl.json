@@ -2,6 +2,8 @@
     "Course": {
         "title": "Cursussen",
         "manageTitle": "Cursussen beheren",
+        "newLecturer": "Nieuwe lector",
+        "newSchema": "Nieuw schema",
         "newCourse": "Nieuwe cursus",
         "loading": "Laden...",
         "error": "Er is iets misgegaan",

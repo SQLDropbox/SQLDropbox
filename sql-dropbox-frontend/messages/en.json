@@ -2,6 +2,8 @@
     "Course": {
         "title": "Courses",
         "manageTitle": "Manage Courses",
+        "newLecturer": "New lecturer",
+        "newSchema": "New schema",
         "newCourse": "New course",
         "loading": "Loading...",
         "error": "Something went wrong",
