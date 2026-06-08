@@ -320,7 +320,7 @@
             "importing": "IMPORTEREN...",
             "confirmImport": "IMPORT BEVESTIGEN",
             "sysError": "SYSTEEMFOUT",
-            "acknowledge": "BEVESTIGEN"
+            "acknowledge": "Sluiten"
         }
     },
     "Unauthorized": {

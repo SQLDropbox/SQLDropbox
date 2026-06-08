@@ -320,7 +320,7 @@
             "importing": "IMPORTING...",
             "confirmImport": "CONFIRM IMPORT",
             "sysError": "SYS ERROR",
-            "acknowledge": "ACKNOWLEDGE"
+            "acknowledge": "Close"
         }
     },
     "Unauthorized": {
