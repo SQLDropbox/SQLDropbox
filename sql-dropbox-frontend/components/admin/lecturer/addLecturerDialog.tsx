@@ -202,10 +202,10 @@ export default function AddLecturerDialog({ open, onClose, onSuccess }: Props) {
             <AlertDialog
                 open={!!errorDialog}
                 onClose={() => setErrorDialog(null)}
-                title="SYS ERROR"
+                title={t("alert.title")}
                 description={errorDialog || ""}
                 type="error"
-                buttonText="ACKNOWLEDGE"
+                buttonText={t("alert.button")}
             />
         </div>
     );

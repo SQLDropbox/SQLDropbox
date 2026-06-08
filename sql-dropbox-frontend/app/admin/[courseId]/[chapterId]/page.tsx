@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { FaArrowLeft, FaPlus } from "react-icons/fa6";
+import { useLocale, useTranslations } from "next-intl";
 
 import Header from "@/components/header";
 import AdminExerciseCard from "@/components/admin/exercise/adminExerciseCard";
@@ -16,6 +17,8 @@ import EditExerciseDialog from "@/components/admin/exercise/editExerciseDialog";
 import Loading from "@/components/loading";
 
 export default function ChapterExercisesPage() {
+    const t = useTranslations("AdminChapterExercisesPage");
+    const locale = useLocale();
     const params = useParams();
     const courseId = params.courseId as string;
     const chapterId = params.chapterId as string;
@@ -50,6 +53,11 @@ export default function ChapterExercisesPage() {
         setIsDialogOpen(true);
     };
 
+    const chapterName =
+        locale === "nl"
+            ? chapter?.chapterNameNL ?? chapter?.chapterNameEN
+            : chapter?.chapterNameEN ?? chapter?.chapterNameNL;
+
     if (isLoading) {
         return <Loading />;
     }
@@ -59,9 +67,7 @@ export default function ChapterExercisesPage() {
             <div>
                 <Header />
                 <div className="max-w-350 mx-auto p-6">
-                    <p className="text-red-500">
-                        Fout: {(error as Error).message}
-                    </p>
+                    <p className="text-red-500">{t("error", { message: (error as Error).message })}</p>
                 </div>
             </div>
         );
@@ -77,12 +83,14 @@ export default function ChapterExercisesPage() {
                         href={`/admin/${courseId}`}
                         className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-muted hover:text-ink"
                     >
-                        ← Terug naar hoofdstukken
+                        ← {t("backToChapters")}
                     </Link>
 
                     <h1 className="font-display text-4xl font-bold mb-3">
-                        Oefeningen:{" "}
-                        {chapter?.chapterNameNL || `Hoofdstuk ${chapterId}`}
+                        {t("title", {
+                            chapterName:
+                                chapterName ?? t("chapterFallback", { chapterId }),
+                        })}
                     </h1>
                 </div>
 
@@ -90,16 +98,16 @@ export default function ChapterExercisesPage() {
                     <button
                         className="flex items-center gap-2 font-mono text-sm border-2 px-4 py-2 uppercase tracking-widest transition-colors -rotate-1 border-accent text-accent hover:bg-accent hover:text-paper"
                         onClick={handleAddExercise}
-                >
+                    >
                         <FaPlus className="w-2.5 h-2.5" />
-                        New Exercise
+                        {t("addExercise")}
                     </button>
                 </div>
 
                 {chapter?.exercises?.length === 0 ? (
-                    <p className="text-gray-500 bg-gray-50 border border-gray-200 rounded-lg p-4">
-                        Er zijn nog geen oefeningen gekoppeld aan dit hoofdstuk.
-                    </p>
+                    <div className="border border-border p-8 text-center font-mono text-sm text-muted uppercase tracking-widest bg-transparent">
+                        {t("empty")}
+                    </div>
                 ) : (
                     <div className="flex flex-col gap-4">
                         {chapter?.exercises?.map((exercise) => (

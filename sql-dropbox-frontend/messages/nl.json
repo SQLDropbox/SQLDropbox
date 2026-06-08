@@ -2,6 +2,8 @@
     "Course": {
         "title": "Cursussen",
         "manageTitle": "Cursussen beheren",
+        "newLecturer": "Nieuwe lector",
+        "newSchema": "Nieuw schema",
         "newCourse": "Nieuwe cursus",
         "loading": "Laden...",
         "error": "Er is iets misgegaan",
@@ -145,6 +147,14 @@
         "duplicating": "Dupliceren...",
         "newCourseId": "Nieuwe cursus-ID",
         "autoGenerateHint": "Laat leeg om automatisch te genereren."
+    },
+    "AdminChapterExercisesPage": {
+        "error": "Fout: {message}",
+        "backToChapters": "Terug naar hoofdstukken",
+        "title": "Oefeningen: {chapterName}",
+        "chapterFallback": "Hoofdstuk {chapterId}",
+        "addExercise": "Nieuwe oefening",
+        "empty": "Er zijn nog geen oefeningen gekoppeld aan dit hoofdstuk."
     },
     "Header": {
         "brand": "Databasement",
@@ -311,7 +321,7 @@
             "importing": "IMPORTEREN...",
             "confirmImport": "IMPORT BEVESTIGEN",
             "sysError": "SYSTEEMFOUT",
-            "acknowledge": "BEVESTIGEN"
+            "acknowledge": "Sluiten"
         }
     },
     "Unauthorized": {
@@ -356,6 +366,14 @@
     "SchemaDialog": {
         "title": "Schema Aanmaken",
         "subtitle": "DATABASE STRUCTUUR / SCHEMA INVOER",
+        "alert": {
+            "title": "SYSTEEMFOUT",
+            "button": "Sluiten"
+        },
+        "successAlert": {
+            "title": "SUCCES",
+            "button": "OK"
+        },
         "role": "SYS. MODULE: SCHEMA",
         "fields": {
             "name": "Schemanaam",
@@ -379,6 +397,10 @@
     "LecturerDialog": {
         "title": "Lector Registreren",
         "subtitle": "PERSONEELSDOSSIER / DATABASE INVOER",
+        "alert": {
+            "title": "SYSTEEMFOUT",
+            "button": "Sluiten"
+        },
         "role": "SYS. ROL: LECTOR",
         "fields": {
             "firstName": "Voornaam",

@@ -205,20 +205,20 @@ export default function AddSchemaDialog({ open, onClose, onSuccess }: Props) {
             <AlertDialog
                 open={!!errorDialog}
                 onClose={() => setErrorDialog(null)}
-                title="SYS ERROR"
+                title={t("alert.title")}
                 description={errorDialog || ""}
                 type="error"
-                buttonText="ACKNOWLEDGE"
+                buttonText={t("alert.button")}
             />
 
             {/* SUCCESS */}
             <AlertDialog
                 open={!!successDialog}
                 onClose={() => setSuccessDialog(null)}
-                title="SUCCESS"
+                title={t("successAlert.title")}
                 description={successDialog || ""}
                 type="success"
-                buttonText="OK"
+                buttonText={t("successAlert.button")}
             />
         </div>
     );

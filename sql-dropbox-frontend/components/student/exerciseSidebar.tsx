@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { FaArrowLeft, FaBookOpen, FaCheck } from "react-icons/fa6";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Exercise } from "@/types/types";
 import ProgressIcon from "../admin/chapter/progressIcon";
 
@@ -26,6 +26,7 @@ export default function ExerciseSidebar({
     completedExerciseIds,
 }: ExerciseSidebarProps) {
     const t = useTranslations("ChapterExercisePage");
+    const locale = useLocale();
 
     const totalExercises = exercises.length;
     const completedCount = exercises.filter((e) =>
@@ -127,7 +128,9 @@ export default function ExerciseSidebar({
                                         : "text-ink"
                                 }`}
                             >
-                                {exercise.questionNL}
+                                {locale.startsWith("nl")
+                                    ? exercise.questionNL || exercise.questionEN
+                                    : exercise.questionEN || exercise.questionNL}
                             </p>
 
                             <div
