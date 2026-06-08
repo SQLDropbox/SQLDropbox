@@ -12,8 +12,7 @@ namespace SQLDropbox.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class UtilitiesController(
-       AppDbContext db, PasswordService passwordService, JwtService jwtService, SolutionService solutionService, SchemaService schemaService) : BaseController
+public class UtilitiesController(AppDbContext db, PasswordService passwordService, JwtService jwtService, SolutionService solutionService, SchemaService schemaService) : BaseController(db)
 {
     private readonly AppDbContext _db = db;
     private readonly PasswordService _pS = passwordService;
@@ -30,6 +29,10 @@ public class UtilitiesController(
             await DbInitializer.SeedAsyncDev(_db, _pS);
             return Ok("DB seeded.");
         }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized(new { message = "You're not authorized to access this resource." });
+        }
         catch (Exception ex)
         {
             return BadRequest(new { message = ex.Message });
@@ -45,26 +48,9 @@ public class UtilitiesController(
             await DbInitializer.EmptyAsync(_db);
             return Ok("DB emptied.");
         }
-        catch (Exception ex)
+        catch (UnauthorizedAccessException)
         {
-            return BadRequest(new { message = ex.Message });
-        }
-    }
-
-    [Authorize(Roles = "Admin")]
-    [HttpPost("format")]
-    public async Task<IActionResult> Format([FromBody] FormatDTO format)
-    {
-        try
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            if (format.Query == null)
-                return BadRequest("Query is required.");
-
-            var formatted = _soS.FormatQuery(format.Query);
-            return Ok(formatted);
+            return Unauthorized(new { message = "You're not authorized to access this resource." });
         }
         catch (Exception ex)
         {
@@ -95,36 +81,69 @@ public class UtilitiesController(
                 if (!_pS.ValidatePassword(user.Password, dto.Password))
                     return BadRequest("Incorrect credentials.");
 
-                string accessToken = _jwtS.GenerateAccessToken(user);                
-                return Ok(new {accessToken});
+                string accessToken = _jwtS.GenerateAccessToken(user);
+                return Ok(new { accessToken });
             }
 
             return BadRequest(new { message = "Incorrect credentials." });
         }
-        catch (Exception)
+        catch (UnauthorizedAccessException)
         {
-            return BadRequest(new { message = "Incorrect credentials." });
-        }
-    }
-
-    [Authorize(Roles = "Admin")]
-    [HttpGet("me")]
-    public async Task<IActionResult> Me()
-    {
-        try
-        {
-            var (userId, role) = IsAuthenticated();          
-            return Ok(new {userId, role});
+            return Unauthorized(new { message = "You're not authorized to access this resource." });
         }
         catch (Exception ex)
         {
             return BadRequest(new { message = ex.Message });
         }
-    }  
+    }
+
+    [Authorize]
+    [HttpGet("me")]
+    public async Task<IActionResult> Me()
+    {
+        try
+        {
+            var (userId, role) = IsAuthenticated();
+            return Ok(new { userId, role });
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized(new { message = "You're not authorized to access this resource." });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpPost("format")]
+    public async Task<IActionResult> Format([FromBody] FormatDTO format)
+    {
+        try
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            if (format.Query == null)
+                return BadRequest("Query is required.");
+
+            var formatted = _soS.FormatQuery(format.Query);
+            return Ok(formatted);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized(new { message = "You're not authorized to access this resource." });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
 
     [Authorize(Roles = "Admin")]
     [HttpPost("seed-exercise-create-helper")]
-    public async Task<IActionResult> GetExerciseCreateData([FromBody] SolutionDTO dto)
+    public async Task<IActionResult> SeedExerciseCreateHelper([FromBody] SolutionDTO dto)
     {
         try
         {
@@ -138,6 +157,10 @@ public class UtilitiesController(
             string queryOutput = await _scS.ExecuteSelectOnSchemaAsync("animals", formattedQuery);
 
             return Ok(new { query = formattedQuery, hash = queryHash, output = queryOutput });
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized(new { message = "You're not authorized to access this resource." });
         }
         catch (Exception ex)
         {

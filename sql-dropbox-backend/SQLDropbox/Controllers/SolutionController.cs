@@ -12,7 +12,7 @@ namespace SQLDropbox.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class SolutionController(AppDbContext db, SolutionService solutionService, SchemaService schemaService) : BaseController
+public class SolutionController(AppDbContext db, SolutionService solutionService, SchemaService schemaService) : BaseController(db)
 {
     private readonly AppDbContext _db = db;
     private readonly SolutionService _soS = solutionService;

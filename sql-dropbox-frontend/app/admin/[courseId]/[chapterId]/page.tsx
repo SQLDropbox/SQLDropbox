@@ -105,9 +105,9 @@ export default function ChapterExercisesPage() {
                 </div>
 
                 {chapter?.exercises?.length === 0 ? (
-                    <p className="text-gray-500 bg-gray-50 border border-gray-200 rounded-lg p-4">
+                    <div className="border border-border p-8 text-center font-mono text-sm text-muted uppercase tracking-widest bg-transparent">
                         {t("empty")}
-                    </p>
+                    </div>
                 ) : (
                     <div className="flex flex-col gap-4">
                         {chapter?.exercises?.map((exercise) => (

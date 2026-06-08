@@ -105,6 +105,10 @@ export default function EditChapterDialog({
             newErrors.schema = "schema fout";
         }
 
+        if (form.amountOfExercises !== undefined && form.amountOfExercises < 0) {
+            newErrors.amountOfExercises = "Aantal mag niet negatief zijn";
+        }
+
         return newErrors;
     }
 
@@ -248,7 +252,7 @@ export default function EditChapterDialog({
                         />
                     </Field>
 
-                    <Field label={t("amountOfExercises")}>
+                    <Field label={t("amountOfExercises")} error={errors.amountOfExercises}>
                         <input
                             type="number"
                             placeholder={t("amountOfExercises")}
@@ -259,7 +263,7 @@ export default function EditChapterDialog({
                                     amountOfExercises:
                                         e.target.value === ""
                                             ? 0
-                                            : Number(e.target.value),
+                                            : Math.max(0, Number(e.target.value)),
                                 }))
                             }
                             className="w-full bg-transparent border-b border-border py-1 text-sm focus:border-accent outline-none"

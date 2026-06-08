@@ -93,11 +93,6 @@ export default function QueryWorkspace({
 
     const missingRequirements = satisfiedReqs?.filter((r) => !r.satisfied);
     const queryMeetsRequirements = (missingRequirements?.length ?? 0) === 0;
-    const completedCount =
-        satisfiedReqs?.filter((r) => r.satisfied).length ?? 0;
-    const totalCount = satisfiedReqs?.length ?? 0;
-    const progressPct =
-        totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
     const hint = locale === "nl" ? exercise.hintNL : exercise.hintEN;
 

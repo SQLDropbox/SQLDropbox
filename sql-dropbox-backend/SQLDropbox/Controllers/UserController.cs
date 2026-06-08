@@ -11,10 +11,9 @@ namespace SQLDropbox.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class UserController(AppDbContext db, AuthorizationService authorizationService, PasswordService passwordService, CsvService csvService, UserService userService, EmailService emailService, IConfiguration configuration) : BaseController
+    public class UserController(AppDbContext db, PasswordService passwordService, CsvService csvService, UserService userService, EmailService emailService, IConfiguration configuration) : BaseController(db)
     {
         private readonly AppDbContext _db = db;
-        private readonly AuthorizationService _aS = authorizationService;
         private readonly PasswordService _passwordService = passwordService;
         private readonly CsvService _csvService = csvService;
         private readonly UserService _userService = userService;
@@ -28,8 +27,7 @@ namespace SQLDropbox.Controllers
         {
             try
             {
-                var (userId, role) = IsAuthenticated();
-                await _aS.UserHasAccessToCourse(userId, role, courseId);
+                await UserHasAccessToCourse(courseId);
 
                 Course? course = await _db.Courses
                 .FirstOrDefaultAsync(x => x.CourseId == courseId);
@@ -63,8 +61,7 @@ namespace SQLDropbox.Controllers
         {
             try
             {
-                var (userId, role) = IsAuthenticated();
-                await _aS.UserHasAccessToCourse(userId, role, courseId);
+                await UserHasAccessToCourse(courseId);
 
                 var course = await _db.Courses
                     .FirstOrDefaultAsync(x => x.CourseId == courseId);
@@ -107,8 +104,7 @@ namespace SQLDropbox.Controllers
         {
             try
             {
-                var (userId, role) = IsAuthenticated();
-                await _aS.UserHasAccessToCourse(userId, role, courseId);
+                await UserHasAccessToCourse(courseId);
 
                 var course = await _db.Courses
                 .FirstOrDefaultAsync(x => x.CourseId == courseId);
@@ -168,8 +164,7 @@ namespace SQLDropbox.Controllers
         {
             try
             {
-                var (userId, role) = IsAuthenticated();
-                await _aS.UserHasAccessToCourse(userId, role, courseId);
+                await UserHasAccessToCourse(courseId);
 
                 var course = await _db.Courses.FirstOrDefaultAsync(x => x.CourseId == courseId);
 
@@ -205,8 +200,7 @@ namespace SQLDropbox.Controllers
         {
             try
             {
-                var (userId, role) = IsAuthenticated();
-                await _aS.UserHasAccessToCourse(userId, role, courseId);
+                await UserHasAccessToCourse(courseId);
 
                 var course = _db.Courses
                 .Include(c => c.Students)
@@ -287,6 +281,10 @@ namespace SQLDropbox.Controllers
 
                 return Ok(lecturers);
             }
+            catch (UnauthorizedAccessException)
+            {
+                return Unauthorized(new { message = "You're not authorized to access this resource." });
+            }
             catch (Exception ex)
             {
                 return BadRequest(new { message = ex.Message });
@@ -328,11 +326,11 @@ namespace SQLDropbox.Controllers
                 _db.Users.Add(newLecturer);
                 await _db.SaveChangesAsync();
 
-                var url = _configuration["AllowedOrigins"];
+                var url = _configuration["FrontendURL"];
 
                 if (url == null)
                 {
-                    return BadRequest("The URL of the frontend was not found.");
+                    return BadRequest("FrontendURL is not configured.");
                 }
 
                 string htmlContent = $"""
@@ -371,6 +369,10 @@ namespace SQLDropbox.Controllers
                     newLecturer.FirstName,
                     newLecturer.LastName
                 });
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Unauthorized(new { message = "You're not authorized to access this resource." });
             }
             catch (Exception ex)
             {

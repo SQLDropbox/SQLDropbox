@@ -19,14 +19,14 @@ namespace SQLDropbox.Services
             _configuration = configuration
                 ?? throw new ArgumentNullException(nameof(configuration));
             _issuer = _configuration["Jwt:Issuer"]
-                ?? throw new InvalidOperationException("Jwt Issuer is not configured");
+                ?? throw new InvalidOperationException("Jwt:Issuer is not configured");
             _audience = _configuration["Jwt:Audience"]
-                ?? throw new InvalidOperationException("Jwt Audience is not configured");
+                ?? throw new InvalidOperationException("Jwt:Audience is not configured");
             _accessTokenMinutes = int.Parse(_configuration["Jwt:AccessTokenMinutes"]
-                ?? throw new InvalidOperationException("Jwt AccessTokenMinutes is not configured"));
+                ?? throw new InvalidOperationException("Jwt:AccessTokenMinutes is not configured"));
 
             var privateKey = File.ReadAllText(configuration["Jwt:PrivateKeyPath"]
-                ?? throw new InvalidOperationException("Jwt PrivateKeyPath is not configured"));
+                ?? throw new InvalidOperationException("Jwt:PrivateKeyPath is not configured"));
 
             var rsa = RSA.Create();
             rsa.ImportFromPem(privateKey);

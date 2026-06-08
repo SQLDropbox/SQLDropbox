@@ -16,11 +16,7 @@ builder.Services.AddCors(options =>
     {
         policy
 
-            .WithOrigins(
-                builder.Configuration["AllowedOrigins"]
-                    ?.Split(",", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                    ?? []
-            )
+            .WithOrigins(builder.Configuration["FrontendURL"] ?? throw new Exception("FrontendURL is not configured."))
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
@@ -39,7 +35,6 @@ builder.Services.AddScoped<CsvExportService>();
 builder.Services.AddScoped<RoutineService>();
 builder.Services.AddScoped<CsvService>();
 builder.Services.AddScoped<RefreshTokenService>();
-builder.Services.AddScoped<AuthorizationService>();
 builder.Services.AddScoped<ChapterService>();
 builder.Services.AddScoped<EmailService>();
 
@@ -77,8 +72,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 // JWT
-var publicKey = File.ReadAllText(builder.Configuration["Jwt:PublicKeyPath"])
-    ?? throw new Exception("Jwt:PublicKeyPath is missing");
+var publicKey = File.ReadAllText(builder.Configuration["Jwt:PublicKeyPath"] ?? throw new Exception("Jwt:PublicKeyPath is not configured"));
 var rsa = RSA.Create();
 rsa.ImportFromPem(publicKey);
 
@@ -92,8 +86,8 @@ builder.Services.AddAuthentication("Bearer")
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
 
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
+            ValidIssuer = builder.Configuration["Jwt:Issuer"] ?? throw new Exception("Jwt:Issuer is not configured"),
+            ValidAudience = builder.Configuration["Jwt:Audience"] ?? throw new Exception("Jwt:Audience is not configured"),
             IssuerSigningKey = new RsaSecurityKey(rsa),
 
             ClockSkew = TimeSpan.Zero
@@ -106,84 +100,42 @@ var app = builder.Build();
 // CORS
 app.UseCors("AllowFrontend");
 
+// DB MIGRATION
+AsyncServiceScope scope = app.Services.CreateAsyncScope();
+AppDbContext db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+await db.Database.MigrateAsync();
+
+// ADMIN CREATION
+if (!await db.Users.AnyAsync(u => u.UserCode == "admin"))
+{
+    string adminPassword = builder.Configuration["AdminPassword"] ?? throw new Exception("AdminPassword is not configured");
+
+    PasswordService ps = scope.ServiceProvider.GetRequiredService<PasswordService>();
+
+    var admin = new User
+    {
+        UserCode = "admin",
+        FirstName = "Admin",
+        Email = "Admin@ucll.be",
+        Password = ps.HashPassword(adminPassword),
+        Role = Role.Admin,
+        CreatedAt = DateTime.Now,
+    };
+
+    db.Users.Add(admin);
+    await db.SaveChangesAsync();
+}
+
 if (app.Environment.IsDevelopment())
 {
     // SWAGGER
     app.MapOpenApi();
     app.UseSwagger();
-    app.UseSwaggerUI();
-
-    // DB MIGRATION
-    AsyncServiceScope scope = app.Services.CreateAsyncScope();
-    AppDbContext db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await db.Database.MigrateAsync();
-
-    // If no users yet, create admin user (so seed can be used)
-    if (!await db.Users.AnyAsync(u => u.Email == "admin@ucll.be"))
-    {
-        PasswordService ps = scope.ServiceProvider.GetRequiredService<PasswordService>();
-
-        var admin = new User
-        {
-            UserCode = "admin",
-            FirstName = "Admin",
-            Email = "Admin@ucll.be",
-            Password = ps.HashPassword("Admin"),
-            Role = Role.Admin,
-            CreatedAt = DateTime.Now,
-        };
-
-        db.Users.Add(admin);
-        await db.SaveChangesAsync();
-    }
+    app.UseSwaggerUI();    
 }
 
 if (app.Environment.IsProduction())
-{
-    // DB MIGRATION
-    AsyncServiceScope scope = app.Services.CreateAsyncScope();
-    AppDbContext db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await db.Database.MigrateAsync();
-
-    // If no users yet, create admin user (and for now lecturers and students as well)
-    if (!await db.Users.AnyAsync(u => u.Email == "admin@ucll.be"))
-    {
-        PasswordService ps = scope.ServiceProvider.GetRequiredService<PasswordService>();
-
-        var admin = new User
-        {
-            UserCode = "admin",
-            FirstName = "Admin",
-            Email = "Admin@ucll.be",
-            Password = ps.HashPassword("V$k0&q-8~3oQmsbO"),
-            Role = Role.Admin,
-            CreatedAt = DateTime.Now,
-        };
-        var lecturer = new User
-        {
-            UserCode = "u0123456",
-            FirstName = "Lector-Lander",
-            LastName = "Dirix",
-            Email = "u0123456@ucll.be",
-            Password = ps.HashPassword("p1g8V!2ewg-&r-pY"),
-            Role = Role.Lecturer,
-            CreatedAt = DateTime.Now,
-        };
-        var student = new User
-        {
-            UserCode = "r0123456",
-            FirstName = "Example",
-            LastName = "student",
-            Email = "r0123456@ucll.be",
-            Password = ps.HashPassword("Kf55L5=0tr@Qd~dk"),
-            Role = Role.Student,
-            CreatedAt = DateTime.Now,
-        };
-
-        db.Users.AddRange(admin, lecturer, student);
-        await db.SaveChangesAsync();
-    }
-
+{      
     app.UseHttpsRedirection();
     app.UsePathBase("/api");
 }
