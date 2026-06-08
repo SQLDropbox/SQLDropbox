@@ -293,10 +293,10 @@ export default function ImportStudentsModal({
             <AlertDialog
                 open={!!errorDialog}
                 onClose={() => setErrorDialog(null)}
-                title="SYS ERROR"
+                title={t("modal.sysError")}
                 description={errorDialog || ""}
                 type="error"
-                buttonText="ACKNOWLEDGE"
+                buttonText={t("modal.acknowledge")}
             />
         </div>
     );
