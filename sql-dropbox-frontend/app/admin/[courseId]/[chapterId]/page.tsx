@@ -75,12 +75,12 @@ export default function ChapterExercisesPage() {
                 <div className="mb-6">
                     <Link
                         href={`/admin/${courseId}`}
-                        className="flex items-center gap-2 text-gray-600 hover:text-black transition-colors w-fit text-sm font-medium mb-4"
+                        className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-muted hover:text-ink"
                     >
-                        <FaArrowLeft /> Terug naar hoofdstukken
+                        ← Terug naar hoofdstukken
                     </Link>
 
-                    <h1 className="text-3xl font-bold text-gray-900">
+                    <h1 className="font-display text-4xl font-bold mb-3">
                         Oefeningen:{" "}
                         {chapter?.chapterNameNL || `Hoofdstuk ${chapterId}`}
                     </h1>
@@ -88,10 +88,10 @@ export default function ChapterExercisesPage() {
 
                 <div className="flex justify-end mb-4">
                     <button
-                        className="bg-black text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-800 transition-colors flex items-center gap-2"
+                        className="flex items-center gap-2 font-mono text-sm border-2 px-4 py-2 uppercase tracking-widest transition-colors -rotate-1 border-accent text-accent hover:bg-accent hover:text-paper"
                         onClick={handleAddExercise}
-                    >
-                        <FaPlus />
+                >
+                        <FaPlus className="w-2.5 h-2.5" />
                         New Exercise
                     </button>
                 </div>
