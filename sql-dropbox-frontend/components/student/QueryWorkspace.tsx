@@ -155,12 +155,11 @@ export default function QueryWorkspace({
         <div>
             <div className="flex">
                 {/* Editor column */}
-                <div className="border border-border flex-1 flex flex-col h-full">
+                <div className="border border-border flex-1 bg-paper">
                     
                     <CodeMirror
-                        height="100%"
-                        minHeight="200px"
-                        className="flex-1 text-sm [&>.cm-editor]:h-full"
+                        minHeight="210px"
+                        className="text-sm max-h-screen overflow-scroll"
                         value={queryValue}
                         onChange={(val) => setQueryValue(val)}
                         extensions={[
@@ -180,7 +179,6 @@ export default function QueryWorkspace({
                         theme={createTheme({
                             theme: "light",
                             settings: {
-                                background: "var(--color-paper)",
                                 gutterBackground: "var(--color-surface-3)",
                                 lineHighlight: "rgba(0, 0, 0, 0.06)",
                                 gutterActiveForeground: "var(--color-ink)",
@@ -190,7 +188,6 @@ export default function QueryWorkspace({
                             },
                             styles: [],
                         })}
-                        className="text-sm"
                     />
                 </div>
 
