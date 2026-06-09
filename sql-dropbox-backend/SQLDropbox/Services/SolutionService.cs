@@ -61,7 +61,8 @@ namespace SQLDropbox.Services
                 .Include(ue => ue.UserSolutions)
                 .FirstOrDefaultAsync(ue =>
                     ue.Exercise.ExerciseId == exercise.ExerciseId &&
-                    ue.User.UserId == user.UserId);
+                    ue.User.UserId == user.UserId
+                );
 
             if (userExercise == null)
             {
@@ -77,9 +78,6 @@ namespace SQLDropbox.Services
             }
             else
             {
-                if (userExercise.IsCompleted)
-                    return;
-
                 userExercise.IsCompleted = isCorrect;
                 userExercise.UpdatedAt = DateTime.Now;
             }
