@@ -17,18 +17,23 @@ namespace SQLDropbox.Services
         {
             var apiInstance = new TransactionalEmailsApi();
 
+            string senderName = _config["Brevo:SenderName"] ?? throw new Exception("SenderName is not configured.");
+            string senderEmail = _config["Brevo:SenderEmail"] ?? throw new Exception("SenderEmail is not configured.");
+            string replyToName = _config["Brevo:ReplyToName"] ?? throw new Exception("ReplyToName is not configured.");
+            string replyToEmail = _config["Brevo:ReplyToEmail"] ?? throw new Exception("ReplyToEmail is not configured.");
+
             var sendSmtpEmail = new SendSmtpEmail(
                 sender: new SendSmtpEmailSender(
-                    name: _config["Brevo:SenderName"] ?? throw new Exception("SenderName is not configured."),
-                    email: _config["Brevo:SenderEmail"] ?? throw new Exception("SenderEmail is not configured.")
+                    name: senderName,
+                    email: senderEmail
                 ),
                 to:
                 [new SendSmtpEmailTo(email: toEmail, name: toName)],
                 subject: subject,
                 htmlContent: htmlContent,
                 replyTo: new SendSmtpEmailReplyTo(
-                    email: _config["Brevo:ReplyToEmail"] ?? throw new Exception("ReplyToEmail is not configured."),
-                    name: _config["Brevo:ReplyToName"] ?? throw new Exception("ReplyToName is not configured.")
+                    email: replyToEmail,
+                    name: replyToName
                 )
             );
 
