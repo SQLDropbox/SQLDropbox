@@ -207,7 +207,8 @@
         "expectedOutput": "Expected output",
         "expand": "Expand",
         "collapse": "Collapse",
-        "noHistory": "No query history yet. Run your first query to see it here!"
+        "noHistory": "No query history yet. Run your first query to see it here!",
+        "queryCorrect": "Correct!"
     },
     "ExerciseSidebar": {
         "title": "Questions",

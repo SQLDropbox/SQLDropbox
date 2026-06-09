@@ -78,18 +78,22 @@ export default function QueryWorkspace({
     const [queryValue, setQueryValue] = useState("");
     const [queryResult, setQueryResult] = useState<any>(null);
     const [queryError, setQueryError] = useState<string | null>(null);
+    const [queryCompleted, setQueryCompleted] = useState(false);
     const [isExecuting, setIsExecuting] = useState(false);
     const [showHint, setShowHint] = useState(false);
 
     const normalizedQuery = queryValue.toLowerCase();
 
-    const satisfiedReqs = exercise.requirements?.map((req) => {
-        const isIncluded = normalizedQuery.includes(req.statement!.toLowerCase());
-        return {
-            ...req,
-            satisfied: req.isBlacklist ? !isIncluded : isIncluded,
-        };
-    }) || [];
+    const satisfiedReqs =
+        exercise.requirements?.map((req) => {
+            const isIncluded = normalizedQuery.includes(
+                req.statement!.toLowerCase(),
+            );
+            return {
+                ...req,
+                satisfied: req.isBlacklist ? !isIncluded : isIncluded,
+            };
+        }) || [];
 
     const missingRequirements = satisfiedReqs?.filter((r) => !r.satisfied);
     const queryMeetsRequirements = (missingRequirements?.length ?? 0) === 0;
@@ -124,10 +128,11 @@ export default function QueryWorkspace({
                 queryValue,
             );
 
-            if (submission.correct) {
+            if (submission.queryResult == undefined) {
                 await queryClient.invalidateQueries({
                     queryKey: ["chapter", chapterId],
                 });
+                setQueryCompleted(true);
             } else {
                 setQueryError(submission.message);
             }
@@ -151,7 +156,6 @@ export default function QueryWorkspace({
             <div className="flex">
                 {/* Editor column */}
                 <div className="border border-border flex-1 bg-paper">
-                    
                     <CodeMirror
                         minHeight="210px"
                         className="text-sm max-h-screen overflow-scroll"
@@ -187,10 +191,17 @@ export default function QueryWorkspace({
                 </div>
 
                 {/* Requirements sidebar */}
-                        {hasRequirements && (
-                            <RequirementsSidebar satisfiedReqs={satisfiedReqs} />
-                        )}
+                {hasRequirements && (
+                    <RequirementsSidebar satisfiedReqs={satisfiedReqs} />
+                )}
             </div>
+
+            {queryCompleted && (
+                <div className="border-l-4 border-green-500 my-2 bg-surface-2 px-4 py-3 font-mono text-sm text-success mb-0 flex items-center gap-2 text-green-800">
+                    <FaCheck />
+                    {t("queryCorrect")}
+                </div>
+            )}
 
             {queryError && (
                 <div className="border-l-4 border-error my-2 bg-surface-2 px-4 py-3 font-mono text-sm text-error mb-0">
