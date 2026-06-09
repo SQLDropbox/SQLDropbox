@@ -370,6 +370,7 @@ public class ChapterController(AppDbContext db, AuthorizationService authorizati
                                 .OrderBy(x => x.SolutionId)
                                 .Select(x => x.Query)
                                 .FirstOrDefault(),
+                            validationQuery = e.ValidationQuery,
 
                             Requirements = e.Requirements
                                 .Select(r => new
