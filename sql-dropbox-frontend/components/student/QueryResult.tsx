@@ -96,7 +96,7 @@ function TableSheet({
                         {headers.map((header, i) => (
                             <th
                                 key={i}
-                                className="border-b border-r border-border p-2 text-left text-[10px] uppercase tracking-[0.2em] text-muted last:border-r-0"
+                                className="border-b border-r border-border px-1 py-1.5 text-left text-[10px] uppercase tracking-[0.2em] text-muted last:border-r-0"
                             >
                                 {header}
                             </th>
@@ -113,7 +113,7 @@ function TableSheet({
                                 {row.map((cell, j) => (
                                     <td
                                         key={j}
-                                        className="border-r border-t border-border p-2 align-top last:border-r-0"
+                                        className="border-r border-t border-border p-1 align-top last:border-r-0"
                                     >
                                         {cell || "—"}
                                     </td>

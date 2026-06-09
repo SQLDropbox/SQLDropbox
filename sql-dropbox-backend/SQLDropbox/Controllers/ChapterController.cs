@@ -255,7 +255,12 @@ public class ChapterController(AppDbContext db, ChapterService chapterService) :
 
                     Exercises = c.Exercises
                         .Where(e => e.UserExercises.Any(ue => ue.User == user))
-                        .OrderBy(e => e.ExerciseId)
+                        .OrderByDescending(e =>
+                            e.UserExercises
+                                .Where(ue => ue.User == user)
+                                .Select(ue => ue.IsCompleted)
+                                .FirstOrDefault()
+                        )
                         .Take(c.AmountOfExercises ?? 0)
                         .Select(e => new
                         {

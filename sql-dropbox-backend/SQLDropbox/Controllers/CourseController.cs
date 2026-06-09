@@ -127,7 +127,20 @@ public class CourseController(AppDbContext db, EmailService emailService, IConfi
                         x.StartDate,
                         x.Deadline,
 
-                        completedAmount = x.Exercises.Take(x.AmountOfExercises ?? 0).Sum(e => e.UserExercises.Count(ue => ue.User.UserId == userId && ue.IsCompleted))
+                        completedAmount = x.Exercises
+                            .Where(e => e.UserExercises.Any(ue => ue.User.UserId == userId))
+                            .OrderByDescending(e =>
+                                e.UserExercises
+                                    .Where(ue => ue.User.UserId == userId)
+                                    .Select(ue => ue.IsCompleted)
+                                    .FirstOrDefault()
+                            )
+                            .Take(x.AmountOfExercises ?? 0)
+                            .Count(e =>
+                                e.UserExercises.Any(ue =>
+                                    ue.User.UserId == userId && ue.IsCompleted
+                                )
+                            )
                     })
             });
         }

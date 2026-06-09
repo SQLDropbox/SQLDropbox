@@ -207,7 +207,8 @@
         "expectedOutput": "Verwachte output",
         "expand": "Uitvouwen",
         "collapse": "Inklappen",
-        "noHistory": "Nog geen query-geschiedenis. Voer je eerste query uit om het hier te zien!"
+        "noHistory": "Nog geen query-geschiedenis. Voer je eerste query uit om het hier te zien!",
+        "queryCorrect": "Correct!"
     },
     "ExerciseSidebar": {
         "title": "Vragen",

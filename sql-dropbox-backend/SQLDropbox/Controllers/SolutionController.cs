@@ -22,7 +22,7 @@ public class SolutionController(AppDbContext db, SolutionService solutionService
         if (string.IsNullOrWhiteSpace(actual))  return "Your query returned no results.";
         if (string.IsNullOrWhiteSpace(expected)) return "Your query returned data when no data was expected.";
 
-        return "Your query executed successfully, but the result does not match the expected output.";
+        return "The query doesn't match the expected output.";
     }
 
     [Authorize]
