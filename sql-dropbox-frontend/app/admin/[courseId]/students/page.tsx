@@ -93,6 +93,7 @@ export default function Page() {
                 onConfirm={() => {
                     courseService.inviteStudents(courseId!).then(() => {
                         setConfirmInviteOpen(false);
+                        refetch();
                     });
                 }}
                 title={"Invite students"}
