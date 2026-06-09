@@ -7,7 +7,7 @@ const ROLE_CLAIM =
 const PUBLIC_ROUTES = ["/login", "/activate", "/unauthorized"];
 
 const ROLE_ROUTES: Record<string, string[]> = {
-    "/admin": ["Admin", "Lecturer"],
+    "/admin": ["Admin", "Lecturer", "Test"],
 };
 
 export function proxy(req: NextRequest) {
