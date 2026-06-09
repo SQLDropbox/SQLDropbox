@@ -126,16 +126,90 @@ if (!await db.Users.AnyAsync(u => u.UserCode == "admin"))
     await db.SaveChangesAsync();
 }
 
+// TEST USER CREATION
+// These users with limited permission are allowed by the client
+List<User> existingTestUsers = await db.Users.Where(u => u.UserCode == "r0901484" || u.UserCode == "r0950937" || u.UserCode == "r0933070" || u.UserCode == "r0947044").ToListAsync();
+if (existingTestUsers.Count < 4)
+{
+    PasswordService pS = scope.ServiceProvider.GetRequiredService<PasswordService>();
+    List<User> newTestUsers = [];
+
+    string? eKPassword = builder.Configuration["EKPassword"];
+    string? jVMPassword = builder.Configuration["JVMPassword"];
+    string? lDPassword = builder.Configuration["LDPassword"];
+    string? rVPassword = builder.Configuration["RVPassword"];
+
+    if (!existingTestUsers.Any(u => u.UserCode == "r0901484") && eKPassword != null)
+    {
+        var eK = new User
+        {
+            UserCode = "r0901484",
+            FirstName = "Egor",
+            LastName = "Kolomiets",
+            Email = "egor.kolomiets@hotmail.com",
+            Password = pS.HashPassword(eKPassword),
+            Role = Role.Test,
+            CreatedAt = DateTime.Now,
+        };
+        newTestUsers.Add(eK);
+    }
+    if (!existingTestUsers.Any(u => u.UserCode == "r0950937") && jVMPassword != null)
+    {
+        var jVM = new User
+        {
+            UserCode = "r0950937",
+            FirstName = "Joran",
+            LastName = "Vander Mergel",
+            Email = "joranvandermergel@gmail.com",
+            Password = pS.HashPassword(jVMPassword),
+            Role = Role.Test,
+            CreatedAt = DateTime.Now,
+        };
+        newTestUsers.Add(jVM);
+    }
+    if (!existingTestUsers.Any(u => u.UserCode == "r0933070") && lDPassword != null)
+    {
+        var lD = new User
+        {
+            UserCode = "r0933070",
+            FirstName = "Lander",
+            LastName = "Dirix",
+            Email = "lander@dirix-philips.be",
+            Password = pS.HashPassword(lDPassword),
+            Role = Role.Test,
+            CreatedAt = DateTime.Now,
+        };
+        newTestUsers.Add(lD);
+    }
+    if (!existingTestUsers.Any(u => u.UserCode == "r0947044") && rVPassword != null)
+    {
+        var rV = new User
+        {
+            UserCode = "r0947044",
+            FirstName = "Raf",
+            LastName = "Versichele",
+            Email = "raf.versichele@gmail.com",
+            Password = pS.HashPassword(rVPassword),
+            Role = Role.Test,
+            CreatedAt = DateTime.Now,
+        };
+        newTestUsers.Add(rV);
+    }
+
+    db.Users.AddRange(newTestUsers);
+    await db.SaveChangesAsync();
+}
+
 if (app.Environment.IsDevelopment())
 {
     // SWAGGER
     app.MapOpenApi();
     app.UseSwagger();
-    app.UseSwaggerUI();    
+    app.UseSwaggerUI();
 }
 
 if (app.Environment.IsProduction())
-{      
+{
     app.UseHttpsRedirection();
     app.UsePathBase("/api");
 }

@@ -10,31 +10,25 @@ namespace SQLDropbox.Services
         public EmailService(IConfiguration config)
         {
             _config = config;
-            brevo_csharp.Client.Configuration.Default.ApiKey["api-key"] = _config["Brevo:ApiKey"];
+            brevo_csharp.Client.Configuration.Default.ApiKey["api-key"] = _config["Brevo:ApiKey"] ?? throw new Exception("ApiKey is not configured.");
         }
 
         public async System.Threading.Tasks.Task SendEmailAsync(string toEmail, string toName, string subject, string htmlContent)
         {
-            Console.WriteLine($"API Key: {_config["Brevo:ApiKey"]?.Substring(0, 15)}...");
-            Console.WriteLine($"Sender: {_config["Brevo:SenderEmail"]}");
-            Console.WriteLine($"To: {toEmail}");
-
             var apiInstance = new TransactionalEmailsApi();
 
             var sendSmtpEmail = new SendSmtpEmail(
                 sender: new SendSmtpEmailSender(
-                    name: _config["Brevo:SenderName"],
-                    email: _config["Brevo:SenderEmail"]
+                    name: _config["Brevo:SenderName"] ?? throw new Exception("SenderName is not configured."),
+                    email: _config["Brevo:SenderEmail"] ?? throw new Exception("SenderEmail is not configured.")
                 ),
-                to: new List<SendSmtpEmailTo>
-                {
-                new SendSmtpEmailTo(email: toEmail, name: toName)
-                },
+                to:
+                [new SendSmtpEmailTo(email: toEmail, name: toName)],
                 subject: subject,
                 htmlContent: htmlContent,
                 replyTo: new SendSmtpEmailReplyTo(
-                    email: _config["Brevo:ReplyToEmail"],
-                    name: _config["Brevo:ReplyToName"]
+                    email: _config["Brevo:ReplyToEmail"] ?? throw new Exception("ReplyToEmail is not configured."),
+                    name: _config["Brevo:ReplyToName"] ?? throw new Exception("ReplyToName is not configured.")
                 )
             );
 

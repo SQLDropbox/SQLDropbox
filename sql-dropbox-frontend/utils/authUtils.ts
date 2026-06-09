@@ -6,9 +6,7 @@ const setup = async (
     studentId: string,
     password: string,
 ) => {
-    const response = await authService.setupAccount(studentId, password);
-
-    setJWTCookie(response.token);
+    await authService.setupAccount(studentId, password);
 
     setTimeout(() => {
         router.push("/");
