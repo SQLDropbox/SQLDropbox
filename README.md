@@ -71,7 +71,7 @@ openssl rsa -in private.dev.pem -pubout -out public.dev.pem
     "AccessTokenMinutes": 10,
     "RefreshTokenDays": 10
   },
-  "AllowedOrigins": "http://localhost:3000"
+  "FrontendURL": "http://localhost:3000"
 }
 ```
 ### 4. Startup backend

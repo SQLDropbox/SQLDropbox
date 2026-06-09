@@ -16,7 +16,7 @@ namespace SQLDropbox.Services
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _refreshTokenDays = int.Parse(_configuration["Jwt:RefreshTokenDays"]
-                ?? throw new InvalidOperationException("Jwt Refresh Token Days is not configured"));
+                ?? throw new InvalidOperationException("Jwt:RefreshTokenDays is not configured"));
             _db = db;
         }
 

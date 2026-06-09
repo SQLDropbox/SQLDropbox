@@ -7,7 +7,7 @@ using SQLDropbox.Services;
 namespace SQLDropbox.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("[controller]")]
 public class RoutineController(SchemaService schema, SqlQueryService sql) : ControllerBase
 {
     private readonly SchemaService _schema = schema;
@@ -94,6 +94,14 @@ public class RoutineController(SchemaService schema, SqlQueryService sql) : Cont
         catch (InvalidOperationException ex)
         {
             return BadRequest(ex.Message);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized(new { message = "You're not authorized to access this resource." });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
         }
     }
 }

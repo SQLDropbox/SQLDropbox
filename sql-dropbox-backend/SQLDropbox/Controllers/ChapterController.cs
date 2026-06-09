@@ -10,14 +10,13 @@ namespace SQLDropbox.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class ChapterController(AppDbContext db, AuthorizationService authorizationService, ChapterService chapterService) : BaseController
+public class ChapterController(AppDbContext db, ChapterService chapterService) : BaseController(db)
 {
     private readonly AppDbContext _db = db;
-    private readonly AuthorizationService _aS = authorizationService;
     private readonly ChapterService _cS = chapterService;
     private string BaseUrl => $"{Request.Scheme}://{Request.Host}";
 
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,Test")]
     [HttpGet]
     public async Task<IActionResult> GetChapters()
     {
@@ -59,8 +58,7 @@ public class ChapterController(AppDbContext db, AuthorizationService authorizati
     {
         try
         {
-            var (userId, role) = IsAuthenticated();
-            await _aS.UserHasAccessToChapter(userId, role, id);
+            await UserHasAccessToChapter(id);
 
             var chapter = await _db.Chapters.Where(x => x.ChapterId == id).Select(x => new
             {
@@ -104,8 +102,7 @@ public class ChapterController(AppDbContext db, AuthorizationService authorizati
     {
         try
         {
-            var (userId, role) = IsAuthenticated();
-            await _aS.UserHasAccessToCourse(userId, role, courseId);
+            await UserHasAccessToCourse(courseId);
 
             Course? course = await _db.Courses.FirstOrDefaultAsync(x => x.CourseId == courseId);
 
@@ -157,8 +154,7 @@ public class ChapterController(AppDbContext db, AuthorizationService authorizati
     {
         try
         {
-            var (userId, role) = IsAuthenticated();
-            await _aS.UserHasAccessToChapter(userId, role, id);
+            await UserHasAccessToChapter(id);
 
             Chapter? chapter = await _db.Chapters.Include(c => c.Course).FirstOrDefaultAsync(x => x.ChapterId == id);
             if (chapter == null)
@@ -203,8 +199,7 @@ public class ChapterController(AppDbContext db, AuthorizationService authorizati
     {
         try
         {
-            var (userId, role) = IsAuthenticated();
-            await _aS.UserHasAccessToChapter(userId, role, id);
+            await UserHasAccessToChapter(id);
 
             Chapter? chapter = await _db.Chapters.FirstOrDefaultAsync(x => x.ChapterId == id);
 
@@ -231,8 +226,8 @@ public class ChapterController(AppDbContext db, AuthorizationService authorizati
     {
         try
         {
-            var (userId, role) = IsAuthenticated();
-            await _aS.UserHasAccessToChapter(userId, role, chapterId);
+            await UserHasAccessToChapter(chapterId);
+            var userId = GetUserId();
 
             User? user = await _db.Users
                     .Where(u => u.UserId == userId)
@@ -327,14 +322,14 @@ public class ChapterController(AppDbContext db, AuthorizationService authorizati
         }
     }
 
-    [Authorize(Roles = "Admin,Lecturer")]
+    [Authorize(Roles = "Admin,Lecturer,Test")]
     [HttpGet("{chapterId}/all-exercises")]
     public async Task<IActionResult> GetAllExercisesByChapter(int chapterId)
     {
         try
         {
-            var (userId, role) = IsAuthenticated();
-            await _aS.UserHasAccessToChapter(userId, role, chapterId);
+            await UserHasAccessToChapter(chapterId);
+            var userId = GetUserId();
 
             User? user = await _db.Users
                     .Where(u => u.UserId == userId)
@@ -413,8 +408,7 @@ public class ChapterController(AppDbContext db, AuthorizationService authorizati
     {
         try
         {
-            var (userId, role) = IsAuthenticated();
-            await _aS.UserHasAccessToCourse(userId, role, courseId);
+            await UserHasAccessToCourse(courseId);
 
             List<Chapter> chapters = await _db.Chapters.Where(c => c.Course.CourseId == courseId).ToListAsync();
 
