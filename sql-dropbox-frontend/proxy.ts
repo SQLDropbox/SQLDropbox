@@ -16,6 +16,11 @@ export function proxy(req: NextRequest) {
 
     const isPublic = PUBLIC_ROUTES.some((r) => path.startsWith(r));
 
+    const isLoginRoute = path.startsWith("/login");
+    if (token && isLoginRoute) {
+        return NextResponse.redirect(new URL("/", req.url));
+    }
+
     if (isPublic) return NextResponse.next();
 
     if (!token) {
@@ -38,7 +43,9 @@ export function proxy(req: NextRequest) {
     )?.[1];
 
     if (requiredRoles && role && !requiredRoles.includes(role)) {
-        console.log(`user role ${role} not authorized for path ${path}, redirecting to unauthorized`);
+        console.log(
+            `user role ${role} not authorized for path ${path}, redirecting to unauthorized`,
+        );
         return NextResponse.redirect(new URL("/unauthorized", req.url));
     }
 
