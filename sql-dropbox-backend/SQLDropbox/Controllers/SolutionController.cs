@@ -18,10 +18,9 @@ public class SolutionController(AppDbContext db, SolutionService solutionService
     private readonly SolutionService _soS = solutionService;
     private readonly SchemaService _scS = schemaService;
 
-    private string GetResultMismatchMessage(string expected, string actual){
+    private static string GetResultMismatchMessage(string expected, string actual){
         if (string.IsNullOrWhiteSpace(actual))  return "Your query returned no results.";
         if (string.IsNullOrWhiteSpace(expected)) return "Your query returned data when no data was expected.";
-
         return "The query doesn't match the expected output.";
     }
 
@@ -146,47 +145,7 @@ public class SolutionController(AppDbContext db, SolutionService solutionService
             return Ok(new { message = "Well done, this query was correct!" });
         }
         catch (PostgresException ex)
-        {
-            //string code = ex.SqlState;
-            //string message = "Something went wrong.";
-
-            //switch (ex.SqlState)
-            //{
-            //    case "22001":
-            //        message = "String too long.";
-            //        break;
-            //    case "22003":
-            //        message = "Number too large/small.";
-            //        break;
-            //    case "22P02":
-            //        message = "Incorrect type or format.";
-            //        break;
-            //    case "23502":
-            //        message = "Violating a not null constraint.";
-            //        break;
-            //    case "23503":
-            //        message = "Violating a foreign key constraint.";
-            //        break;
-            //    case "23505":
-            //        message = "Violating a unique constraint.";
-            //        break;
-            //    case "23514":
-            //        message = "Failing a check constraint.";
-            //        break;
-            //    case "42501":
-            //        message = "Don't have permission to access this resource.";
-            //        break;
-            //    case "42601":
-            //        message = "Use of invalid SQL syntax.";
-            //        break;
-            //    case "42703":
-            //        message = "Use of a column that doesn't exist.";
-            //        break;
-            //    case "42P01":
-            //        message = "Use of a table that doesn't exist.";
-            //        break;
-            //}
-
+        {            
             return BadRequest(new { message = ex.Message });
         }
         catch

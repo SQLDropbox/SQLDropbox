@@ -59,27 +59,28 @@ public class ExerciseController(AppDbContext db, SolutionService solutionService
 
             if (queryAction == QueryAction.Select)
             {
-                //If this returns an error, that error should be shown
                 queryOutput = await _scS.ExecuteSelectOnSchemaAsync(chapter.Schema.SchemaName, formattedQuery);
             }
 
-            string? formattedValidationQuery = null;
+            string formattedValidationQuery = "";
 
-            if (queryAction == QueryAction.Manipulation && dto.ValidationQuery != null)
+            if (queryAction == QueryAction.Manipulation)
             {
-                var (fVQ, fEM) = _soS.FormatQuery(dto.ValidationQuery);
-                if (formatErrorMessage != null)
-                    return BadRequest(new { message = $"Error occured formatting validation query: {fEM}." });
-                if (fVQ == null)
-                    return BadRequest(new { message = "Something went wrong while formatting the validation query." });
+                if (dto.ValidationQuery != null)
+                {
+                    var (fVQ, fEM) = _soS.FormatQuery(dto.ValidationQuery);
+                    if (formatErrorMessage != null)
+                        return BadRequest(new { message = $"Error occured formatting validation query: {fEM}." });
+                    if (fVQ == null)
+                        return BadRequest(new { message = "Something went wrong while formatting the validation query." });
 
-                formattedValidationQuery = fVQ;
-                queryOutput = await _scS.ExecuteInsertUpdateDeleteOnSchemaAsync(chapter.Schema.SchemaName, formattedQuery, formattedValidationQuery);
-            }
-
-            if (queryAction == QueryAction.Manipulation && dto.ValidationQuery == null)
-            {
-                return BadRequest(new { message = "In case of manipulation, a validation query is required." });
+                    formattedValidationQuery = fVQ;
+                    queryOutput = await _scS.ExecuteInsertUpdateDeleteOnSchemaAsync(chapter.Schema.SchemaName, formattedQuery, formattedValidationQuery);
+                }
+                else
+                {
+                    return BadRequest(new { message = "In case of manipulation, a validation query is required." });
+                }
             }
 
             uint queryHash = await _soS.HashSolution(formattedQuery);
