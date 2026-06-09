@@ -1,0 +1,39 @@
+import { api } from "./apiClient";
+
+const getAccountSetup = async (userId: string) => {
+    return api.publicFetch(`/Auth/setup/${userId}`, {
+        method: "GET",
+    });
+};
+
+const setupAccount = async (guid: string, password: string) => {
+    return api.publicFetch(`/Auth/setup`, {
+        method: "POST",
+        body: JSON.stringify({ guid, password: password.trim() }),
+    });
+};
+
+const login = async (emailOrCode: string, password: string) => {
+    return api.publicFetch(`/Auth/login`, {
+        method: "POST",
+        body: JSON.stringify({
+            emailOrCode: emailOrCode.trim(),
+            password: password.trim(),
+        }),
+        credentials: "include",
+    });
+};
+
+const logout = async () => {
+    return api.publicFetch(`/Auth/logout`, {
+        method: "GET",
+        credentials: "include",
+    });
+};
+
+export const authService = {
+    getAccountSetup,
+    setupAccount,
+    login,
+    logout,
+};

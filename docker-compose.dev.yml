@@ -1,0 +1,65 @@
+# docker compose up --build
+services:
+    postgres:
+        image: postgres:16
+        container_name: postgres-db
+        restart: unless-stopped
+        environment:
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: postgres
+            POSTGRES_DB: sqldropbox
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+            - ../database:/docker-entrypoint-initdb.d
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres -d sqldropbox"]
+            interval: 5s
+            timeout: 5s
+            retries: 10
+        networks:
+            - appnet
+
+    api:
+        build:
+            context: ./sql-dropbox-backend
+            dockerfile: Dockerfile
+        volumes:
+            - ../env/keys:/run/keys:ro
+        env_file:
+            - ../env/backend.dev.env
+        container_name: dotnet-api
+        restart: unless-stopped
+        depends_on:
+            postgres:
+                condition: service_healthy
+        ports:
+            - "8080:8080"
+        environment:
+            ASPNETCORE_ENVIRONMENT: Development
+            ASPNETCORE_URLS: "http://+:8080"
+        networks:
+            - appnet
+
+    frontend:
+        build:
+            context: ./sql-dropbox-frontend
+            dockerfile: Dockerfile
+            args:
+                NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        env_file:
+            - ../env/frontend.dev.env
+        container_name: nextjs-app
+        restart: unless-stopped
+        depends_on:
+            - api
+        ports:
+            - "3000:3000"
+        networks:
+            - appnet
+
+volumes:
+    postgres_data:
+
+networks:
+    appnet:
+        driver: bridge
