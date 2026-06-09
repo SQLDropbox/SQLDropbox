@@ -194,7 +194,7 @@ namespace SQLDropbox.Controllers
             }
         }
 
-        [Authorize(Roles = "Admin,Lecturer")]
+        [Authorize(Roles = "Admin,Lecturer,Test")]
         [HttpGet("students/{courseId}")]
         public async Task<ActionResult> GetStudents(string courseId)
         {
@@ -262,7 +262,7 @@ namespace SQLDropbox.Controllers
             }
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Test")]
         [HttpGet("lecturers")]
         public async Task<IActionResult> GetAllLecturers()
         {
