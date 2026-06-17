@@ -1,4 +1,4 @@
-# DataBasement
+# Databasement
 
 ## Setup Database
 Make sure you have [PgAdmin](https://www.pgadmin.org/) installed. In order to run the database locally.
@@ -107,4 +107,4 @@ npm run dev
 ```
 - Navigate to this page to see the frontend `http://localhost:3000/`
 
-# Congrats, if you now run both you should have a fully working project!
+# Congrats, if you now run both you should have a fully working project! 🚀
